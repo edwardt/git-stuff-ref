@@ -21,9 +21,9 @@ handle(Sock, Host, Header) ->
 
 % Extract the repo from the header.
 extract_repo_path(Sock, Host, Header) ->
-  case re:match(Header, " /[^\000]+\000") of
-    {match, Start, Length} ->
-      Path = string:substr(Header, Start + 2, Length - 3),
+  case re:run(Header, " /[^\\000]+\\000") of
+    {match, [{Start,Length}]} ->
+      Path = string:substr(Header, Start + 2, Length - 2),
       convert_path(Sock, Host, Path);
     _Else ->
       invalid
@@ -48,7 +48,7 @@ repo_existence(Sock, Host, Path, FullPath) ->
     false ->
       repo_existence_ext(Sock, Host, Path, FullPath)
   end.
-  
+
 % The repo may always be specified without .git on the end
 repo_existence_ext(Sock, Host, Path, FullPath) ->
   FullPathExt = FullPath ++ ".git",

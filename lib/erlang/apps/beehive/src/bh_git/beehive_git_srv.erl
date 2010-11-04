@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : beehive_git_srv.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%   Based on Tom Preston-Werner's egitd (http://github.com/mojombo/egitd)
 %%% Created :  Wed Dec  2 20:02:41 PST 2009
 %%%-------------------------------------------------------------------
@@ -11,28 +11,31 @@
 -include ("common.hrl").
 
 -export([
-  start_link/0, 
-  init/0, 
+  start_link/0,
+  init/0,
   init/1,
   init_accept/2
 ]).
 
 start_link()          -> init().
 % Start listening on the application port
-init()                -> init(config:search_for_application_value(git_port, 9148)).
-init(LocalPort) -> 
+init() -> init(config:search_for_application_value(git_port, 9148)).
+init(LocalPort) ->
   Pid = spawn_link(?MODULE, init_accept, [LocalPort, 10]),
   {ok, Pid}.
 
 % accept responses on the port given by the application configuration
-init_accept(LPort, 0) -> ?LOG(debug, "Could not listen on the git port: ~p", [LPort]);
+init_accept(LPort, 0) ->
+  ?LOG(debug, "Could not listen on the git port: ~p", [LPort]);
 init_accept(LPort, Count) ->
   SockOpts = [list, {packet, 0}, {active, false}],
 	case gen_tcp:listen(LPort, SockOpts) of
-	  {ok, ListenSocket} -> 
+	  {ok, ListenSocket} ->
 	    accept(ListenSocket);
 	  Error ->
-	    ?LOG(error, "There was an error listening to the socket for port ~p: ~p", [LPort, Error]),
+	    ?LOG(error,
+                 "There was an error listening to the socket for port ~p: ~p",
+                 [LPort, Error]),
 	    init_accept(LPort, Count - 1)
 	end.
 
@@ -57,7 +60,7 @@ handle_method(Sock) ->
     {error, closed} ->
       ok = gen_tcp:close(Sock)
   end.
-  
+
 handle_method_dispatch({ok, "upload-pack"}, Sock, Host, Header) ->
   bh_upload_pack:handle(Sock, Host, Header);
 handle_method_dispatch({ok, "receive-pack"}, Sock, Host, Header) ->
@@ -65,7 +68,7 @@ handle_method_dispatch({ok, "receive-pack"}, Sock, Host, Header) ->
 handle_method_dispatch(invalid, Sock, _Host, _Header) ->
   gen_tcp:send(Sock, "Invalid method declaration. Upgrade to the latest git.\n"),
   ok = gen_tcp:close(Sock).
-  
+
 extract_method_name(Header) ->
   case re:run(Header, "....git[ -]([a-z\-]+) ") of
     {match, Matches} ->
@@ -74,7 +77,7 @@ extract_method_name(Header) ->
     _Else ->
       invalid
   end.
-  
+
 extract_host(Header) ->
   case re:run(string:to_lower(Header), "host=(.*)\^@") of % \000host=[^\000]+\000
     {match, Matches} ->
