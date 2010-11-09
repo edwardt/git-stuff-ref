@@ -5,8 +5,8 @@
 var apps_controller = function(app) {
 
   this.get('#/apps', function(context) {
-    this.get_page("/apps.json", 'apps');
-    this.auto_reload("/apps.json", 'apps');
+    this.get_page(("/apps.json?token=" + Sammy.current_user["token"]), 'apps');
+    this.auto_reload("/apps.json" + Sammy.current_user["token"], 'apps');
   });
 
   this.get('#/apps/new', function(context) {
@@ -38,7 +38,7 @@ var apps_controller = function(app) {
   });
 
   this.get('#/apps/:name', function(context) {
-    this.get_page("/apps/"+ this.params['name'] + ".json", 'application');
+    this.get_page("/apps/"+ this.params['name'] + ".json?token=" + Sammy.current_user["token"], 'application');
     this.template = "apps/show";
   });
 
