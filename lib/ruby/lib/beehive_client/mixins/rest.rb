@@ -5,10 +5,15 @@ module BeehiveClient
   module Rest
 
      # REST Methods
-     def get(path)
-       r = RestClient.get("http://#{host}/#{path}")
-       JSON.parse(r) # todo - http basic auth?
-     end
+    def get(path, params = {})
+      uri = "http://#{host}/#{path}"
+      r = unless params.empty?
+            RestClient.get(uri, {:params => params})
+          else
+            RestClient.get(uri)
+          end
+      JSON.parse(r)
+    end
 
      def post(path, params={})
        j = RestClient.post("http://#{host}/#{path}", params.to_json)

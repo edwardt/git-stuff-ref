@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : auth_controller.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  Sun Nov 29 20:40:59 PST 2009
 %%%-------------------------------------------------------------------
@@ -12,7 +12,7 @@
 
 -export ([get/2, post/2, put/2, delete/2]).
 
-get(_, _Data) -> 
+get(_, _Data) ->
   {struct, [{"beehive", <<"app, node, bees, stats">>}]}.
 
 post([], Data) ->
@@ -32,7 +32,7 @@ post([], Data) ->
           end
       end
   end;
-  
+
 post(_Path, _Data) -> "unhandled".
 
 put(_Path, _Data) -> "unhandled".
