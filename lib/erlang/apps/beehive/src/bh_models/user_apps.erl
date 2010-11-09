@@ -13,6 +13,7 @@
 
 -export ([
           find_by_email/1,
+          find_all_by_email/1,
           find_by_app_name/1,
           get_owners/1, get_users/1,
           all/0,
@@ -26,7 +27,7 @@
 -define (DB, beehive_db_srv).
 
 -export ([
-          validate_user_app/1,
+          validate/1,
           to_proplist/1
          ]).
 
@@ -99,12 +100,12 @@ get_users(App) ->
 %% Insert a new user
 create(UsersApp) when is_record(UsersApp, user_app) ->
   case catch ?DB:write(user_app, UsersApp#user_app.app_name,
-                       validate_user_app(UsersApp)) of
+                       validate(UsersApp)) of
     ok -> {ok, UsersApp};
     Else -> {error, Else}
   end;
 
-create(NewProps) -> save(validate_user_app(new(NewProps))).
+create(NewProps) -> save(validate(new(NewProps))).
 
 %% Create a user_app
 create(User, App) when is_record(User, user) andalso is_record(App, app) ->
@@ -117,7 +118,7 @@ create(Email, AppName) ->
 
 %% Save the user_app
 save(UserApp) when is_record(UserApp, user_app) ->
-  case catch ?DB:write(user_app, UserApp#user_app.app_name, UserApp) of
+  case catch ?DB:write(user_app, UserApp#user_app.id, UserApp) of
     ok -> {ok, UserApp};
     {'EXIT',{aborted,{no_exists,_}}} ->
       ?NOTIFY({db, database_not_initialized, user_app}),
@@ -141,24 +142,26 @@ save(Else) -> {error, {cannot_save, Else}}.
 
 new([]) -> error;
 new(UsersApp) when is_record(UsersApp, user_app) ->
-  validate_user_app(UsersApp);
+  validate(UsersApp);
 new(Proplist) when is_list(Proplist) ->
-  validate_user_app(from_proplists(Proplist));
+  validate(from_proplists(Proplist));
 new(Else) -> {error, {cannot_make_user_app, Else}}.
 
-delete(UsersApp) when is_record(UsersApp, user_app) ->
-  ?DB:delete(user_app, UsersApp);
+delete(UserApp) when is_record(UserApp, user_app) ->
+  ?DB:delete(user_app, UserApp#user_app.id);
 delete([]) -> invalid;
 delete(Else) -> {error, {cannot_delete, Else}}.
 
 delete(Email, AppName) ->
-  UserApp = find_user_app(Email, AppName),
-  ?DB:delete(UserApp).
+  delete(find_user_app(Email, AppName)).
+
 
 all() -> ?DB:all(user_app).
 
 from_proplists(Proplists) -> from_proplists(Proplists, #user_app{}).
 from_proplists([], UserApp)  -> UserApp;
+from_proplists([{id, V}|Rest], UserApp) ->
+  from_proplists(Rest, UserApp#user_app{id = V});
 from_proplists([{user_email, V}|Rest], UserApp) ->
   from_proplists(Rest, UserApp#user_app{user_email = V});
 from_proplists([{app_name, V}|Rest], UserApp) ->
@@ -170,6 +173,8 @@ from_proplists([_Else|Rest], UserApp) ->
 
 to_proplist(UserApp) -> to_proplist(record_info(fields, user_app), UserApp, []).
 to_proplist([], _UserApp, Acc) -> Acc;
+to_proplist([id|Rest], #user_app{id = Id} = UserApp, Acc) ->
+  to_proplist(Rest, UserApp, [{id, Id}|Acc]);
 to_proplist([user_email|Rest], #user_app{user_email = Id} = UserApp, Acc) ->
   to_proplist(Rest, UserApp, [{user_email, Id}|Acc]);
 to_proplist([app_name|Rest], #user_app{app_name = Name} = UserApp, Acc) ->
@@ -179,31 +184,39 @@ to_proplist([level|Rest], #user_app{level=Level} = UserApp, Acc) ->
 to_proplist([_Else|Rest], UserApp, Acc) -> to_proplist(Rest, UserApp, Acc).
 
 
-validate_user_app(UserApp) when is_record(UserApp, user_app) ->
-  validate_user_app(record_info(fields, user_app), UserApp);
-validate_user_app(Else) -> Else.
+validate(UserApp) when is_record(UserApp, user_app) ->
+  validate(record_info(fields, user_app), UserApp);
+validate(Else) -> Else.
 
-validate_user_app([], UserApp) ->  UserApp;
+validate([], UserApp) ->  UserApp;
+
+validate([id|Rest],
+             #user_app{id = undefined, app_name = AppName,
+                       user_email = UserEmail} = UserApp) ->
+  validate(Rest, UserApp#user_app{id = {UserEmail, AppName}});
+validate([id|Rest], UserApp) ->
+  validate(Rest, UserApp);
+
 %% Validate the user_email
-validate_user_app([user_email|_Rest],
+validate([user_email|_Rest],
                   #user_app{user_email = undefined} = _UserApp) ->
   {error, no_user_email_given};
-validate_user_app([user_email|Rest], #user_app{user_email = Email} = UserApp) ->
+validate([user_email|Rest], #user_app{user_email = Email} = UserApp) ->
   case users:find_by_email(Email) of
     [] -> {error, user_not_found};
-    _User -> validate_user_app(Rest, UserApp)
+    _User -> validate(Rest, UserApp)
   end;
 %% Validate the app
-validate_user_app([app_name|_Rest], #user_app{app_name = undefined}) ->
+validate([app_name|_Rest], #user_app{app_name = undefined}) ->
   {error, no_app_name_given};
-validate_user_app([app_name|Rest], #user_app{app_name = AppName} = UserApp) ->
+validate([app_name|Rest], #user_app{app_name = AppName} = UserApp) ->
   case apps:find_by_name(AppName) of
     [] -> {error, app_not_found};
-    _App -> validate_user_app(Rest, UserApp)
+    _App -> validate(Rest, UserApp)
   end;
 %% Validate the level
-validate_user_app([level|Rest], #user_app{level = undefined} = UserApp) ->
-  validate_user_app(Rest, UserApp#user_app{level = ?REGULAR_USER_LEVEL});
+validate([level|Rest], #user_app{level = undefined} = UserApp) ->
+  validate(Rest, UserApp#user_app{level = ?REGULAR_USER_LEVEL});
 
 %% Validate others?
-validate_user_app([_H|Rest], UA) -> validate_user_app(Rest, UA).
+validate([_H|Rest], UA) -> validate(Rest, UA).

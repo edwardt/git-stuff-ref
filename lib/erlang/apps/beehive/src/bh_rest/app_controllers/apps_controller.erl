@@ -13,29 +13,39 @@
 -export ([get/2, post/2, put/2, delete/2]).
 
 
-get([Name, "bee_logs"], _Data) ->
-  LogFile = beehive_bee_object:bee_log_file(Name),
-  case(filelib:is_file(LogFile)) of
-    true ->
-      case(file:read_file(LogFile)) of
-        {ok, Data} -> {bee_log, Data};
-        {error, _Err} -> {error, unreadable_log_file}
+get([Name, "bee_logs"], Data) ->
+  case find_app_for_user(Name, Data) of
+    App when is_record(App, app) ->
+      LogFile = beehive_bee_object:bee_log_file(Name),
+      case(filelib:is_file(LogFile)) of
+        true ->
+          case(file:read_file(LogFile)) of
+            {ok, LogData} -> {bee_log, LogData};
+            {error, _E} -> {error, unreadable_log_file}
+          end;
+        false -> {error, file_not_found}
       end;
-    false -> {error, file_not_found}
+    Err -> Err
   end;
-get([Name], _Data) ->
-  case apps:find_by_name(Name) of
-    not_found -> {error, "App not found"};
-    App ->
+get([Name], Data) ->
+  case find_app_for_user(Name, Data) of
+    App when is_record(App, app) ->
       AppDetails = compile_app_details(App),
-      {"application", AppDetails}
+      {application, AppDetails};
+    Err -> Err
   end;
-get(_, _Data) ->
-  All = apps:all(),
-  {"apps", lists:map(fun(A) ->
-      compile_app_details(A)
-    end, All)
-  }.
+get(_, Data) ->
+  case auth_utils:get_authorized_user(Data) of
+    User when is_record(User, user) ->
+      All = case User#user.level of
+              ?REGULAR_USER_LEVEL ->
+                user_apps:all_apps(User#user.email);
+              ?ADMIN_USER_LEVEL ->
+                apps:all()
+            end,
+      { "apps", lists:map(fun(A) -> compile_app_details(A) end, All) };
+    E -> E
+  end.
 
 post([], Data) ->
   case auth_utils:get_authorized_user(Data) of
@@ -133,4 +143,26 @@ rebuild_bee(App) ->
   case rpc:call(Node, beehive_storage_srv, rebuild_bee, [App], 60*1000) of
     {bee_built, _Proplist} -> ok;
     _ -> error
+  end.
+
+find_app_for_user(Name, Data) ->
+  case auth_utils:get_authorized_user(Data) of
+    User when is_record(User, user) ->
+      case User#user.level of
+        ?ADMIN_USER_LEVEL ->
+          case apps:find_by_name(Name) of
+            not_found -> {error, "App not found"};
+            App -> App
+          end;
+
+        ?REGULAR_USER_LEVEL ->
+          Apps = user_apps:all_apps(User#user.email),
+          MatchingApps = lists:filter(fun(A) -> A#app.name =:= Name end,
+                                      Apps),
+          case MatchingApps of
+            [] -> {error, "App not found"};
+            [Head|_] -> Head
+          end
+      end;
+    E -> E
   end.

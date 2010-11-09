@@ -3,6 +3,7 @@
 -include ("beehive.hrl").
 
 setup() ->
+  bh_test_util:setup(),
   bh_test_util:dummy_user(),                    % test@getbeehive.com
   rest_server:start_link(),
   timer:sleep(100),
@@ -63,6 +64,9 @@ get_index_with_bad_email() ->
   passed.
 
 get_user_apps_no_apps() ->
+  lists:foreach(fun(UApp) -> user_apps:delete(UApp) end,
+                user_apps:find_all_by_email("test@getbeehive.com")),
+
   {ok, Header, Response} =
     bh_test_util:fetch_url(get,
                            [{path, "/users/test@getbeehive.com/apps.json"}]),

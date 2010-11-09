@@ -36,45 +36,47 @@ get(_, _Data) ->
                        end, All)
   }.
 
-post([Name, "keys", "new"], Data) ->
-  auth_utils:run_if_admin(fun(_) ->
-                              case proplists:get_value(key, Data) of
-                                undefined -> app_error("No key defined");
-                                Key ->
-                                  case users:find_by_email(Name) of
-                                    User when is_record(User, user) ->
-                                      case users:create(User#user{key = Key}) of
-                                        User when is_record(User, user) ->
-                                          [{"user", User#user.email}, {"key", "added key"}];
-                                        _Else ->
-                                          app_error("There was an error adding bee")
-                                      end;
-                                    _E ->
-                                      app_error("Error finding user")
-                                  end
-                              end
-                          end, Data);
+post([Name, "pubkeys", "new"], Data) ->
+  auth_utils:run_if_admin(
+    fun(_) ->
+        case proplists:get_value(pubkey, Data) of
+          undefined -> app_error("No pubkey defined");
+          Pubkey ->
+            case users:find_by_email(Name) of
+              User when is_record(User, user) ->
+                case users:create(User#user{pubkey = Pubkey}) of
+                  User when is_record(User, user) ->
+                    [{"user", User#user.email}, {"pubkey", "added pubkey"}];
+                  _Else ->
+                    app_error("There was an error adding bee")
+                end;
+              _E ->
+                app_error("Error finding user")
+            end
+        end
+    end, Data);
 
 post([], Data) ->
-  auth_utils:run_if_admin(fun(_) ->
-                              case proplists:get_value(email, Data) of
-                                undefined -> {error, "No email defined"};
-                                Email ->
-                                                % The user has been submitted with an email
-                                  case users:exist(Email) of
-                                    true -> {error, "The user already exists"};
-                                    false ->
-                                      case users:create(Data) of
-                                        {ok, User} when is_record(User, user) ->
-                                          {user, [{email, User#user.email}]};
-                                        E ->
-                                          io:format("Error: ~p~n", [E]),
-                                          {error, "There was an error creating user"}
-                                      end
-                                  end
-                              end
+  auth_utils:run_if_admin(
+    fun(_) ->
+        case proplists:get_value(email, Data) of
+          undefined -> {error, "No email defined"};
+          Email ->
+            %% The user has been submitted with an email
+            case users:exist(Email) of
+              true -> {error, "The user already exists"};
+              false ->
+                case users:create(Data) of
+                  {ok, User} when is_record(User, user) ->
+                    {user, [{email, User#user.email}]};
+                  E ->
+                    io:format("Error: ~p~n", [E]),
+                    {error, "There was an error creating user"}
+                end
+            end
+        end
 
-                          end, Data);
+    end, Data);
 
 post(Path, _Data) ->
   io:format("Path: ~p~n", [Path]),

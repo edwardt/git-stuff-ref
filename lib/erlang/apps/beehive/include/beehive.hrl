@@ -106,7 +106,7 @@
 -record (user, {
   email,
   password,
-  key,
+  pubkey,
   token,
   level   = ?REGULAR_USER_LEVEL
 }).
@@ -116,6 +116,7 @@
 
 % User to app acl
 -record (user_app, {
+  id,                               % {email, app_name}
   user_email,
   app_name,
   level       = ?OWNER_APP_ROLE
