@@ -51,13 +51,7 @@ all_apps(Email) ->
                           Appname = UserApp#user_app.app_name,
                           apps:find_by_name(Appname)
                       end, UserApps),
-  lists:filter(fun(App) ->
-                   case App of
-                     X when is_record(X, app) ->
-                       true;
-                     _ -> false
-                   end
-               end, TheApps).
+  lists:filter(fun(App) -> is_record(App, app) end, TheApps).
 
 find_by_app_name(Name) ->
   case find_all_by_app_name(Name) of
