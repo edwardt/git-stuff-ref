@@ -22,7 +22,9 @@ starting_test_() ->
     [
      fun get_index_as_user/0,
      fun get_index_as_admin/0,
-     fun get_index_with_name/0,
+     fun get_index_with_name_as_admin/0,
+     fun get_index_with_name_as_user/0,
+     fun get_index_with_name_as_invalid_user/0,
      fun get_index_with_wrong_name/0,
      fun get_bee_logs/0,
      fun get_bee_logs_with_wrong_name/0,
@@ -72,7 +74,7 @@ get_index_as_admin() ->
   passed.
 
 
-get_index_with_name() ->
+get_index_with_name_as_admin() ->
   User = bh_test_util:admin_user(),
   {ok, Header, Response} =
     bh_test_util:fetch_url(get,
@@ -81,6 +83,36 @@ get_index_with_name() ->
   ?assertEqual("HTTP/1.0 200 OK", Header),
   [App|_] = bh_test_util:response_json(Response),
   {"application",[{"name","test_app"}|_]} = App,
+  passed.
+
+get_index_with_name_as_user() ->
+  User = bh_test_util:dummy_user(),
+  {ok, Header, Response} =
+    bh_test_util:fetch_url(get,
+                           [{path, path_with_token("/apps/test_app.json",
+                                                   User#user.token)}]),
+  ?assertEqual("HTTP/1.0 200 OK", Header),
+  [App|_] = bh_test_util:response_json(Response),
+  {"application",[{"name","test_app"}|_]} = App,
+  passed.
+
+get_index_with_name_as_invalid_user() ->
+  User = bh_test_util:create_user(#user{email    = "noapps@getbeehive.com",
+                                        password = "test",
+                                        token    = "noapptoken" }),
+  {ok, Header, Response} =
+    bh_test_util:fetch_url(get,
+                           [{path, path_with_token("/apps/test_app.json",
+                                                   User#user.token)}]),
+  ?assertEqual("HTTP/1.0 404 Object Not Found", Header),
+  passed.
+
+get_index_with_name_with_bad_token() ->
+  {ok, Header, Response} =
+    bh_test_util:fetch_url(get,
+                           [{path, path_with_token("/apps/test_app.json",
+                                                   "asdfwrong")}]),
+  ?assertEqual("HTTP/1.0 401 Unauthorized", Header),
   passed.
 
 get_index_with_wrong_name() ->
