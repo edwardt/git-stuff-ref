@@ -36,25 +36,31 @@ get(_, _Data) ->
                        end, All)
   }.
 
-post([Name, "pubkeys", "new"], Data) ->
-  auth_utils:run_if_admin(
-    fun(_) ->
-        case proplists:get_value(pubkey, Data) of
-          undefined -> app_error("No pubkey defined");
-          Pubkey ->
-            case users:find_by_email(Name) of
-              User when is_record(User, user) ->
-                case users:create(User#user{pubkey = Pubkey}) of
-                  User when is_record(User, user) ->
-                    [{"user", User#user.email}, {"pubkey", "added pubkey"}];
-                  _Else ->
-                    app_error("There was an error adding bee")
-                end;
-              _E ->
-                app_error("Error finding user")
-            end
-        end
-    end, Data);
+post([Name, "pubkeys"], Data) ->
+  case proplists:get_value(pubkey, Data) of
+    undefined -> app_error("No pubkey defined", 400);
+    Pubkey ->
+      case auth_utils:get_authorized_user(Data) of
+        AuthorizedUser when is_record(AuthorizedUser, user) ->
+          case auth_utils:is_admin_user(AuthorizedUser) of
+            true ->
+              case users:find_by_email(Name) of
+                User when is_record(User, user) ->
+                  add_pubkey(User, Pubkey);
+                _E ->
+                  app_error("Error finding user")
+              end;
+            false ->
+              Email = AuthorizedUser#user.email,
+              case Name of
+                Email ->
+                  add_pubkey(AuthorizedUser, Pubkey);
+                _Err ->
+                  app_error("You can not add a key for another user", 401)
+              end
+          end
+      end
+  end;
 
 post([], Data) ->
   auth_utils:run_if_admin(
@@ -94,5 +100,16 @@ delete([], Data) ->
                           end, Data);
 delete(_Path, _Data) -> "unhandled".
 
+add_pubkey(User, Pubkey) ->
+  case users:save(User#user{pubkey = Pubkey}) of
+    {ok, SavedUser} ->
+      [{"user", SavedUser#user.email}, {"pubkey", "added pubkey"}];
+    _Else ->
+      app_error("There was an error updating the user")
+  end.
+
+app_error(Msg, Status) ->
+  {error, Status, misc_utils:to_bin(Msg)}.
+
 app_error(Msg) ->
-  {struct, [{error, misc_utils:to_bin(Msg)}]}.
+  {error, misc_utils:to_bin(Msg)}.

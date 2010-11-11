@@ -29,7 +29,11 @@ starting_test_() ->
      fun get_user_apps_with_an_app/0,
      fun post_new_user/0,
      fun post_new_user_bad_auth/0,
-     fun post_new_user_non_admin_auth/0
+     fun post_new_user_non_admin_auth/0,
+     fun post_user_pubkeys_as_admin/0,
+     fun post_user_pubkeys_as_user/0,
+     fun post_user_pubkeys_as_wrong_user/0,
+     fun post_user_pubkeys_no_pubkey_provided/0
     ]
    }
   }.
@@ -134,6 +138,51 @@ post_new_user_non_admin_auth() ->
                bh_test_util:response_json(Response)),
   passed.
 
+post_user_pubkeys_as_admin() ->
+  User = bh_test_util:dummy_user(),
+  Admin = bh_test_util:admin_user(),
+  {ok, Header, Response} =
+    perform_post_pubkeys(User#user.email,
+                         [{token, Admin#user.token},
+                          {pubkey, "newkey"}]),
+  ?assertEqual("HTTP/1.0 200 OK", Header),
+  UpdatedUser = users:find_by_email(User#user.email),
+  ?assertEqual("newkey", UpdatedUser#user.pubkey),
+  passed.
+
+post_user_pubkeys_as_user() ->
+  User = bh_test_util:dummy_user(),
+  {ok, Header, Response} =
+    perform_post_pubkeys(User#user.email,
+                         [{token, User#user.token},
+                          {pubkey, "newkey"}]),
+  ?assertEqual("HTTP/1.0 200 OK", Header),
+  UpdatedUser = users:find_by_email(User#user.email),
+  ?assertEqual("newkey", UpdatedUser#user.pubkey),
+  passed.
+
+post_user_pubkeys_as_wrong_user() ->
+  User = bh_test_util:dummy_user(),
+  CallingUser =
+    bh_test_util:create_user(
+      #user{email    = "caller@getbeehive.com",
+            password = "test",
+            token    = "callertoken"}),
+  {ok, Header, Response} =
+    perform_post_pubkeys(User#user.email,
+                         [{token, CallingUser#user.token},
+                          {pubkey, "newkey"}]),
+  ?assertEqual("HTTP/1.0 401 Unauthorized", Header),
+  passed.
+
+post_user_pubkeys_no_pubkey_provided() ->
+  User = bh_test_util:dummy_user(),
+  {ok, Header, Response} =
+    perform_post_pubkeys(User#user.email,
+                         [{token, User#user.token}]),
+  ?assertEqual("HTTP/1.0 400 Bad Request", Header),
+  passed.
+
 perform_post_new(Params) ->
   bh_test_util:fetch_url(post,
                          [{path, "/users.json"},
@@ -142,4 +191,12 @@ perform_post_new(Params) ->
                           {params, Params}
                          ]).
 
-  
+perform_post_pubkeys(Email, Params) ->
+  bh_test_util:fetch_url(post,
+                         [{path, lists:flatten(["/users/", Email,
+                                                "/pubkeys.json"])},
+                          {headers, [{"Content-Type",
+                                      "application/x-www-form-urlencoded" }]},
+                          {params, Params}
+                         ]).
+
