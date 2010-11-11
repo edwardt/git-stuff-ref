@@ -18,8 +18,6 @@ var users_controller = function(app) {
     this.get_page("/users/" + email + ".json", "user");
     this.get_page("/users/" + email + "/apps.json", "apps");
     this.template = "users/show";
-    console.log(this.user);
-    console.log(this.apps);
   });
 
 }
