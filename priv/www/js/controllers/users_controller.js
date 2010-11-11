@@ -13,7 +13,7 @@ var users_controller = function(app) {
     }
   });
 
-  this.get("#/profile", function(context) {
+  this.get("#/account", function(context) {
     var email = Sammy.current_user["user"];
     this.get_page("/users/" + email + ".json", "user");
     this.get_page("/users/" + email + "/apps.json", "apps");
