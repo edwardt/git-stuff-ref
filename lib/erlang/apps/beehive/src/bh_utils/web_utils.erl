@@ -37,7 +37,8 @@ prepare_for_json(Tuple) when is_tuple(Tuple) ->
 prepare_for_json(V) -> V.
 
 list_to_json([], Acc) -> lists:reverse(Acc);
-list_to_json([{_Key, _Value}|_Rest] = List, Acc) -> {struct, proplist_to_json(List, Acc)};
+list_to_json([{_Key, _Value}|_Rest] = List, Acc) ->
+  {struct, proplist_to_json(List, Acc)};
 list_to_json([H|Rest], Acc) -> list_to_json(Rest, [prepare_for_json(H)|Acc]).
 
 proplist_to_json([], Acc) -> lists:reverse(Acc);

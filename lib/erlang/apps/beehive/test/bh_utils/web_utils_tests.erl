@@ -3,7 +3,7 @@
 
 setup() ->
   ok.
-  
+
 teardown(_X) ->
   ok.
 
@@ -17,7 +17,7 @@ starting_test_() ->
       ]
     }
   }.
-  
+
 test_json_parsing() ->
   List = [
     {1, "1"},
@@ -28,8 +28,13 @@ test_json_parsing() ->
     {false, "false"},
     {{hello, "world"}, "{\"hello\":\"world\"}"},
     {{hello, [1,2,3]}, "{\"hello\":[1,2,3]}"},
-    {{app, [{name, "test"}, {var, "10"}]}, "{\"app\":{\"name\":\"test\",\"var\":\"10\"}}"},
-    {{all_your, {bases, are}}, "{\"all_your\":{\"bases\":\"are\"}}"}
+    {{app, [{name, "test"}, {var, "10"}]},
+           "{\"app\":{\"name\":\"test\",\"var\":\"10\"}}"},
+    {{apps, [[{name, "test"}], [{var, "10"}]]},
+           "{\"apps\":[{\"name\":\"test\"},{\"var\":\"10\"}]}"},
+    {{apps, [[{name, "test"}]]},
+           "{\"apps\":[{\"name\":\"test\"}]}"},
+    {{all_your, {base, are}}, "{\"all_your\":{\"base\":\"are\"}}"}
   ],
   lists:map(fun({Test,EExpected}) ->
     Json = web_utils:to_json(Test),
@@ -37,4 +42,4 @@ test_json_parsing() ->
     ?assertEqual(EExpected, Output)
   end, List),
   passed.
-  
+

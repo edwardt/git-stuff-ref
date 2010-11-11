@@ -76,7 +76,7 @@ get_user_apps_no_apps() ->
                            [{path, "/users/test@getbeehive.com/apps.json"}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
   [User|_] = bh_test_util:response_json(Response),
-  {"user",[_,_,{"apps",""}]} = User,
+  {"apps",""} = User,
   passed.
 
 get_user_apps_with_bad_email() ->
@@ -95,9 +95,9 @@ get_user_apps_with_an_app() ->
     bh_test_util:fetch_url(get,
                            [{path, "/users/test@getbeehive.com/apps.json"}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
-  [User|_] = bh_test_util:response_json(Response),
-  {"user",[_,_,FoundApp]} = User,
-  ?assertMatch({"apps", [{"name",_}]}, FoundApp),
+  [Apps|_] = bh_test_util:response_json(Response),
+  %% Two arrays: 1 for the list, 1 for the object proplist
+  ?assertMatch({"apps", [[{"name",_}]]}, Apps),
   passed.
 
 post_new_user() ->
