@@ -23,7 +23,9 @@ get([Email], _Data) ->
   case users:find_by_email(Email) of
     not_found -> {error, 404, {Email, "does_not_exist"}};
     User -> {
-      "user", [{"email", User#user.email}, {"level", User#user.level}]
+      "user", [{"email", User#user.email},
+               {"level", User#user.level},
+               {"pubkey", User#user.pubkey}]
      }
   end;
 get(_, _Data) ->

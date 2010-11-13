@@ -57,7 +57,7 @@ get_index_with_email() ->
                            [{path, "/users/test@getbeehive.com.json"}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
   [User|_] = bh_test_util:response_json(Response),
-  {"user",[{"email","test@getbeehive.com"},_]} = User,
+  {"user",[{"email","test@getbeehive.com"}|_]} = User,
   passed.
 
 get_index_with_bad_email() ->

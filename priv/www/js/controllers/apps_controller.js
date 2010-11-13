@@ -19,12 +19,13 @@ var apps_controller = function(app) {
     var new_app = this.params;
     new_app.token = Sammy.current_user["token"];
     this.post_page("/apps.json", new_app, context, "response");
-      if(context['error']) {
-          this.error = true;
-          this.template = "apps/new";
-      } else {
-          this.redirect('#/apps');
-      }
+
+    if(context['error']) {
+      this.error = true;
+      this.template = "apps/new";
+    } else {
+      this.redirect('#/apps');
+    }
   });
 
   this.get('#/apps/delete/:name', function(context) {

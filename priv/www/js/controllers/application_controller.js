@@ -132,8 +132,8 @@ var application_controller = function(app) {
       var auth = {};
       var auth_url = "/auth.json";
       var auth_params = {email: email, password: password};
-		  this.post_page(auth_url, auth_params, auth, "response");
-		  return auth.response.token;
+      this.post_page(auth_url, auth_params, auth, "response");
+      return auth.response.token;
     },
 
     clear_intervals: function() {
@@ -172,7 +172,7 @@ var application_controller = function(app) {
 
     link_to: function(link_text, url, opts) {
       if ( opts === undefined ) {
-            opts = {};
+        opts = {};
       }
       var opts_string = this.opts_to_string(opts);
       console.log(opts_string);
