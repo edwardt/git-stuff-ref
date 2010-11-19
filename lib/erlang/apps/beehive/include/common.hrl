@@ -68,8 +68,12 @@ end()).
     {ok, F} -> F
   end
 end()).
+
 -define (BEEHIVE_DIR (List),
          filename:join([?BEEHIVE_HOME, lists:flatten(List)])).
+
+-define (GITOLITE_REPO,
+         fun() -> ?BEEHIVE_HOME ++ "/gitolite/"  end()).
 
 -define (USER_OR_BH (List), bh_file_utils:relative_or_abs_path(List)).
 

@@ -39,4 +39,13 @@ var users_controller = function(app) {
 
   });
 
+  this.post("#/account/pubkeys", function(context) {
+    var email = Sammy.current_user["user"];
+    this.post_page("/users/"+email+"/pubkeys.json",
+                   {"pubkey":params["pubkey"]},
+                   context, "user");
+
+
+  });
+
 }
