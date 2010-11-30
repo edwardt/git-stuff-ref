@@ -1,0 +1,26 @@
+%h2 Guides - Custom Start Scripts
+%div= link_to("<< Back to guides", "#/guides")
+
+%h3 Why would I need them?
+
+%p 
+  If your app has some special steps necessary for startup or you'd 
+  like to define additional environment variables, then you may need 
+  to use a custom start script.
+
+%p
+  Beehive will look for a custom start script in (app_root)/beehive/start.sh
+  Start scripts must include an actual invokation of an application start.
+
+%p A Simple Example:
+
+%pre 
+  export ORACLE_HOME=/home/t/oracle_instant_client-10.2.0.4.0
+  %br
+  export TNS_ADMIN=$RUN_DIR/config
+  %br
+  %br
+  ./script/server -p $PORT
+
+%p 
+  $RUN_DIR and $PORT are values provided by beehive's invocation of the script.

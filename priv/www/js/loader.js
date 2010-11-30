@@ -17,6 +17,7 @@ $LAB
 .script("/js/controllers/apps_controller.js")
 .script("/js/controllers/bees_controller.js")
 .script("/js/controllers/events_controller.js")
+.script("/js/controllers/guides_controller.js")
 .script("/js/controllers/log_controller.js")
 .script("/js/controllers/login_controller.js")
 .script("/js/controllers/users_controller.js")
