@@ -1,5 +1,4 @@
 .autosession.vim
-.DS_Store
 *.beam
 pkg/*
 pkg
