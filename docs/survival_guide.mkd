@@ -1,0 +1,58 @@
+[TODO:  This document is a work in progress, and is only barely
+started/outlined; I've stuffed it into my git repo mainly so jdunphy can
+correct the errors I make.]
+
+## You will need
+
+* Erlang.  Beehive attempts to support at least 13B and later.
+* Ruby.  I'm using 1.9.2, and things probably work fine with 1.8.7.
+* Thin, a Ruby gem.  `gem install thin`
+* Various basic things, like a C compiler and bash.  (There are a few
+bashisms in the accompanying scripts for the time being.)
+
+## Building
+
+`make`.  The Makefile is fairly easy to read, although it consists
+almost entirely of calls to rebar.
+
+[TODO:  I can't find documentation for rebar.]
+
+## Running the tests
+
+`make test`.  The tests are in these two directories (relative to the
+beehive repo's root):
+
+* ./lib/erlang/apps/beehive_router/test
+* ./lib/erlang/apps/beehive/test
+
+The tests require that localhost:4999 be available to listen on.
+
+[TODO:  They don't all pass for me, in Ruby 1.8.7 or 1.9.2, and I don't
+yet know why that is.]
+
+## Running a dev server
+
+`./start_dev.sh`.  The relevant environment variables are:
+
+ * BEEHIVE_HOME (default /tmp/beehive)
+ * BEEHIVE_DOMAIN (default `hostname -f`)
+
+[TODO:  Explain those.]
+That will start an instance of Beehive on localhost:4999.  Note that, as
+the tests run an instance of Beehive on the same port, you'll want to
+shut down the dev server before running the tests.
+
+## Deploying "Hello, World!" to the dev server
+
+## Managing Bees
+
+## The admin interface
+
+## REST API summary
+
+## Troubleshooting
+[TODO:  I'll be filling this in as I encounter/fix problems with my own
+setup.]
+
+## See also
+[TODO:  The remaining docs are not written yet.]
