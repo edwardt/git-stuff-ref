@@ -66,7 +66,6 @@ init(Args) ->
     _ -> false
   end,
   ShouldRunRestServer = config:search_for_application_value(run_rest_server, true),
-
   Children = lists:flatten([
     % For the distributed database
     ?CHILD(beehive_db_srv, worker, Args),
@@ -78,6 +77,8 @@ init(Args) ->
     % ?CHILD(babysitter, worker, Args),
     % Storage stuff
     ?CHILD(beehive_storage_srv, worker, Args),
+    %% Gitolite integration - glitter
+    ?CHILD(glitter, worker, Args),
     % Rest server, should we run it?
     ?IF(ShouldRunRouter, BeehiveRouter, []),
     ?IF(ShouldRunRestServer, RestServer, [])

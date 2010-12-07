@@ -26,6 +26,9 @@ setup(Proplist) when is_list(Proplist) ->
   application:set_env(beehive, database_dir,
                       proplists:get_value(database_dir, Proplist,
                                           "/tmp/beehive/test/test_db")),
+  GlitterConfig = filename:join([Dir, "test", "gitolite-admin",
+                                 "conf", "gitolite.conf"]),
+  application:set_env(glitter, config_file, GlitterConfig),
   application:start(sasl),
   beehive:start([{beehive_db_srv, testing}]),
 
