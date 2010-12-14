@@ -25,7 +25,6 @@
 -include("common.hrl").
 -define(LOCAL_REPO_ROOT, ?BEEHIVE_HOME ++ "/git_repos").
 
-
 -record(state, {repo_dir}).
 
 %%%===================================================================
@@ -79,7 +78,6 @@ init(_Args) ->
 handle_call({create, Name}, _From, State) ->
   RepoName = Name ++ ".git",
   Status = run_git_command(["init", "--bare", RepoName], State#state.repo_dir),
-  erlang:display(Status),
   {reply, ok, State};
 handle_call({add_user, Username, Name}, _From, State) ->
   {reply, ok, State};
@@ -95,32 +93,6 @@ handle_call({add_pubkey, Name, Key}, _From, State) ->
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.
-
-run_git_command(Args, Cd) ->
-  Opts = [binary, stderr_to_stdout, use_stdio, exit_status, stream,
-          {args, Args}, {cd, Cd}],
-  P = open_port({spawn_executable, os:find_executable('git')}, Opts),
-  cmd_receive(P).
-
-
-cmd_receive(Port) ->
-   cmd_receive(Port, []).
-
-cmd_receive(Port, Out) ->
-  receive
-    {Port, {data, Data}}      ->
-      List = binary_to_list(Data),
-      cmd_receive(Port, [List|Out]);
-    {Port, {exit_status, 0}}  ->
-      {ok, lists:reverse(Out)};
-    {Port, {exit_status, N}}  ->
-      {error, {N, lists:reverse(Out)}};
-    E ->
-      cmd_receive(Port, Out)
-    after 500 ->
-      % We don't want it to hang infinitely, so if it does, we'll close it off
-      ok
-  end.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -176,3 +148,29 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+run_git_command(Args, Cd) ->
+  Opts = [binary, stderr_to_stdout, use_stdio, exit_status, stream,
+          {args, Args}, {cd, Cd}],
+  P = open_port({spawn_executable, os:find_executable('git')}, Opts),
+  cmd_receive(P).
+
+
+cmd_receive(Port) ->
+   cmd_receive(Port, []).
+
+cmd_receive(Port, Out) ->
+  receive
+    {Port, {data, Data}}      ->
+      List = binary_to_list(Data),
+      cmd_receive(Port, [List|Out]);
+    {Port, {exit_status, 0}}  ->
+      {ok, lists:reverse(Out)};
+    {Port, {exit_status, N}}  ->
+      {error, {N, lists:reverse(Out)}};
+    E ->
+      cmd_receive(Port, Out)
+    after 500 ->
+      % We don't want it to hang infinitely, so if it does, we'll close it off
+      ok
+  end.
