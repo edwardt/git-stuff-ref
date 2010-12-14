@@ -78,7 +78,7 @@ init(Args) ->
     % Storage stuff
     ?CHILD(beehive_storage_srv, worker, Args),
     %% Gitolite integration - glitter
-    ?CHILD(glitter, worker, Args),
+    ?CHILD(beehive_repository, worker, Args),
     % Rest server, should we run it?
     ?IF(ShouldRunRouter, BeehiveRouter, []),
     ?IF(ShouldRunRestServer, RestServer, [])
