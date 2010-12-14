@@ -20,6 +20,8 @@
 
 -record(state, {}).
 
+-include("common.hrl").
+-define(GITOLITE_CONFIG, ?BEEHIVE_HOME ++ "/gitolite/conf/gitolite.conf").
 %%%===================================================================
 %%% API
 %%%===================================================================
@@ -50,6 +52,8 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
+  gen_server:start({global, glitter}, glitter,
+                   [{config_file, ?GITOLITE_CONFIG}], []),
   {ok, #state{}}.
 
 %%--------------------------------------------------------------------
@@ -67,10 +71,13 @@ init([]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({create, Name}, _From, State) ->
-  {reply, ok, State};
+  Resp = glitter:add_repos(Name),
+  {reply, Resp, State};
 handle_call({add_user, Username, Name}, _From, State) ->
+  Resp = glitter:add_user_to_repos({Username, "RW+"}, Name),
   {reply, ok, State};
 handle_call({remove_user, Username, Name}, _From, State) ->
+  Resp = glitter:remove_user_from_repos(Username, Name),
   {reply, ok, State};
 handle_call({clone, Name, Path}, _From, State) ->
   {reply, ok, State};

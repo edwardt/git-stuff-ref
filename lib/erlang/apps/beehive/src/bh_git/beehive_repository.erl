@@ -74,8 +74,8 @@ init([Backend]) ->
   {ok,Pid} = case Backend of
     local_git ->
       gen_server:start(local_git, [], []);
-    gitosis ->
-      gen_server:start(gitosis_adapter, [], [])
+    gitolite ->
+      gen_server:start(glitter_adapter, [], [])
   end,
   {ok, #state{ pid = Pid, name = Backend }}.
 
