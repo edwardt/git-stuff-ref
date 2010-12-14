@@ -515,11 +515,12 @@ try_to_connect_to_new_instance(Bee, Attempts) ->
       try_to_connect_to_new_instance(Bee, Attempts - 1)
   end.
 
-% Add an application based on it's proplist
+% Add an application based on its proplist
 internal_add_application(ConfigProplist, UserEmail) ->
   case apps:create(ConfigProplist) of
     {ok, NewApp} when is_record(NewApp, app) ->
       {ok, _UserApp} = user_apps:create(UserEmail, NewApp),
+      ok = beehive_repository:create(NewApp#app.name),
       {ok, NewApp};
     Err = {error, Details} ->
       erlang:display({apps,validation,failed,Details}),
