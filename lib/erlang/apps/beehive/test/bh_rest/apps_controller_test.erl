@@ -4,6 +4,7 @@
 -include ("common.hrl").
 
 setup() ->
+  bh_test_util:setup(),
   bh_test_util:dummy_user(),                    % test@getbeehive.com
   apps:save(bh_test_util:dummy_app()),
   rest_server:start_link(),
