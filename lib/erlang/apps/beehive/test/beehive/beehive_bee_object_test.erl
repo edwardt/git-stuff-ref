@@ -194,7 +194,7 @@ mount_t() ->
 
 start_t() ->
   Host = "127.0.0.1",
-  Port = 9192,
+  Port = bh_host:unused_port(),
   beehive_bee_object:bundle([{type, rack}|git_repos_props()]),
   Pid = spawn(fun() -> responding_loop([]) end),
   {started, BeeObject} = beehive_bee_object:start(#app{template=rack, name="beehive_bee_object_test_app"}, Port, Pid),
@@ -212,7 +212,7 @@ start_t() ->
 
 start_t_with_deploy_branch() ->
   Host = "127.0.0.1",
-  Port = 10100,
+  Port = bh_host:unused_port(),
   beehive_bee_object:bundle([{template, rack},
                              {branch, "deploy"}|
                              git_repos_props("app_with_branch")]),
@@ -245,7 +245,7 @@ start_t_with_deploy_branch() ->
 
 stop_t() ->
   Host = "127.0.0.1",
-  Port = 9191,
+  Port = bh_host:unused_port(),
   ReposUrl = bh_test_util:dummy_git_repos_url(),
   Name = "app_intended_to_test_stopping",
   NewProps = [{name, Name},{repo_url, ReposUrl},{repo_type, git},{type, rack},{fixture_dir, fixture_dir()}],
