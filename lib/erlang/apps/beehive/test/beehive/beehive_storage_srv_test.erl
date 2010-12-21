@@ -4,7 +4,7 @@
 
 setup() ->
   ok.
-  
+
 teardown(_X) ->
   ok.
 
@@ -29,8 +29,7 @@ build_bee_good() ->
 
 build_bee_bad() ->
   App = bh_test_util:dummy_app(),
-  Out = beehive_storage_srv:build_bee(
-          App#app{repo_url="svn://no_exists/here/so/fail/please/thank/you"}),
+  Out = beehive_storage_srv:build_bee(App),
   {error, NewApp} = Out,
   ?assert(NewApp#app.latest_error =/= undefined),
   passed.

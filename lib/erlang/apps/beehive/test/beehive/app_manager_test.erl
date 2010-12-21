@@ -50,11 +50,15 @@ start_new_instance_t() ->
       ?assertEqual(failed, connect)
   end.
 
+
+
+%% TODO: Figure out how to do this test without external git repos.
 start_new_instance_t_failing_app() ->
+  ?assert(false),
   bh_test_util:delete_all(app),
   DummyApp = bh_test_util:dummy_app(),
   {error, ErrorObj} = start_dummy_app(
-    DummyApp#app{repo_url = "http://this.does/not/exist",
+    DummyApp#app{%%repo_url = "http://this.does/not/exist",
                  name = "doesnt_exist"},
   self()),
   % It should fail when fetching

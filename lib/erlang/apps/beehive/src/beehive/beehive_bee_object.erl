@@ -424,8 +424,7 @@ info(Name) when is_list(Name) ->
               write_info_about_bee(BeeObject#bee_object{bee_file = T});
             _ ->
               write_info_about_bee(#bee_object{bee_file = T,
-                                               name = Name,
-                                               repo_type = git})
+                                               name = Name })
           end
       end
   end;
@@ -502,15 +501,6 @@ run_hook_action_str(CmdStr,
         E -> E
       end
   end.
-% Check the url from the type
-extract_repo_type(undefined, Url) when is_list(Url) ->
-  case check_type_from_the_url_string(Url, ["git://", "svn://"]) of
-    "git://" -> git;
-    "svn://" -> svn;
-    unknown -> throw({error, unknown_repo_type})
-  end;
-extract_repo_type(RepoType, _Url) when is_atom(RepoType) -> RepoType;
-extract_repo_type(_, _) -> unknown.
 
 % Attempt to extract the type of the vcs from the url
 check_type_from_the_url_string(_Str, []) -> unknown;
@@ -529,16 +519,12 @@ ensure_repos_exists(#bee_object{bundle_dir = BundleDir} = BeeObject, From) ->
   end.
 
 % Checkout the repos using the config method
-clone_repos(#bee_object{bundle_dir = BundleDir,
-                        repo_type = RepoType} = BeeObject,
+clone_repos(#bee_object{bundle_dir = BundleDir} = BeeObject,
             From)   ->
-  case proplists:get_value(clone, config_props(RepoType)) of
-    undefined -> throw({error, action_not_defined, clone});
-    FoundAction ->
-      Str = render_command_string(FoundAction, to_proplist(BeeObject)),
-      ?LOG(debug, "clone in directory: ~p: ~p", [Str, FoundAction]),
-      run_command_in_directory(Str, filename:dirname(BundleDir), From, BeeObject)
-  end.
+  FoundAction = git,
+  Str = render_command_string(FoundAction, to_proplist(BeeObject)),
+  ?LOG(debug, "clone in directory: ~p: ~p", [Str, FoundAction]),
+  run_command_in_directory(Str, filename:dirname(BundleDir), From, BeeObject).
 
 update_repos(BeeObject, From)  -> run_action_in_directory(update, BeeObject, From).
 
@@ -566,17 +552,13 @@ get_current_sha(BeeObject) ->
 % Action
 % Props
 run_action_in_directory(Action,
-                        #bee_object{repo_type = RepoType,
-                                    bundle_dir = BundleDir} = BeeObject,
+                        #bee_object{bundle_dir = BundleDir} = BeeObject,
                         From) ->
-  case proplists:get_value(Action, config_props(RepoType)) of
-    undefined -> throw({error, action_not_defined, Action});
-    FoundAction ->
-      Str = render_command_string(FoundAction, to_proplist(BeeObject)),
-      ?LOG(debug, "run_action_in_directory: ~p ~p: ~p",
-           [Action, Str, FoundAction]),
-      run_command_in_directory(Str, BundleDir, From, BeeObject)
-  end.
+  FoundAction = git,
+  Str = render_command_string(FoundAction, to_proplist(BeeObject)),
+  ?LOG(debug, "run_action_in_directory: ~p ~p: ~p",
+       [Action, Str, FoundAction]),
+  run_command_in_directory(Str, BundleDir, From, BeeObject).
 
 % Run a command in the directory
 run_command_in_directory(Cmd, Dir, From, BeeObject) ->
@@ -691,13 +673,6 @@ ensure_directory_exists(Dir) ->
     O -> O
   end.
 
-% Pull off the config_props for the specific vcs
-config_props(RepoType) ->
-  case  proplists:get_value(RepoType, config_props()) of
-    undefined -> throw({error, unknown_repo_type});
-    Props -> Props
-  end.
-
 config_props() ->
   Dir =?BH_ROOT,
   {ok, C} =
@@ -721,8 +696,6 @@ from_proplists([{branch, V}|Rest], BeeObject) ->
   from_proplists(Rest, BeeObject#bee_object{branch = V});
 from_proplists([{revision, V}|Rest], BeeObject) ->
   from_proplists(Rest, BeeObject#bee_object{revision = V});
-from_proplists([{repo_type, V}|Rest], BeeObject) ->
-  from_proplists(Rest, BeeObject#bee_object{repo_type = V});
 from_proplists([{repo_url, V}|Rest], BeeObject) ->
   from_proplists(Rest, BeeObject#bee_object{repo_url = V});
 from_proplists([{template, V}|Rest], BeeObject) ->
@@ -765,10 +738,6 @@ to_proplist([branch|Rest], #bee_object{branch = V} = Bo, Acc) ->
   to_proplist(Rest, Bo, [{branch, V}|Acc]);
 to_proplist([revision|Rest], #bee_object{revision = V} = Bo, Acc) ->
   to_proplist(Rest, Bo, [{revision, V}|Acc]);
-to_proplist([repo_type|Rest], #bee_object{repo_type = V} = Bo, Acc) ->
-  to_proplist(Rest, Bo, [{repo_type, V}|Acc]);
-to_proplist([repo_url|Rest], #bee_object{repo_url = V} = Bo, Acc) ->
-  to_proplist(Rest, Bo, [{repo_url, V}|Acc]);
 to_proplist([template|Rest], #bee_object{template = V} = Bo, Acc) ->
   to_proplist(Rest, Bo, [{template, V}|Acc]);
 to_proplist([run_dir|Rest], #bee_object{run_dir = V} = Bo, Acc) ->
@@ -818,10 +787,6 @@ validate_bee_object([bee_file|Rest], #bee_object{bee_file=undefined} = BeeObject
   BeeFile = filename:join([RootDir, lists:flatten([unique_filename(BeeObject), ".bee"])]),
   validate_bee_object(Rest, BeeObject#bee_object{bee_file = BeeFile});
 
-% TRy to extract the type
-validate_bee_object([repo_type|Rest], #bee_object{repo_type=Type, repo_url=Url} = BeeObject) ->
-  FoundType = extract_repo_type(Type, Url),
-  validate_bee_object(Rest, BeeObject#bee_object{repo_type = FoundType});
 validate_bee_object([pid|Rest], #bee_object{pid = Pid} = BeeObject) when is_list(Pid) ->
   validate_bee_object(Rest, BeeObject#bee_object{pid = list_to_pid(Pid)});
 validate_bee_object([], BeeObject) ->  BeeObject;

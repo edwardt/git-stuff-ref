@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : bh_host.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  Tue Dec 29 18:16:40 PST 2009
 %%%-------------------------------------------------------------------
@@ -63,7 +63,7 @@ get_if([H | T], Res) ->
 get_iplist() ->
     {ok, If} = inet:getiflist(),
     get_if(If).
-    
+
 
 % Find an unused port
 unused_port() -> unused_port_between(5000, 65535, []).

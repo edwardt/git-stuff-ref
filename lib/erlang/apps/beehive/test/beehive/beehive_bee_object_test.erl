@@ -275,7 +275,6 @@ send_t() ->
   beehive_bee_object:bundle([{type, rack}|git_repos_props()]),
   timer:sleep(500),
   BeeObject = beehive_bee_object:get_bee_object(node(self()), "beehive_bee_object_test_app"),
-  ?assertEqual(git, BeeObject#bee_object.repo_type),
   ?assertEqual(rack, BeeObject#bee_object.template),
   BeeFile = BeeObject#bee_object.bee_file,
   ?assert(filelib:is_file(BeeFile)),

@@ -6,7 +6,6 @@
   %thead
     %tr
       %th name
-      %th url
       %th branch
       %th template
       %th owners
@@ -20,7 +19,6 @@
   %tbody
     %tr
       %td= link_to(application.name, "#/apps/"+ application.name)
-      %td= application.repo_url
       %td= application.branch
       %td= application.template
       %td= application.owners

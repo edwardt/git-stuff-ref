@@ -153,7 +153,7 @@ dummy_git_repos_url() ->
   lists:concat(["file://", ReposDir]).
 
 dummy_app(Name) ->
-  apps:new(#app{name = Name, repo_url = dummy_git_repos_url()}).
+  apps:new(#app{name = Name}).
 dummy_app() -> dummy_app("test_app").
 
 dummy_user() ->

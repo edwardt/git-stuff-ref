@@ -28,27 +28,18 @@ starting_test_() ->
 
 test_create() ->
   {ok, App} =
-    apps:create([{name, "created"}, {repo_url, "http://someurl.com"}]),
+    apps:create([{name, "created"}]),
   ?assertEqual("created", App#app.name),
-  ?assertEqual("http://someurl.com", App#app.repo_url),
-
-  ?assertEqual({error, {invalid_app,no_repo_url_given}},
-               apps:create([{name, "nourl"}])),
-  ?assertEqual({error, {invalid_app,no_repo_url_given}},
-               apps:create([{name, "nourl"}, {repo_url, ""}])),
   passed.
 
 test_name_validation() ->
-  {ok, App} = apps:create([{name, "with.dot"},
-                           {repo_url, "http://someurl.com"}]),
+  {ok, App} = apps:create([{name, "with.dot"}]),
   ?assertEqual("with-dot", App#app.name),
 
-  {ok, App2} = apps:create([{name, "with_underscore"},
-                            {repo_url, "http://someurl.com"}]),
+  {ok, App2} = apps:create([{name, "with_underscore"}]),
   ?assertEqual("with-underscore", App2#app.name),
 
-  {ok, App3} = apps:create([{name, "with space"},
-                            {repo_url, "http://someurl.com"}]),
+  {ok, App3} = apps:create([{name, "with space"}]),
   ?assertEqual("with-space", App3#app.name),
 
   passed.
@@ -57,8 +48,7 @@ test_save() ->
   %% Delete all
   Table = app,
   bh_test_util:delete_all(Table),
-  {ok, App1} = apps:save(#app{name="test-app",
-                              repo_url=bh_test_util:dummy_git_repos_url()}),
+  {ok, App1} = apps:save(#app{name="test-app"}),
   ?assert(App1#app.branch =:= "master"),
   %% Hardcode search in ets
   Results1 = lists:map(
@@ -69,7 +59,6 @@ test_save() ->
   ?assertEqual(FoundApp1#app.name, App1#app.name),
   %% save via proplists
   Props = [{name, "another_app"},
-           {repo_url, bh_test_util:dummy_git_repos_url()},
            {min_instances, 1}, {max_instances, 10}],
   App2 = apps:new(Props),
   apps:save(Props),
@@ -85,11 +74,9 @@ test_save_app_with_same_name() ->
   bh_test_util:delete_all(app),
   lists:map(fun(App) -> apps:delete(App) end, apps:all()),
   {ok, App3} =
-    apps:create(#app{name="test-app",
-                     repo_url="http://github.com/auser/test-app1.git"}),
+    apps:create(#app{name="test-app"}),
   {ok, App4} =
-    apps:create(#app{name="test-app",
-                     repo_url="http://github.com/auser/test-app2.git"}),
+    apps:create(#app{name="test-app"}),
   ?assertEqual(App3#app.name, "test-app"),
   ?assert(App4#app.name =/= "test-app"),
   passed.
@@ -97,20 +84,17 @@ test_save_app_with_same_name() ->
 test_save_app_with_upper_case_name() ->
   bh_test_util:delete_all(app),
   {ok, App} =
-    apps:create(#app{name="TestApp",
-                     repo_url="http://github.com/auser/test-app2.git"}),
+    apps:create(#app{name="TestApp"}),
   ?assertEqual("testapp", App#app.name),
   passed.
 
 test_branch() ->
   lists:map(fun(App) -> apps:delete(App) end, apps:all()),
   {ok, App1} =
-    apps:create(#app{name="test-app",
-                     repo_url="http://github.com/auser/test-app1.git"}),
+    apps:create(#app{name="test-app"}),
   ?assertEqual(App1#app.branch, "master"),
   {ok, App2} =
-    apps:create(#app{name="test-app/other_branch",
-                     repo_url="http://github.com/auser/test-app1.git"}),
+    apps:create(#app{name="test-app/other_branch"}),
   ?assertEqual(App2#app.branch, "other_branch"),
   passed.
 
