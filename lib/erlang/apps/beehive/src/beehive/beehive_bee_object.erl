@@ -521,12 +521,16 @@ ensure_repos_exists(#bee_object{bundle_dir = BundleDir} = BeeObject, From) ->
 % Checkout the repos using the config method
 clone_repos(#bee_object{bundle_dir = BundleDir} = BeeObject,
             From)   ->
-  FoundAction = git,
-  Str = render_command_string(FoundAction, to_proplist(BeeObject)),
-  ?LOG(debug, "clone in directory: ~p: ~p", [Str, FoundAction]),
-  run_command_in_directory(Str, filename:dirname(BundleDir), From, BeeObject).
+  case proplists:get_value(clone, config_props(git)) of
+    undefined -> throw({error, action_not_defined, clone});
+    FoundAction ->
+      Str = render_command_string(FoundAction, to_proplist(BeeObject)),
+      ?LOG(debug, "clone in directory: ~p: ~p", [Str, FoundAction]),
+      run_command_in_directory(Str, filename:dirname(BundleDir), From, BeeObject)
+  end.
 
-update_repos(BeeObject, From)  -> run_action_in_directory(update, BeeObject, From).
+update_repos(BeeObject, From)  ->
+  run_action_in_directory(update, BeeObject, From).
 
 ensure_repos_is_current_repos(#bee_object{revision = Rev} = BeeObject) when is_record(BeeObject, bee_object) ->
   ?DEBUG_PRINT({updating_to_revision, Rev, get_current_sha(BeeObject)}),
@@ -554,11 +558,15 @@ get_current_sha(BeeObject) ->
 run_action_in_directory(Action,
                         #bee_object{bundle_dir = BundleDir} = BeeObject,
                         From) ->
-  FoundAction = git,
-  Str = render_command_string(FoundAction, to_proplist(BeeObject)),
-  ?LOG(debug, "run_action_in_directory: ~p ~p: ~p",
-       [Action, Str, FoundAction]),
-  run_command_in_directory(Str, BundleDir, From, BeeObject).
+  case proplists:get_value(Action, config_props(git)) of
+    undefined -> throw({error, action_not_defined, Action});
+    FoundAction ->
+      Str = render_command_string(FoundAction, to_proplist(BeeObject)),
+      ?LOG(debug, "run_action_in_directory: ~p ~p: ~p",
+           [Action, Str, FoundAction]),
+      run_command_in_directory(Str, BundleDir, From, BeeObject)
+  end.
+
 
 % Run a command in the directory
 run_command_in_directory(Cmd, Dir, From, BeeObject) ->
@@ -678,6 +686,13 @@ config_props() ->
   {ok, C} =
     file:consult(filename:join([Dir, "etc", "beehive_bee_object_config.conf"])),
   C.
+
+% Pull off the config_props for the specific vcs
+config_props(RepoType) ->
+  case  proplists:get_value(RepoType, config_props()) of
+    undefined -> throw({error, unknown_repo_type});
+    Props -> Props
+  end.
 
 %% Render strings from templates currently defined
 %% in etc/beehive_bee_object_config.

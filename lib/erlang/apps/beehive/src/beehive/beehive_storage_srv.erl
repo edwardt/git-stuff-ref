@@ -118,10 +118,12 @@ handle_call({build_bee, App, Caller}, _From, State) ->
         exit_status = ExitCode,
         timestamp = date_util:now_to_seconds()
       },
-      {ok, NewApp} = app_manager:request_to_save_app(App#app{latest_error = Error}),
+      {ok, NewApp} =
+               app_manager:request_to_save_app(App#app{latest_error = Error}),
       {error, NewApp};
     Props when is_list(Props) ->
-      {updated, NewApp} = apps:update(App#app{latest_error = undefined}, Props),
+      {updated, NewApp} =
+               apps:update(App#app{latest_error = undefined}, Props),
       Bee = bees:new(Props),
       {ok, NewApp, Bee}
   end,
@@ -253,7 +255,7 @@ internal_build_bee(App, Caller, _State) ->
 
 handle_repos_lookup([]) -> {error, repos_not_found};
 handle_repos_lookup(App) when is_record(App, app) ->
-  beehive_repository:clone_url(App#app.name);
+  {ok, beehive_repository:clone_url(App#app.name)};
 handle_repos_lookup(AppName) ->
   case apps:find_by_name(AppName) of
     App when is_record(App, app) ->
