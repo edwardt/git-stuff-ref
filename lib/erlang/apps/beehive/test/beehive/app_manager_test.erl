@@ -27,7 +27,7 @@ instance()->
   ?assert(undefined =/= app_manager:instance()),
   passed.
 
--define(APP_NAME, "bobby-bobbie-o").
+-define(APP_NAME, "app-mgr-test").
 
 add_application() ->
   bh_test_util:delete_all(app),
@@ -40,8 +40,7 @@ add_application() ->
 add_populated_repo() ->
   RepoPath = beehive_repository:clone_url(?APP_NAME),
   ?assert(filelib:is_dir(RepoPath)),
-  file:del_dir(RepoPath),
-  Command = lists:append(["cp -r ",
+  Command = lists:append(["rm -rf ", RepoPath, " && cp -r ",
                           bh_test_util:dummy_git_repos_path(), " ",
                           RepoPath]),
   Out = os:cmd(Command),
@@ -57,7 +56,7 @@ start_new_instance_t() ->
   {ok, App, Bee} = start_dummy_app(TheApp, self()),
   case try_to_fetch_url_or_retry(get, [{host, Bee#bee.host}, {port, Bee#bee.port}, {path, "/"}], 20) of
     {ok, _Headers, Body} ->
-      ?assertEqual("Hello World test_app", hd(lists:reverse(Body))),
+      ?assertEqual("Hello World app-mgr-test", hd(lists:reverse(Body))),
       % os:cmd(lists:flatten(["kill ", integer_to_list(Bee#bee.os_pid)])),
       passed;
     _ ->

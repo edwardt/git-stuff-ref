@@ -546,7 +546,7 @@ ensure_repos_exists(#bee_object{bundle_dir = BundleDir} = BeeObject, From) ->
   end.
 
 %% Checkout the repos using the config method
-clone_repos(#bee_object{bundle_dir = BundleDir} = BeeObject,
+clone_repos(#bee_object{bundle_dir = BundleDir, repo_url = RepoUrl} = BeeObject,
             From)   ->
   case proplists:get_value(clone, config_props(git)) of
     undefined -> throw({error, action_not_defined, clone});
@@ -781,6 +781,8 @@ to_proplist([name|Rest], #bee_object{name = Name} = Bo, Acc) ->
   to_proplist(Rest, Bo, [{name, Name}|Acc]);
 to_proplist([branch|Rest], #bee_object{branch = V} = Bo, Acc) ->
   to_proplist(Rest, Bo, [{branch, V}|Acc]);
+to_proplist([repo_url|Rest], #bee_object{repo_url = V} = Bo, Acc) ->
+  to_proplist(Rest, Bo, [{repo_url, V}|Acc]);
 to_proplist([revision|Rest], #bee_object{revision = V} = Bo, Acc) ->
   to_proplist(Rest, Bo, [{revision, V}|Acc]);
 to_proplist([template|Rest], #bee_object{template = V} = Bo, Acc) ->
