@@ -8,6 +8,7 @@ all_test_app_manager_test_() ->
     [
         fun instance/0,
         fun add_application/0,
+        fun add_populated_repo/0,
         fun spawn_update_bee_status/0,
         fun start_new_instance_t/0,
         % fun start_new_instance_t_failing_app/0,
@@ -26,13 +27,25 @@ instance()->
   ?assert(undefined =/= app_manager:instance()),
   passed.
 
+-define(APP_NAME, "bobby-bobbie-o").
+
 add_application() ->
   bh_test_util:delete_all(app),
   User = bh_test_util:dummy_user(),
-  O = app_manager:add_application([{name, "bobby-bobbie-o"},
+  {ok, _} =  app_manager:add_application([{name, ?APP_NAME},
                                   {repo_url, bh_test_util:dummy_git_repos_url()}],
                                    User),
-  ?assert(element(1, O) =:= ok),
+  passed.
+
+add_populated_repo() ->
+  RepoPath = beehive_repository:clone_url(?APP_NAME),
+  ?assert(filelib:is_dir(RepoPath)),
+  file:del_dir(RepoPath),
+  Command = lists:append(["cp -r ",
+                          bh_test_util:dummy_git_repos_path(), " ",
+                          RepoPath]),
+  Out = os:cmd(Command),
+  io:format("Out: ~p~n", [Out]),
   passed.
 
 spawn_update_bee_status() ->
@@ -40,7 +53,8 @@ spawn_update_bee_status() ->
 
 % Starting and stopping
 start_new_instance_t() ->
-  {ok, App, Bee} = start_dummy_app(self()),
+  TheApp = apps:find_by_name(?APP_NAME),
+  {ok, App, Bee} = start_dummy_app(TheApp, self()),
   case try_to_fetch_url_or_retry(get, [{host, Bee#bee.host}, {port, Bee#bee.port}, {path, "/"}], 20) of
     {ok, _Headers, Body} ->
       ?assertEqual("Hello World test_app", hd(lists:reverse(Body))),

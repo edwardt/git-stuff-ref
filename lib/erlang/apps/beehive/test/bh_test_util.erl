@@ -148,9 +148,12 @@ context_run(Count, Fun) ->
   shutdown(Nodes).
 
 %% FIXTURE
+dummy_git_repos_path() ->
+  filename:join([?BH_ROOT, "test", "fixtures",
+                 "incredibly_simple_rack_app.git"]).
+
 dummy_git_repos_url() ->
-  ReposDir = filename:join([?BH_ROOT, "test", "fixtures", "incredibly_simple_rack_app.git"]),
-  lists:concat(["file://", ReposDir]).
+  lists:concat(["file://", dummy_git_repos_path()]).
 
 dummy_app(Name) ->
   apps:new(#app{name = Name}).
