@@ -201,3 +201,8 @@ parse_json_struct(List) when is_list(List) ->
 parse_json_struct(Binary) when is_binary(Binary) ->  binary_to_list(Binary);
 parse_json_struct(Int) when is_integer(Int) -> Int.
 
+replace_repo_with_fixture(RepoPath) ->
+  Command = lists:append(["rm -rf ", RepoPath, " && cp -r ",
+                          bh_test_util:dummy_git_repos_path(), " ",
+                          RepoPath]),
+  os:cmd(Command).

@@ -40,11 +40,7 @@ add_application() ->
 add_populated_repo() ->
   RepoPath = beehive_repository:clone_url(?APP_NAME),
   ?assert(filelib:is_dir(RepoPath)),
-  Command = lists:append(["rm -rf ", RepoPath, " && cp -r ",
-                          bh_test_util:dummy_git_repos_path(), " ",
-                          RepoPath]),
-  Out = os:cmd(Command),
-  io:format("Out: ~p~n", [Out]),
+  bh_test_util:replace_repo_with_fixture(RepoPath),
   passed.
 
 spawn_update_bee_status() ->

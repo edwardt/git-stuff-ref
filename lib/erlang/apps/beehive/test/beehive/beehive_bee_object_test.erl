@@ -213,6 +213,7 @@ start_t() ->
 start_t_with_deploy_branch() ->
   Host = "127.0.0.1",
   Port = 10100,
+  bh_test_util:replace_repo_with_fixture("app_with_branch"),
   beehive_bee_object:bundle([{template, rack},
                              {branch, "deploy"}|
                              git_repos_props("app_with_branch")]),
