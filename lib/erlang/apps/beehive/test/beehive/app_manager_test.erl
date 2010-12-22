@@ -80,9 +80,7 @@ start_new_instance_t_failing_app() ->
   passed.
 
 teardown_an_instance_t() ->
-  % {ok, _App, Bee} = start_dummy_app(self()),
-  App = bh_test_util:dummy_app(),
-  Bee = bees:find_by_name(App#app.name),
+  Bee = bees:find_by_name(?APP_NAME),
   app_manager:request_to_terminate_bee(Bee, self()),
   receive
     {bee_terminated, _Bee} ->

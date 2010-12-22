@@ -30,7 +30,6 @@ starting_test_() ->
      fun get_bee_logs/0,
      fun get_bee_logs_with_wrong_name/0,
      fun post_create_new_app/0,
-     fun post_create_new_app_no_repo_url/0,
      fun post_create_new_app_bad_token/0,
      fun post_create_new_app_no_token/0,
      fun put_app/0,
@@ -163,17 +162,6 @@ post_create_new_app() ->
                          {token, User#user.token}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
   ?assertMatch([{"ok","created"}],
-               bh_test_util:response_json(Response)),
-  passed.
-
-post_create_new_app_no_repo_url() ->
-  User = bh_test_util:dummy_user(),
-  {ok, Header, Response} =
-    perform_post_create([{app_name, "creationtest"},
-                         {token, User#user.token}]),
-  ?assertEqual("HTTP/1.0 404 Object Not Found", Header),
-
-  ?assertMatch([{"error",[{"invalid_app", "no_repo_url_given"}]}],
                bh_test_util:response_json(Response)),
   passed.
 
