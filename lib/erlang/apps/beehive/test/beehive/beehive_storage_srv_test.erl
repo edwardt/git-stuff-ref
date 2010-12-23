@@ -32,8 +32,11 @@ build_bee_good() ->
   passed.
 
 build_bee_bad() ->
-  App = bh_test_util:dummy_app(),
-  Out = beehive_storage_srv:build_bee(App#app{template = "fake"}),
+  App = bh_test_util:dummy_app("norepo"),
+  %% Clear out the repo, should create an error
+  RepoPath = beehive_repository:clone_url(App#app.name),
+  os:cmd("rm -rf " ++ RepoPath),
+  Out = beehive_storage_srv:build_bee(App),
   {error, NewApp} = Out,
   ?assert(NewApp#app.latest_error =/= undefined),
   passed.
