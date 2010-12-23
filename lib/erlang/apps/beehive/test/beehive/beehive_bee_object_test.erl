@@ -289,16 +289,20 @@ have_bee_t() ->
 
 start_bee_with_no_object_in_memory() ->
   DummyApp = bh_test_util:dummy_app("nonprod_app"),
-  DummyApp1 = DummyApp#app{deploy_env = "nonprod"},
+  DummyApp1 = DummyApp#app{template = rack},
   apps:save(DummyApp1),
   App = apps:find_by_name(DummyApp1#app.name),
+
+  bh_test_util:replace_repo_with_fixture(
+    beehive_repository:clone_url(App#app.name)),
+
   beehive_bee_object:bundle(apps:to_proplist(App)),
 
   %% Actually deleting the reference from the bobject store
   ets:delete('beehive_bee_object_info', App#app.name),
 
   Pid = spawn(fun() -> responding_loop([]) end),
-  Foo = beehive_bee_object:start(App, 9876, Pid),
+  Foo = beehive_bee_object:start(App, bh_host:unused_port(), Pid),
   passed.
 
 

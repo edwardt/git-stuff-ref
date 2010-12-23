@@ -546,6 +546,9 @@ ensure_repos_exists(#bee_object{bundle_dir = BundleDir} = BeeObject, From) ->
   end.
 
 %% Checkout the repos using the config method
+clone_repos(#bee_object{repo_url = undefined} = BeeObject, From) ->
+  Repo = beehive_repository:clone_url(BeeObject#bee_object.name),
+  clone_repos(BeeObject#bee_object{ repo_url = Repo }, From);
 clone_repos(#bee_object{bundle_dir = BundleDir, repo_url = RepoUrl} = BeeObject,
             From)   ->
   case proplists:get_value(clone, config_props(git)) of
