@@ -121,6 +121,7 @@ compile_app_details(App) ->
     {"updated_at", App#app.updated_at},
     {"branch", App#app.branch},
     {"deploy_env", App#app.deploy_env},
+    {"clone_url", beehive_repository:clone_url(App#app.name)},
     {"dynamic", misc_utils:to_list(App#app.dynamic)},
     {"template", misc_utils:to_list(App#app.template)},
     {"latest_error", case App#app.latest_error of
