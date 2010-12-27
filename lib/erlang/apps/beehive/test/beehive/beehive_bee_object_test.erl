@@ -61,11 +61,15 @@ git_clone() ->
   Ts = lists:flatten(io_lib:format("~w~2..0w~2..0w~2..0w~2..0w~2..0w",
                                    [Year, Month, Day, Hour, Minute, Second])),
 
-  ReposDir = proplists:get_value(repo_url, git_repos_props()),
+  ReposDir = beehive_repository:clone_url("beehive_bee_object_test_app"),
+
+  setup_populated_repo("beehive_bee_object_test_app"),
 
   os:cmd([
     "cd ", ReposDir, " && echo '", Ts, "' > LATEST_REV && git commit -a -m 'updated time for beehive_bee_object_test_app purposes'"
   ]),
+
+
   % Pull one with a specific revision
   Rev = "7b6221ef298d26167e4ba5da13e55b9af57274e7",
   Pid = spawn(fun() -> responding_loop([]) end),
@@ -85,7 +89,10 @@ git_clone() ->
 git_bundle() ->
   rm_rf(filename:join([related_dir(), "squashed", "testing_bee_out"])),
   ?DEBUG_PRINT({starting, git_bundle}),
+  setup_populated_repo("beehive_bee_object_test_app"),
+
   beehive_bee_object:bundle(git_repos_props()),
+
   BeeFile = filename:join([related_dir(), "squashed", "beehive_bee_object_test_app.bee"]),
   ?assert(filelib:is_file(BeeFile)),
   % Run it with a before
@@ -157,7 +164,8 @@ responding_from() ->
 ls_bee() ->
   ReposUrl = bh_test_util:dummy_git_repos_url(),
 
-  NewProps = [{name, "crazy_name-045"},{repo_url, ReposUrl},{repo_type, git}],
+  NewProps = [{name, "crazy_name-045"},{repo_type, git}],
+  setup_populated_repo("crazy_name-045"),
   beehive_bee_object:bundle([{type, python}|NewProps], self()),
   F = fun(This) ->
     receive
@@ -180,6 +188,7 @@ ls_bee() ->
 
 mount_t() ->
   Params = [{type, rack},{deploy_env, "staging"}|git_repos_props()],
+  bh_test_util:replace_repo_with_fixture("test_app.git"),
   beehive_bee_object:bundle(Params),
   BeeDir = filename:join([related_dir(), "run"]),
   beehive_bee_object:mount(apps:new(Params)),
@@ -195,10 +204,15 @@ mount_t() ->
 start_t() ->
   Host = "127.0.0.1",
   Port = 9192,
-  beehive_bee_object:bundle([{type, rack}|git_repos_props()]),
+  setup_populated_repo("beehive_bee_object_test_app"),
+  beehive_bee_object:bundle([{type, rack}|git_repos_props("beehive_bee_object_test_app")]),
+
   Pid = spawn(fun() -> responding_loop([]) end),
-  {started, BeeObject} = beehive_bee_object:start(#app{template=rack, name="beehive_bee_object_test_app"}, Port, Pid),
-  timer:sleep(600),
+  {started, BeeObject} =
+    beehive_bee_object:start(#app{template=rack,
+                                  name="beehive_bee_object_test_app"},
+                             Port, Pid),
+  timer:sleep(1500),
   case catch gen_tcp:connect(Host, Port, [binary]) of
     {ok, Sock} ->
       gen_tcp:close(Sock),
@@ -213,7 +227,8 @@ start_t() ->
 start_t_with_deploy_branch() ->
   Host = "127.0.0.1",
   Port = 10100,
-  bh_test_util:replace_repo_with_fixture("app_with_branch"),
+  setup_populated_repo("app_with_branch"),
+  io:format(os:cmd("ls /tmp/beehive/test/git_repos")),
   beehive_bee_object:bundle([{template, rack},
                              {branch, "deploy"}|
                              git_repos_props("app_with_branch")]),
@@ -224,7 +239,7 @@ start_t_with_deploy_branch() ->
                                   branch="deploy"},
                              Port, Pid),
   ?assertEqual("deploy", BeeObject#bee_object.branch),
-  timer:sleep(600),
+  timer:sleep(500),
   case catch gen_tcp:connect(Host, Port, [binary]) of
     {ok, Sock} ->
       case bh_test_util:try_to_fetch_url_or_retry(get, [{port, Port},
@@ -249,10 +264,14 @@ stop_t() ->
   Port = 9191,
   ReposUrl = bh_test_util:dummy_git_repos_url(),
   Name = "app_intended_to_test_stopping",
-  NewProps = [{name, Name},{repo_url, ReposUrl},{repo_type, git},{type, rack},{fixture_dir, fixture_dir()}],
+  setup_populated_repo(Name),
+  NewProps = [{name, Name},
+              {type, rack},
+              {fixture_dir, fixture_dir()}],
   Pid = spawn(fun() -> responding_loop([]) end),
   beehive_bee_object:bundle(NewProps, Pid),
-  {started, BeeObject} = beehive_bee_object:start(#app{template=rack,name= Name}, Port, Pid),
+  {started, BeeObject} =
+    beehive_bee_object:start(#app{template=rack,name= Name}, Port, Pid),
   timer:sleep(100),
   Q = beehive_bee_object:stop(Name, Pid),
   ?DEBUG_PRINT({beehive_bee_object,stop,Q,BeeObject#bee_object.pid,Name,Pid}),
@@ -265,6 +284,7 @@ stop_t() ->
   passed.
 
 cleanup_t() ->
+  bh_test_util:replace_repo_with_fixture("beehive_bee_object_test_app.git"),
   beehive_bee_object:bundle([{type, rack}|git_repos_props()]),
   Bundle = filename:join([related_dir(), "squashed", "beehive_bee_object_test_app.bee"]),
   ?assert(filelib:is_file(Bundle) =:= true),
@@ -320,8 +340,6 @@ git_repos_props(Name) ->
   ReposUrl = bh_test_util:dummy_git_repos_url(),
   [
    {name, Name},
-   {repo_type, git},
-   {repo_url, ReposUrl},
    {fixture_dir, fixture_dir()}
   ].
 
@@ -356,3 +374,7 @@ responding_loop(Acc) ->
 related_dir() ->
   {ok, Dir} = application:get_env(beehive, beehive_home),
   Dir.
+
+setup_populated_repo(Name) ->
+  RepoPath = beehive_repository:clone_url(Name),
+  bh_test_util:replace_repo_with_fixture(RepoPath).

@@ -6,5 +6,5 @@ export RACK_ENV=$DEPLOY_ENV
 
 echo $$ > $PIDFILE
 if [ -f config.ru ]; then
-  exec rackup config.ru -p $PORT
+  exec rackup -s thin config.ru -p $PORT
 fi
