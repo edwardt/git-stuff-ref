@@ -73,12 +73,12 @@ git_clone() ->
   % Pull one with a specific revision
   Rev = "7b6221ef298d26167e4ba5da13e55b9af57274e7",
   Pid = spawn(fun() -> responding_loop([]) end),
-  beehive_bee_object:clone([{revision, Rev}|git_repos_props()], Pid),
+  beehive_bee_object:clone([{revision, Rev}|app_proplist()], Pid),
   timer:sleep(500),
   ?assertEqual(Rev, get_current_revision(git)),
 
   % Do run it with an after command
-  beehive_bee_object:clone([{post, "touch NEW_FILE"}|git_repos_props()]),
+  beehive_bee_object:clone([{post, "touch NEW_FILE"}|app_proplist()]),
   timer:sleep(200), % let it work
   ReposBundleDir = filename:join([related_dir(), "squashed", "beehive_bee_object_test_app"]),
   os:cmd(["ls ", ReposBundleDir]),
@@ -91,12 +91,12 @@ git_bundle() ->
   ?DEBUG_PRINT({starting, git_bundle}),
   setup_populated_repo("beehive_bee_object_test_app"),
 
-  beehive_bee_object:bundle(git_repos_props()),
+  beehive_bee_object:bundle(app_proplist()),
 
   BeeFile = filename:join([related_dir(), "squashed", "beehive_bee_object_test_app.bee"]),
   ?assert(filelib:is_file(BeeFile)),
   % Run it with a before
-  beehive_bee_object:bundle([{pre, "touch DUMMY_FILE"}|git_repos_props()]),
+  beehive_bee_object:bundle([{pre, "touch DUMMY_FILE"}|app_proplist()]),
   % Untar and ensure the file is there
   BeeDir = filename:join([related_dir(), "squashed", "testing_bee_out"]),
   file:make_dir(BeeDir),
@@ -109,7 +109,7 @@ git_bundle() ->
 % git_clone_with_errors() ->
 %   % Non-existing url
 %   ?DEBUG_PRINT({git_clone_with_errors}),
-%   Props1 = proplists:delete(url, git_repos_props()),
+%   Props1 = proplists:delete(url, app_proplist()),
 %   Props  = proplists:delete(name, Props1),
 %   Pid = spawn(fun() -> responding_loop([]) end),
 %   case (catch beehive_bee_object:bundle([{name, "error_clone"},{url, "http://this.does.not/exist.git"}|Props], Pid)) of
@@ -125,14 +125,14 @@ git_bundle_with_errors() ->
   ?assertException(
     throw,
     {hook_error, _},
-    beehive_bee_object:bundle([{pre, "echo 'ducks'\nexit 1"}|git_repos_props()])),
+    beehive_bee_object:bundle([{pre, "echo 'ducks'\nexit 1"}|app_proplist()])),
   ?DEBUG_PRINT({git_bundle_with_errors, passed}),
   passed.
 
 bundle_template() ->
   ?DEBUG_PRINT({starting, bundle_template}),
   BeeFile = filename:join([related_dir(), "squashed", "beehive_bee_object_test_app.bee"]),
-  beehive_bee_object:bundle([{template, rails}|git_repos_props()]),
+  beehive_bee_object:bundle([{template, rails}|app_proplist()]),
   % Run it with a before
   % Untar and ensure the file is there
   BeeDir = filename:join([related_dir(), "squashed", "testing_rack_out"]),
@@ -150,7 +150,7 @@ bundle_template() ->
 
 responding_from() ->
   Pid = spawn(fun() -> responding_loop([]) end),
-  beehive_bee_object:bundle([{type, rails}|git_repos_props()], Pid),
+  beehive_bee_object:bundle([{type, rails}|app_proplist()], Pid),
   timer:sleep(500),
   Pid ! {acc, self()},
   O1 = receive
@@ -187,7 +187,7 @@ ls_bee() ->
   passed.
 
 mount_t() ->
-  Params = [{type, rack},{deploy_env, "staging"}|git_repos_props()],
+  Params = [{type, rack},{deploy_env, "staging"}|app_proplist()],
   bh_test_util:replace_repo_with_fixture("test_app.git"),
   beehive_bee_object:bundle(Params),
   BeeDir = filename:join([related_dir(), "run"]),
@@ -205,7 +205,7 @@ start_t() ->
   Host = "127.0.0.1",
   Port = 9192,
   setup_populated_repo("beehive_bee_object_test_app"),
-  beehive_bee_object:bundle([{type, rack}|git_repos_props("beehive_bee_object_test_app")]),
+  beehive_bee_object:bundle([{type, rack}|app_proplist("beehive_bee_object_test_app")]),
 
   Pid = spawn(fun() -> responding_loop([]) end),
   {started, BeeObject} =
@@ -231,7 +231,7 @@ start_t_with_deploy_branch() ->
   io:format(os:cmd("ls /tmp/beehive/test/git_repos")),
   beehive_bee_object:bundle([{template, rack},
                              {branch, "deploy"}|
-                             git_repos_props("app_with_branch")]),
+                             app_proplist("app_with_branch")]),
   Pid = spawn(fun() -> responding_loop([]) end),
   {started, BeeObject} =
     beehive_bee_object:start(#app{template=rack,
@@ -285,7 +285,7 @@ stop_t() ->
 
 cleanup_t() ->
   bh_test_util:replace_repo_with_fixture("beehive_bee_object_test_app.git"),
-  beehive_bee_object:bundle([{type, rack}|git_repos_props()]),
+  beehive_bee_object:bundle([{type, rack}|app_proplist()]),
   Bundle = filename:join([related_dir(), "squashed", "beehive_bee_object_test_app.bee"]),
   ?assert(filelib:is_file(Bundle) =:= true),
   beehive_bee_object:cleanup("beehive_bee_object_test_app"),
@@ -293,7 +293,7 @@ cleanup_t() ->
   passed.
 
 send_t() ->
-  beehive_bee_object:bundle([{type, rack}|git_repos_props()]),
+  beehive_bee_object:bundle([{type, rack}|app_proplist()]),
   timer:sleep(500),
   BeeObject = beehive_bee_object:get_bee_object(node(self()), "beehive_bee_object_test_app"),
   ?assertEqual(rack, BeeObject#bee_object.template),
@@ -302,7 +302,7 @@ send_t() ->
   passed.
 
 have_bee_t() ->
-  beehive_bee_object:bundle([{type, rack}|git_repos_props()]),
+  beehive_bee_object:bundle([{type, rack}|app_proplist()]),
   ?assert(beehive_bee_object:have_bee("beehive_bee_object_test_app") =:= true),
   ?assert(beehive_bee_object:have_bee("weird_app_name") =:= false),
   passed.
@@ -333,10 +333,10 @@ start_bee_with_no_object_in_memory() ->
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-git_repos_props() ->
-  git_repos_props("beehive_bee_object_test_app").
+app_proplist() ->
+  app_proplist("beehive_bee_object_test_app").
 
-git_repos_props(Name) ->
+app_proplist(Name) ->
   ReposUrl = bh_test_util:dummy_git_repos_url(),
   [
    {name, Name},
