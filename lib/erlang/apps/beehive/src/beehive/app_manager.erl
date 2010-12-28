@@ -16,39 +16,40 @@
 %% API
 -export([start_link/0, stop/0]).
 -export ([
-  instance/0,
-  status/0,
-  terminate_all/0,
-  terminate_app_instances/1,
-  add_application/1, add_application/2,
-  update_application/2,
-  spawn_update_bee_status/3,
-  request_to_start_new_bee_by_name/1, request_to_start_new_bee_by_name/2,
-  start_new_bee_by_name/1, start_new_bee_by_name/2,
-  request_to_start_new_bee_by_app/1, request_to_start_new_bee_by_app/2,
-  start_new_bee_by_app/1, start_new_bee_by_app/2,
-  request_to_update_app/1,
-  request_to_expand_app/1,
-  request_to_terminate_bee/1, request_to_terminate_bee/2,
-  terminate_bee/1, terminate_bee/2,
-  request_to_save_app/1,
-  garbage_collection/0,
-  seed_nodes/1
-]).
+          instance/0,
+          status/0,
+          terminate_all/0,
+          terminate_app_instances/1,
+          add_application/1, add_application/2,
+          update_application/2,
+          spawn_update_bee_status/3,
+          request_to_start_new_bee_by_name/1,
+          request_to_start_new_bee_by_name/2,
+          start_new_bee_by_name/1, start_new_bee_by_name/2,
+          request_to_start_new_bee_by_app/1, request_to_start_new_bee_by_app/2,
+          start_new_bee_by_app/1, start_new_bee_by_app/2,
+          request_to_update_app/1,
+          request_to_expand_app/1,
+          request_to_terminate_bee/1, request_to_terminate_bee/2,
+          terminate_bee/1, terminate_bee/2,
+          request_to_save_app/1,
+          garbage_collection/0,
+          seed_nodes/1
+         ]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
-% gen_cluster callback
+%% gen_cluster callback
 -export([handle_join/2, handle_leave/3]).
 
 -record(state, {
-  run_directory,
-  scratch_dir,
-  max_bees,               % maximum number of bees on this host
-  queries     = queue:new(),
-  last_trans  = 0
-}).
+          run_directory,
+          scratch_dir,
+          max_bees,               % maximum number of bees on this host
+          queries     = queue:new(),
+          last_trans  = 0
+         }).
 
 -define (ACTION_TIMEOUT, 10).
 -define (SERVER, ?MODULE).
@@ -68,7 +69,7 @@ instance() -> whereis(?SERVER).
 
 garbage_collection() -> gen_server:cast(?SERVER, {garbage_collection}).
 
-% Starting
+%% Starting
 request_to_start_new_bee_by_app(App) ->
   request_to_start_new_bee_by_app(App, undefined).
 request_to_start_new_bee_by_app(App, Caller) ->
@@ -166,10 +167,10 @@ init([]) ->
   %%  Try to make sure the pending bees are taken care of by
   %% either turning them broken or ready
   timer:send_interval(timer:seconds(5), {manage_pending_bees}),
-  % Run maintenance
-  % timer:send_interval(timer:seconds(20), {ping_bees}),
+  %% Run maintenance
+  %% timer:send_interval(timer:seconds(20), {ping_bees}),
   timer:send_interval(timer:minutes(5), {garbage_collection}),
-  % timer:send_interval(timer:minutes(2), {maintain_bee_counts}),
+  %% timer:send_interval(timer:minutes(2), {maintain_bee_counts}),
   timer:send_interval(timer:minutes(2), {clean_up_apps}),
 
   ScratchDisk =
@@ -179,10 +180,10 @@ init([]) ->
   MaxBackends     = ?MAX_BACKENDS_PER_HOST,
 
   {ok, #state{
-    run_directory = RunDir,
-    scratch_dir = ScratchDisk,
-    max_bees = MaxBackends
-  }}.
+     run_directory = RunDir,
+     scratch_dir = ScratchDisk,
+     max_bees = MaxBackends
+    }}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -193,9 +194,9 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-% Add an application
+%% Add an application
 handle_call({add_application, ConfigProplist, UserEmail}, From, State) ->
-  % NewState = add_application(ConfigProplist, State),
+  %% NewState = add_application(ConfigProplist, State),
   handle_queued_call(fun() ->
                          internal_add_application(ConfigProplist, UserEmail)
                      end, From, State);
@@ -212,29 +213,32 @@ handle_call({start_new_bee_by_name, Name, Caller}, From, State) ->
   case apps:find_by_name(Name) of
     App when is_record(App, app) ->
       handle_queued_call(fun() ->
-        start_new_instance_by_app(App#app{latest_error=undefined}, Caller)
-      end, From, State);
+                             start_new_instance_by_app(
+                               App#app{latest_error=undefined}, Caller)
+                         end, From, State);
     _ -> {error, app_not_found}
   end;
 
 handle_call({start_new_bee_by_app, App, Caller}, From, State) ->
   handle_queued_call(fun() ->
-    start_new_instance_by_app(App#app{latest_error=undefined}, Caller)
-  end, From, State);
+                         start_new_instance_by_app(
+                           App#app{latest_error=undefined}, Caller)
+                     end, From, State);
 
 handle_call({terminate_bee, Bee, _Caller}, From, State) ->
   handle_queued_call(fun() ->
-    run_app_kill_fsm(Bee, self()),
-    receive
-      {bee_terminated, NewBee} ->
-        bees:save(NewBee),
-        {ok, {bee_terminated, NewBee}};
-      X ->
-        erlang:display({handle_call, terminate_bee, got, X})
-    end
-  end, From, State);
+                         run_app_kill_fsm(Bee, self()),
+                         receive
+                           {bee_terminated, NewBee} ->
+                             bees:save(NewBee),
+                             {ok, {bee_terminated, NewBee}};
+                           X ->
+                             erlang:display({handle_call,
+                                             terminate_bee, got, X})
+                         end
+                     end, From, State);
 
-% Remove an application from this application server
+%% Remove an application from this application server
 handle_call({remove_app, AppName}, _From, State) ->
   terminate_app_instances(AppName),
   {reply, ok, State};
@@ -257,7 +261,7 @@ handle_cast({request_to_expand_app, App}, State) ->
   expand_instance_by_app(App),
   {noreply, State};
 
-% STARTING
+%% STARTING
 handle_cast({request_to_start_new_bee_by_app, App, Caller}, State) ->
   start_new_instance_by_app(App, Caller),
   {noreply, State};
@@ -270,7 +274,7 @@ handle_cast({request_to_start_new_bee_by_name, Name, Caller}, State) ->
   {noreply, State};
 
 handle_cast({request_to_terminate_bee, Bee, Caller}, State) ->
-  % app_killer_fsm
+  %% app_killer_fsm
   run_app_kill_fsm(Bee, Caller),
   {noreply, State};
 
@@ -292,18 +296,18 @@ handle_info({clean_up}, State) ->
 
 handle_info({manage_pending_bees}, State) ->
   spawn(fun() ->
-    PendingBees = lists:filter(fun(B) ->
-        case is_record(B, bee) of
-          true -> B#bee.status == pending;
-          false -> false
-        end
-      end,
-    bees:all()),
-    lists:map(fun(B) ->
-        Status = try_to_connect_to_new_instance(B, 10),
-        ?NOTIFY({bee, update_status, B, Status})
-    end, PendingBees)
-  end),
+            PendingBees = lists:filter(fun(B) ->
+                                           case is_record(B, bee) of
+                                             true -> B#bee.status == pending;
+                                             false -> false
+                                           end
+                                       end,
+                                       bees:all()),
+            lists:map(fun(B) ->
+                          Status = try_to_connect_to_new_instance(B, 10),
+                          ?NOTIFY({bee, update_status, B, Status})
+                      end, PendingBees)
+        end),
   {noreply, State};
 
 handle_info({maintain_bee_counts}, State) ->
@@ -340,7 +344,7 @@ handle_info({bee_updated_normally,
              #bee{revision = Sha} = Bee,
              #app{name = AppName} = App,
              Caller}, State) ->
-  % StartedBee#bee{revision = Sha}, App#app{revision = Sha}
+  %% StartedBee#bee{revision = Sha}, App#app{revision = Sha}
   ?LOG(debug, "app_event_handler got bee_updated_normally: ~p, ~p", [Bee, App]),
   case apps:find_by_name(AppName) of
     RealApp when is_record(RealApp, app) ->
@@ -361,8 +365,9 @@ handle_info({bee_started_normally, Bee, App, Caller}, State) ->
   send_to(Caller, {bee_started_normally, Bee, App}),
   {noreply, State};
 
-% {error, {updating, {error, {babysitter, {app,"fake-lvpae",
-handle_info({error, {Stage, {error, bee_not_found_after_creation, App}}}, State) ->
+%% {error, {updating, {error, {babysitter, {app,"fake-lvpae",
+handle_info({error, {Stage, {error, bee_not_found_after_creation, App}}},
+            State) ->
   ?LOG(debug, "could not find the bee after creation: ~p", [App#app.name]),
   Error = #app_error{
     stage = Stage,
@@ -370,7 +375,7 @@ handle_info({error, {Stage, {error, bee_not_found_after_creation, App}}}, State)
     stdout = "Bee could not be found after creating it. Check the repository",
     exit_status = 128,
     timestamp = date_util:now_to_seconds()
-  },
+   },
   {ok, _NewApp} = apps:save(App#app{latest_error = Error}),
   {noreply, State};
 
@@ -381,13 +386,13 @@ handle_info({app_launcher_fsm, error, {error, broken_start}, Props}, State) ->
   Error = #app_error{
     stage = launching,
     stdout = Output,
-    exit_status = 128, % Erp
+    exit_status = 128, %% Erp
     timestamp = date_util:now_to_seconds()
-  },
+   },
   ?LOG(debug, "app_manager caught error: ~p: ~p", [App, Error]),
 
   {ok, _NewApp} = apps:save(App#app{latest_error = Error}),
-  % run_app_kill_fsm(Bee, self()),
+  %% run_app_kill_fsm(Bee, self()),
 
   Pid = proplists:get_value(caller, Props),
   send_to(Pid, {error, broken_start}),
@@ -403,14 +408,14 @@ handle_info({app_launcher_fsm, error, {StateName, Code}, Props}, State) ->
   Error = #app_error{
     stage = StateName,
     stdout = Output,
-    exit_status = Code, % Erp
+    exit_status = Code, %% Erp
     timestamp = date_util:now_to_seconds()
-  },
+   },
 
   ?LOG(debug, "app_manager caught error: ~p", [App, StateName, Code]),
   {ok, _NewApp} = apps:save(App#app{latest_error = Error}),
 
-  % Send to the caller
+  %% Send to the caller
   send_to(From, {error, Error}),
 
   run_app_kill_fsm(Bee, self()),
@@ -478,30 +483,31 @@ handle_leave(_LeavingPid, _Info, State) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
-handle_queued_call(Fun, From, #state{queries = OldTransQ, last_trans = LastTrans} = State) ->
+handle_queued_call(Fun, From, #state{queries = OldTransQ,
+                                     last_trans = LastTrans} = State) ->
   TransId = next_trans(LastTrans),
   FromServer = self(),
   spawn(fun() ->
-    case Fun() of
-      {ok, _} = T1 -> FromServer ! {answer, TransId, T1};
-      {error, _} = T2 -> FromServer ! {answer, TransId, T2}
-    end
-  end),
+            case Fun() of
+              {ok, _} = T1 -> FromServer ! {answer, TransId, T1};
+              {error, _} = T2 -> FromServer ! {answer, TransId, T2}
+            end
+        end),
   {noreply, State#state{queries = queue:in({TransId, From}, OldTransQ)}}.
 
-% Spawn a process to try to connect to the instance
+%% Spawn a process to try to connect to the instance
 spawn_update_bee_status(Bee, From, Nums) ->
   spawn(fun() ->
-    BeeStatus = try_to_connect_to_new_instance(Bee, Nums),
-    RealBee = case bees:find_by_id(Bee#bee.id) of
-      RealBee1 when is_record(RealBee1, bee) -> RealBee1;
-      _ -> Bee
-    end,
-    bees:save(RealBee#bee{status = BeeStatus}),
-    send_to(From, {updated_bee_status, BeeStatus})
-  end).
+            BeeStatus = try_to_connect_to_new_instance(Bee, Nums),
+            RealBee = case bees:find_by_id(Bee#bee.id) of
+                        RealBee1 when is_record(RealBee1, bee) -> RealBee1;
+                        _ -> Bee
+                      end,
+            bees:save(RealBee#bee{status = BeeStatus}),
+            send_to(From, {updated_bee_status, BeeStatus})
+        end).
 
-% Try to connect to the application instance while it's booting up
+%% Try to connect to the application instance while it's booting up
 try_to_connect_to_new_instance(_Bee, 0) -> broken;
 try_to_connect_to_new_instance(Bee, Attempts) ->
   ?LOG(debug, "try_to_connect_to_new_instance (~p:~p) ~p",
@@ -516,7 +522,7 @@ try_to_connect_to_new_instance(Bee, Attempts) ->
       try_to_connect_to_new_instance(Bee, Attempts - 1)
   end.
 
-% Add an application based on its proplist
+%% Add an application based on its proplist
 internal_add_application(ConfigProplist, UserEmail) ->
   case apps:create(ConfigProplist) of
     {ok, NewApp} when is_record(NewApp, app) ->
@@ -547,25 +553,26 @@ internal_update_application(Name, ConfigProplist) ->
     _ -> {error, app_not_found}
   end.
 
-% Clean up applications
+%% Clean up applications
 clean_up() ->
   Apps = apps:all(),
   lists:map(fun(App) ->
-    Bees = bees:find_all_by_name(App#app.name),
-    RunningBees = lists:filter(fun(B) -> B#bee.status =:= ready end, Bees),
-    Proplist = [{num_backends, erlang:length(RunningBees)}],
-    clean_up_instances(Bees, App, Proplist)
-  end, Apps).
+                Bees = bees:find_all_by_name(App#app.name),
+                RunningBees =
+                  lists:filter(fun(B) -> B#bee.status =:= ready end, Bees),
+                Proplist = [{num_backends, erlang:length(RunningBees)}],
+                clean_up_instances(Bees, App, Proplist)
+            end, Apps).
 
-% Clean up the instances
+%% Clean up the instances
 clean_up_instances([], _, Proplist) -> Proplist;
 clean_up_instances([Bee|Rest], App, Proplist) ->
   clean_up_instance(Bee, App, Proplist),
   clean_up_instances(Rest, App, Proplist).
 
-% Cleanup a single instance
+%% Cleanup a single instance
 clean_up_instance(Bee, App, Proplist) ->
-  % If the instance of the application has been used before
+  %% If the instance of the application has been used before
   case Bee#bee.lastresp_time of
     0 -> Proplist;
     _Time ->  clean_up_on_app_timeout(Bee, App, Proplist)
@@ -576,12 +583,12 @@ clean_up_instance(Bee, App, Proplist) ->
 clean_up_on_app_timeout(#bee{lastresp_time=LastReq} = Bee,
                         #app{timeout=Timeout,sticky=Sticky} = App, Proplist) ->
   _NumBees = proplists:get_value(num_backends, Proplist),
-	TimeDiff = date_util:time_difference_from_now(LastReq),
+  TimeDiff = date_util:time_difference_from_now(LastReq),
   %% ?LOG(info, "clean_up_on_app_timeout: ~p > ~p, ~p > ~p",
   %% [NumBees, Min, TimeDiff, Timeout]),
   if
-    % stop_instance(Bee, App, From)
-    % NumBees > Min andalso
+    %% stop_instance(Bee, App, From)
+    %% NumBees > Min andalso
     TimeDiff > Timeout andalso Sticky =/= true ->
       ?LOG(debug, "The bee has passed it's prime: ~p > ~p: ~p (sticky: ~p)",
            [TimeDiff, Timeout, Sticky]),
@@ -589,39 +596,39 @@ clean_up_on_app_timeout(#bee{lastresp_time=LastReq} = Bee,
     true -> clean_up_on_busy_and_stale_status(Bee, App, Proplist)
   end.
 
-% If the instance is busy, but hasn't served a request in a long time, kill it
+%% If the instance is busy, but hasn't served a request in a long time, kill it
 clean_up_on_busy_and_stale_status(#bee{status = Status,
                                        lastresp_time = LastReq} = Bee,
                                   #app{timeout = Timeout} = App, Proplist) ->
-	TimeDiff = date_util:time_difference_from_now(LastReq),
+  TimeDiff = date_util:time_difference_from_now(LastReq),
   %% ?LOG(info, "clean_up_on_busy_and_stale_status: ~p > ~p + ~p",
   %% [TimeDiff, Timeout, ?TIME_BUFFER]),
   if
     Status =:= busy andalso TimeDiff > Timeout + ?TIME_BUFFER ->
-			?NOTIFY({bee, terminate_please, Bee});
+      ?NOTIFY({bee, terminate_please, Bee});
     true -> clean_up_on_long_running_instance(Bee, App, Proplist)
   end.
 
-% If the application has been running for a while, kill it
+%% If the application has been running for a while, kill it
 clean_up_on_long_running_instance(#bee{start_time = StartTime} = Bee,
                                   _App, Proplist) ->
-	TimeDiff = date_util:time_difference_from_now(StartTime),
+  TimeDiff = date_util:time_difference_from_now(StartTime),
   %% ?LOG(info, "clean_up_on_long_running_instance: ~p > ~p",
   %% [TimeDiff, ?RUN_INSTANCE_TIME_PERIOD]),
   if TimeDiff > ?RUN_INSTANCE_TIME_PERIOD ->
       ?NOTIFY({bee, terminate_please, Bee});
-    true -> Proplist
+     true -> Proplist
   end.
 
-% MAINTENANCE
+%% MAINTENANCE
 ping_bees() ->
   ReadyBees = lists:filter(fun(B) -> B#bee.status =:= ready end, bees:all()),
   lists:map(fun(B) ->
-    spawn_update_bee_status(B, self(), 10)
-  end, ReadyBees),
+                spawn_update_bee_status(B, self(), 10)
+            end, ReadyBees),
   ok.
 
-% GARBAGE COLLECTION
+%% GARBAGE COLLECTION
 handle_non_ready_bees() ->
   TerminatedBees = lists:filter(fun(B) ->
                                     B#bee.status =:= terminated
@@ -633,41 +640,42 @@ handle_non_ready_bees() ->
                    B#bee.status =/= ready andalso B#bee.sticky =:= false
                end, bees:all()),
   lists:map(fun(B) ->
-    ?LOG(debug, "trying to reconnect to broken bee: ~p", [B]),
-    spawn(fun() -> try_to_reconnect_to_bee(B, 5) end)
-  end, DownBees),
+                ?LOG(debug, "trying to reconnect to broken bee: ~p", [B]),
+                spawn(fun() -> try_to_reconnect_to_bee(B, 5) end)
+            end, DownBees),
   ok.
 
-% Maintain bee counts
+%% Maintain bee counts
 maintain_bee_counts() ->
   Apps = apps:all(),
   lists:map(fun(App) ->
-      AppBees = lists:filter(fun(B) ->
-                                 B#bee.status =:= ready
-                             end, bees:find_all_by_name(App#app.name)),
-      NumAppBees = length(AppBees),
-      Min = misc_utils:to_integer(App#app.min_instances),
-      Max = misc_utils:to_integer(App#app.max_instances),
-      case NumAppBees < Min of
-        true ->
-          % Uh oh, the minimum bees aren't running
-          start_number_of_bees(App#app.name, Min - NumAppBees);
-        false ->
-          case NumAppBees > Max of
-            true ->
-              % Uh oh, somehow we got too many bees
-              ?LOG(debug, "The number of bees running exceeds the number of maximum bees: ~p", [NumAppBees]),
-              terminate_number_of_bees(AppBees, NumAppBees - Max);
-            false -> ok
-          end
-      end
-    end, Apps),
+                AppBees = lists:filter(fun(B) ->
+                                           B#bee.status =:= ready
+                                       end,
+                                       bees:find_all_by_name(App#app.name)),
+                NumAppBees = length(AppBees),
+                Min = misc_utils:to_integer(App#app.min_instances),
+                Max = misc_utils:to_integer(App#app.max_instances),
+                case NumAppBees < Min of
+                  true ->
+                    %% Uh oh, the minimum bees aren't running
+                    start_number_of_bees(App#app.name, Min - NumAppBees);
+                  false ->
+                    case NumAppBees > Max of
+                      true ->
+                        %% Uh oh, somehow we got too many bees
+                        ?LOG(debug, "The number of bees running exceeds the number of maximum bees: ~p", [NumAppBees]),
+                        terminate_number_of_bees(AppBees, NumAppBees - Max);
+                      false -> ok
+                    end
+                end
+            end, Apps),
   ok.
 
 start_number_of_bees(_, 0) -> ok;
 start_number_of_bees(Name, Count) ->
-  % This entire method will only start 1 instance at a time because
-  % But keep this in here for the time being until we should address it
+  %% This entire method will only start 1 instance at a time because
+  %% But keep this in here for the time being until we should address it
   start_new_instance_by_name(Name),
   start_number_of_bees(Name, Count - 1).
 
@@ -676,9 +684,9 @@ terminate_number_of_bees([Bee|Rest], Count) ->
   ?NOTIFY({bee, terminate_please, Bee}),
   terminate_number_of_bees(Rest, Count - 1).
 
-% Spawned off process to try to "save" the bee
-% If not, clean up the instance and delete it from the bees.
-% These are throw-aways, so they can come and they can go
+%% Spawned off process to try to "save" the bee
+%% If not, clean up the instance and delete it from the bees.
+%% These are throw-aways, so they can come and they can go
 try_to_reconnect_to_bee(B, 0) ->
   cleanup_bee(B),
   ok;
@@ -692,18 +700,18 @@ try_to_reconnect_to_bee(B, Num) ->
       bees:update(RealBee#bee.app_name, RealBee#bee{status = NewStatus})
   end.
 
-% Cleanup the bee. Remove traces of the bee from the system
+%% Cleanup the bee. Remove traces of the bee from the system
 cleanup_bee(#bee{status = terminated} = B) ->
   ?QSTORE:delete_queue(?WAIT_DB, B#bee.id);
-  % bees:delete(B);
+%% bees:delete(B);
 cleanup_bee(B) ->
   (catch app_manager:request_to_terminate_bee(B, self())),
   ?QSTORE:delete_queue(?WAIT_DB, B#bee.id).
-  % bees:delete(B).
+%% bees:delete(B).
 
-% Starting
-% Call spawn to start new instance if the app is not defined as static and
-% there is an available host to start the bee on
+%% Starting
+%% Call spawn to start new instance if the app is not defined as static and
+%% there is an available host to start the bee on
 start_new_instance_by_name(Name) ->
   case apps:find_by_name(Name) of
     [] -> {error, no_app_found};
@@ -720,13 +728,13 @@ update_instance_by_app(App, Caller) ->
 
 expand_instance_by_app(App) -> start_new_instance_by_app(App).
 
-% PRIVATE
+%% PRIVATE
 app_launcher_fsm_go(Method, App, Caller, Updating) ->
   case App#app.dynamic of
     static -> ok;
     _T ->
       process_flag(trap_exit, true),
-      % Now = date_util:now_to_seconds(),
+      %% Now = date_util:now_to_seconds(),
       StartOpts = [{app, App}, {caller, Caller},
                    {from, self()}, {updating, Updating}],
       case app_launcher_fsm:start_link(StartOpts) of
@@ -746,7 +754,7 @@ app_launcher_fsm_go(Method, App, Caller, Updating) ->
       end
   end.
 
-% Kill off all other bees
+%% Kill off all other bees
 kill_other_bees(#bee{app_name = Name,
                      id = StartedId,
                      revision = StartedSha} = _StartedBee) ->
@@ -755,13 +763,14 @@ kill_other_bees(#bee{app_name = Name,
     CurrentBees ->
       OtherBees = lists:filter(
                     fun(B) ->
-                        B#bee.id =/= StartedId orelse B#bee.revision =/= StartedSha
+                        B#bee.id =/= StartedId orelse
+                          B#bee.revision =/= StartedSha
                     end, CurrentBees),
       lists:map(fun(B) -> ?NOTIFY({bee, terminate_please, B}) end, OtherBees),
       ok
   end.
 
-% So that we can get a unique id for each communication
+%% So that we can get a unique id for each communication
 next_trans(I) when I < 268435455 -> I+1;
 next_trans(_) -> 1.
 
@@ -774,7 +783,7 @@ get_transaction(Q, I, OldQ) ->
       {false, OldQ};
     {_E, Q2} ->
       get_transaction(Q2, I, OldQ)
-    end.
+  end.
 
 run_app_kill_fsm(SentBee, Caller) ->
   case bees:find_by_id(SentBee#bee.id) of

@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : app_killer_fsm.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  Wed Nov 18 17:30:15 PST 2009
 %%%-------------------------------------------------------------------
@@ -14,17 +14,17 @@
 %% API
 -export([start_link/2]).
 
-% methods
+%% methods
 -export ([
-  kill/1
-]).
-% states
+          kill/1
+         ]).
+%% states
 -export ([
-  preparing/2,
-  killing/2,
-  unmounting/2,
-  cleaning_up/2
-]).
+          preparing/2,
+          killing/2,
+          unmounting/2,
+          cleaning_up/2
+         ]).
 
 %% gen_fsm callbacks
 -export([init/1, state_name/2, state_name/3, handle_event/3,
@@ -33,16 +33,16 @@
 -define(SERVER, ?MODULE).
 
 -record (state, {
-  node,
-  bee,
-  from
-}).
+           node,
+           bee,
+           from
+          }).
 
 %%====================================================================
 %% API
 %%====================================================================
 kill(Pid) -> gen_fsm:send_event(Pid, {kill}).
-  
+
 %%--------------------------------------------------------------------
 %% Function: start_link() -> ok,Pid} | ignore | {error,Error}
 %% Description:Creates a gen_fsm process which calls Module:init/1 to
@@ -66,9 +66,9 @@ start_link(Bee, From) ->
 %%--------------------------------------------------------------------
 init([Bee, From]) ->
   RpcNode = case Bee#bee.host_node of
-    undefined -> node();
-    _ -> Bee#bee.host_node
-  end,
+              undefined -> node();
+              _ -> Bee#bee.host_node
+            end,
   State = #state{from = From, bee = Bee, node = RpcNode},
   {ok, preparing, State}.
 
@@ -85,14 +85,15 @@ init([Bee, From]) ->
 %% called if a timeout occurs.
 %%--------------------------------------------------------------------
 preparing({kill}, #state{bee = Bee, node = Node} = State) ->
-  % If there is no node, we'll assume it's on the localhost
+  %% If there is no node, we'll assume it's on the localhost
   rpc:call(Node, beehive_bee_object, stop, [Bee, self()]),
   {next_state, killing, State};
 
 preparing(Other, State) ->
   {stop, {received_unknown_message, {preparing, Other}}, State}.
 
-killing({stopped, _BeeO}, #state{bee = #bee{app_name = Name} = Bee, node = Node} = State) ->
+killing({stopped, _BeeO},
+        #state{bee = #bee{app_name = Name} = Bee, node = Node} = State) ->
   bees:save(Bee#bee{status = stopped}),
   rpc:call(Node, beehive_bee_object, unmount, [default, Name, self()]),
   {next_state, unmounting, State};
@@ -100,23 +101,25 @@ killing({stopped, _BeeO}, #state{bee = #bee{app_name = Name} = Bee, node = Node}
 killing(Msg, State) ->
   {stop, {received_unknown_message, {unmounting, Msg}}, State}.
 
-unmounting({unmounted, _BeeObject}, #state{bee = #bee{app_name = Name} = _Bee, node = Node} = State) ->
+unmounting({unmounted, _BeeObject},
+           #state{bee = #bee{app_name = Name} = _Bee, node = Node} = State) ->
   rpc:call(Node, beehive_bee_object, cleanup, [Name, self()]),
   {next_state, cleaning_up, State};
 
 unmounting({error, Msg}, State) ->
   {stop, {error, Msg}, State}.
 
-cleaning_up({cleaned_up, _BeeObject}, #state{from = From, bee = Bee} = State) ->
-  % Bee cleaned up
+cleaning_up({cleaned_up, _BeeObject},
+            #state{from = From, bee = Bee} = State) ->
+  %% Bee cleaned up
   bees:save(Bee#bee{pid = undefined, os_pid = undefined}),
   From ! {bee_terminated, Bee},
   {stop, normal, State};
-  
+
 cleaning_up(Event, State) ->
   ?LOG(info, "Got uncaught event in cleaning_up state: ~p", [Event]),
   {next_state, cleaning_up, State}.
-  
+
 state_name(Event, State) ->
   io:format("Uncaught event: ~p while in state: ~p ~n", [Event, state_name]),
   {next_state, state_name, State}.
@@ -185,12 +188,14 @@ handle_sync_event(_Event, _From, StateName, State) ->
 %% other message than a synchronous or asynchronous event
 %% (or a system message).
 %%--------------------------------------------------------------------
-% Handle port messages first
-handle_info({data, _Msg}, StateName, State) -> {next_state, StateName, State};
-handle_info({port_closed, _Port}, StateName, State) -> {next_state, StateName, State};
+%% Handle port messages first
+handle_info({data, _Msg}, StateName, State) ->
+  {next_state, StateName, State};
+handle_info({port_closed, _Port}, StateName, State) ->
+  {next_state, StateName, State};
 handle_info(Info, StateName, State) ->
   apply(?MODULE, StateName, [Info, State]).
-  % {next_state, StateName, State}.
+%% {next_state, StateName, State}.
 
 %%--------------------------------------------------------------------
 %% Function: terminate(Reason, StateName, State) -> void()

@@ -14,20 +14,20 @@
 %% API
 -export([start_link/1]).
 
-% methods
+%% methods
 -export ([
-  start_new/1,
-  launch/1,
-  update/1
-]).
-% states
+          start_new/1,
+          launch/1,
+          update/1
+         ]).
+%% states
 -export ([
-  fetching/2,
-  preparing/2,
-  updating/2,
-  launching/2,
-  pending/2
-]).
+          fetching/2,
+          preparing/2,
+          updating/2,
+          launching/2,
+          pending/2
+         ]).
 
 %% gen_fsm callbacks
 -export([init/1, state_name/2, state_name/3, handle_event/3,
@@ -36,16 +36,16 @@
 -define(SERVER, ?MODULE).
 
 -record (state, {
-  app,
-  latest_sha,
-  host,
-  port,
-  bee,
-  output = [],
-  updating = false,
-  caller,
-  from
-}).
+           app,
+           latest_sha,
+           host,
+           port,
+           bee,
+           output = [],
+           updating = false,
+           caller,
+           from
+          }).
 
 %%====================================================================
 %% API
@@ -82,7 +82,7 @@ init([Proplist]) ->
   Updating = proplists:get_value(updating, Proplist),
 
   beehive_bee_object_config:init(), % JUST IN CASE
-  % Only start if there are no other modules registered with the name
+  %% Only start if there are no other modules registered with the name
   State = #state{app = App, from = From, caller = Caller,
                  updating = Updating, bee = #bee{}},
   case global:whereis_name(registered_name(App)) of
@@ -90,15 +90,16 @@ init([Proplist]) ->
       case App#app.latest_error of
         undefined ->
           global:register_name(registered_name(App), self()),
-          % Up for debate, should we always do this on init?
-          % I kind of like the convenience
+          %% Up for debate, should we always do this on init?
+          %% I kind of like the convenience
           Self = self(),
           gen_cluster:run(beehive_storage_srv, {fetch_or_build_bee, App, Self}),
-          ?LOG(debug, "gen_cluster:run(beehive_storage_srv, {fetch_or_build_bee, ~p, ~p})", [App#app.name, Self]),
+          ?LOG(debug, "gen_cluster:run(beehive_storage_srv, {fetch_or_build_bee, ~p, ~p})",
+               [App#app.name, Self]),
           {ok, fetching, State};
         _ ->
           {stop, {error, pending_app_error}}
-    end;
+      end;
     _ ->
       Tuple = {already_started, registered_name(App)},
       {stop, Tuple}
@@ -115,15 +116,17 @@ init([Proplist]) ->
 %% gen_fsm:send_event/2, the instance of this function with the same name as
 %% the current state name StateName is called to handle the event. It is also
 %% called if a timeout occurs.
+%%
+%% Valid states: fetching, preparing, updating, launching, pending
 %%--------------------------------------------------------------------
 fetching({send_bee_object, _Bo}, State) ->
   {next_state, preparing, State};
 fetching({launch}, State) ->
-  % If we have not yet fetched the bee, but received a launch request
-  % we'll just resend it to ourselves in a little while
+  %% If we have not yet fetched the bee, but received a launch request
+  %% we'll just resend it to ourselves in a little while
   gen_cluster:run(beehive_storage_srv,
                   {fetch_or_build_bee, State#state.app, self()}),
-  % Give it some time to try to fetch again...
+  %% Give it some time to try to fetch again...
   timer:send_after(500, {launch}),
   {next_state, fetching, State};
 fetching({error, Msg}, State) ->
@@ -132,7 +135,8 @@ fetching({error, Msg}, State) ->
 fetching(_Msg, State) ->
   {next_state, fetching, State}.
 
-% Prepared to do something!
+
+%% Prepared to do something!
 preparing({update}, #state{app = App} = State) ->
   Self = self(),
   gen_cluster:run(beehive_storage_srv, {build_bee, App, Self}),
@@ -153,6 +157,7 @@ preparing({start_new}, State) ->
 preparing(_Other, State) ->
   {next_state, preparing, State}.
 
+
 updating({bee_built, _Info}, #state{app = App} = State) ->
   Port = bh_host:unused_port(),
   beehive_bee_object:start(App, Port, self()),
@@ -161,7 +166,8 @@ updating({bee_built, _Info}, #state{app = App} = State) ->
 updating(Msg, State) ->
   stop_error({updating, Msg}, State).
 
-% LAUNCHING THE APPLICATION
+
+%% LAUNCHING THE APPLICATION
 launching({started, BeeObject}, #state{app = App} = State) ->
   Self = self(),
   BuiltBee = bees:from_bee_object(BeeObject, App),
@@ -177,7 +183,8 @@ launching(Event, State) ->
   ?LOG(debug, "Uncaught event: ~p while in state: ~p ~n", [Event, launching]),
   {next_state, launching, State}.
 
-% AFTER THE APPLICATION HAS BEEN 'PENDING'
+
+%% AFTER THE APPLICATION HAS BEEN 'PENDING'
 pending({updated_bee_status, broken}, State) ->
   stop_error({error, broken_start}, State);
 
@@ -186,7 +193,7 @@ pending({updated_bee_status, BackendStatus},
                caller = Caller, latest_sha = Sha,
                updating = Updating} = State) ->
   ?LOG(debug, "Application started ~p: ~p", [BackendStatus, App#app.name]),
-  % App started normally
+  %% App started normally
   bees:save(Bee#bee{status = BackendStatus}),
   case Updating of
     true -> From ! {bee_updated_normally, Bee#bee{status = BackendStatus},
@@ -277,7 +284,7 @@ handle_info(Info, StateName, State) ->
   ?LOG(debug, "~p received handle_info: ~p in state ~p",
        [?MODULE, Info, StateName]),
   apply(?MODULE, StateName, [Info, State]).
-  % {next_state, StateName, State}.
+%% {next_state, StateName, State}.
 
 %%--------------------------------------------------------------------
 %% Function: terminate(Reason, StateName, State) -> void()
@@ -309,6 +316,6 @@ stop_error(Msg, #state{from = From, caller = Caller,
   From ! Tuple,
   {stop, normal, State}.
 
-% a name
+%% a name
 registered_name(#app{name = Name}) ->
   list_to_atom(lists:flatten(["app_launcher_fsm", Name])).

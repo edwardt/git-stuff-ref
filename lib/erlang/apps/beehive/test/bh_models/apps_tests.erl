@@ -4,7 +4,6 @@
 
 setup() ->
   bh_test_util:setup(bee),
-  timer:sleep(100),
   ok.
 
 teardown(_X) ->

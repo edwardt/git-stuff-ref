@@ -4,7 +4,8 @@
 
 all_test_() ->
                                                 % Add the router ebin
-  RootDir = filename:dirname(filename:dirname((filename:dirname(code:which(?MODULE))))),
+  RootDir =
+    filename:dirname(filename:dirname(filename:dirname(code:which(?MODULE)))),
   code:add_path(filename:join([RootDir, "beehive_router", "ebin"])),
 
   {inparallel,
@@ -33,9 +34,13 @@ stress_apps() ->
   lists:map(fun({_RealApp, Bee}) ->
                 {ok, B, Socket} = bee_store:get_bee(Bee#bee.app_name),
                 gen_tcp:close(Socket),
-                {ok, _, ReturnedData} = bh_test_util:fetch_url(get, [{host, B#bee.host}, {port, B#bee.port}, {path, "/"}]),
+                {ok, _, ReturnedData} =
+                  bh_test_util:fetch_url(get, [{host, B#bee.host},
+                                               {port, B#bee.port},
+                                               {path, "/"}]),
                 Body = hd(lists:reverse(ReturnedData)),
-                ?assertEqual(lists:flatten(["Hello World ", B#bee.app_name]), Body)
+                ?assertEqual(lists:flatten(["Hello World ", B#bee.app_name]),
+                             Body)
             end, lists:reverse(Bees)),
                                                 % Cleanup
   terminate_bees(Bees),
@@ -57,7 +62,6 @@ start_multiple_bees_for_an_app() ->
   ?assertEqual(Num, length(bees:find_all_by_name(Name))),
 
   terminate_bees(Bees),
-  timer:sleep(100),
   passed.
 
                                                 % HELPERS

@@ -74,12 +74,12 @@ git_clone() ->
   Rev = "7b6221ef298d26167e4ba5da13e55b9af57274e7",
   Pid = spawn(fun() -> responding_loop([]) end),
   beehive_bee_object:clone([{revision, Rev}|app_proplist()], Pid),
-  timer:sleep(500),
+  timer:sleep(200),
   ?assertEqual(Rev, get_current_revision(git)),
 
   % Do run it with an after command
   beehive_bee_object:clone([{post, "touch NEW_FILE"}|app_proplist()]),
-  timer:sleep(200), % let it work
+  timer:sleep(100), % let it work
   ReposBundleDir = filename:join([related_dir(), "squashed", "beehive_bee_object_test_app"]),
   os:cmd(["ls ", ReposBundleDir]),
   ?assert(filelib:is_file(filename:join([ReposBundleDir, "NEW_FILE"]))),
@@ -151,7 +151,7 @@ bundle_template() ->
 responding_from() ->
   Pid = spawn(fun() -> responding_loop([]) end),
   beehive_bee_object:bundle([{type, rails}|app_proplist()], Pid),
-  timer:sleep(500),
+  timer:sleep(200),
   Pid ! {acc, self()},
   O1 = receive
     {ok, Data} -> Data
@@ -177,7 +177,7 @@ ls_bee() ->
         erlang:display({error, Reason});
       X ->
         erlang:display({bundling,got,X})
-      after 1000 -> ok
+      after 200 -> ok
     end
   end,
   F(F),
@@ -212,7 +212,7 @@ start_t() ->
     beehive_bee_object:start(#app{template=rack,
                                   name="beehive_bee_object_test_app"},
                              Port, Pid),
-  timer:sleep(1500),
+  timer:sleep(500),
   case catch gen_tcp:connect(Host, Port, [binary]) of
     {ok, Sock} ->
       gen_tcp:close(Sock),
@@ -228,10 +228,10 @@ start_t_with_deploy_branch() ->
   Host = "127.0.0.1",
   Port = 10100,
   setup_populated_repo("app_with_branch"),
-  io:format(os:cmd("ls /tmp/beehive/test/git_repos")),
   beehive_bee_object:bundle([{template, rack},
                              {branch, "deploy"}|
                              app_proplist("app_with_branch")]),
+
   Pid = spawn(fun() -> responding_loop([]) end),
   {started, BeeObject} =
     beehive_bee_object:start(#app{template=rack,
@@ -275,7 +275,7 @@ stop_t() ->
   timer:sleep(100),
   Q = beehive_bee_object:stop(Name, Pid),
   ?DEBUG_PRINT({beehive_bee_object,stop,Q,BeeObject#bee_object.pid,Name,Pid}),
-  timer:sleep(500),
+  timer:sleep(300),
   GenTcpOut = gen_tcp:connect(Host, Port, [binary]),
   ?assertMatch({ok, _},  GenTcpOut),
   gen_tcp:close(element(2, GenTcpOut)),
@@ -294,7 +294,7 @@ cleanup_t() ->
 
 send_t() ->
   beehive_bee_object:bundle([{type, rack}|app_proplist()]),
-  timer:sleep(500),
+  timer:sleep(200),
   BeeObject = beehive_bee_object:get_bee_object(node(self()), "beehive_bee_object_test_app"),
   ?assertEqual(rack, BeeObject#bee_object.template),
   BeeFile = BeeObject#bee_object.bee_file,

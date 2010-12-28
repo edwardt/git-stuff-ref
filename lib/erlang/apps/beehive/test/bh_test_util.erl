@@ -35,7 +35,6 @@ setup(Proplist) when is_list(Proplist) ->
   %% erlang:display({beehive_db_srv, init_databases, start}),
   %% beehive_db_srv:init_databases(),
   %% erlang:display({beehive_db_srv, init_databases, done}),
-  timer:sleep(200),
   %% We don't need any error output here
   inets:start(),
   ok;
