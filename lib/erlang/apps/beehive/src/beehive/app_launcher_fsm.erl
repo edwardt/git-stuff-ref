@@ -310,5 +310,5 @@ stop_error(Msg, #state{from = From, caller = Caller,
   {stop, Tuple, State}.
 
 % a name
-registered_name(#app{name = Name} = App) when is_record(App, app) ->
+registered_name(#app{name = Name}) ->
   list_to_atom(lists:flatten(["app_launcher_fsm", Name])).

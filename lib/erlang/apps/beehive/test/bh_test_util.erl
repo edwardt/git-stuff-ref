@@ -199,7 +199,7 @@ parse_json_struct({Key, Value}) ->
 parse_json_struct(List) when is_list(List) ->
   lists:map( fun(E) -> parse_json_struct(E) end, List);
 parse_json_struct(Binary) when is_binary(Binary) ->  binary_to_list(Binary);
-parse_json_struct(Int) when is_integer(Int) -> Int.
+parse_json_struct(Else) ->  Else.
 
 replace_repo_with_fixture(RepoPath) ->
   Command = lists:append(["rm -rf ", RepoPath, " && cp -r ",
