@@ -288,8 +288,7 @@ handle_info(Info, StateName, State) ->
 %%--------------------------------------------------------------------
 terminate(_Reason, _StateName, #state{app = App} = _State) ->
   ?LOG(debug, "unregister_name for app: ~p", [registered_name(App)]),
-  ok = global:unregister_name(registered_name(App)),
-  ok.
+  ok = global:unregister_name(registered_name(App)).
 
 %%--------------------------------------------------------------------
 %% Function:
@@ -308,6 +307,7 @@ stop_error(Msg, #state{from = From, caller = Caller,
            [{app, App}, {bee, Bee},
             {output, lists:reverse(Output)}, {caller, Caller}]},
   From ! Tuple,
+  Caller ! Tuple,
   {stop, Tuple, State}.
 
 % a name

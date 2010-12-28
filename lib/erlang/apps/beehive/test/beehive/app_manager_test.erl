@@ -4,14 +4,14 @@
 
 all_test_app_manager_test_() ->
   bh_test_util:setup(),
-  {timeout, 6000,
+  {timeout, 10000,
     [
         fun instance/0,
         fun add_application/0,
         fun add_populated_repo/0,
         fun spawn_update_bee_status/0,
         fun start_new_instance_t/0,
-        % fun start_new_instance_t_failing_app/0,
+        fun start_new_instance_t_failing_app/0,
         fun teardown_an_instance_t/0,
         fun cleanup/0
       ]
@@ -49,7 +49,7 @@ spawn_update_bee_status() ->
 % Starting and stopping
 start_new_instance_t() ->
   TheApp = apps:find_by_name(?APP_NAME),
-  {ok, App, Bee} = start_dummy_app(TheApp, self()),
+  {ok, App, Bee} = start_dummy_app(TheApp),
   case try_to_fetch_url_or_retry(get, [{host, Bee#bee.host}, {port, Bee#bee.port}, {path, "/"}], 20) of
     {ok, _Headers, Body} ->
       ?assertEqual("Hello World app-mgr-test", hd(lists:reverse(Body))),
@@ -61,15 +61,12 @@ start_new_instance_t() ->
 
 
 
-%% TODO: Figure out how to do this test without external git repos.
+%% This testcase does not get a populated repository like the above step
 start_new_instance_t_failing_app() ->
-  ?assert(false),
   bh_test_util:delete_all(app),
   DummyApp = bh_test_util:dummy_app(),
   {error, ErrorObj} = start_dummy_app(
-    DummyApp#app{%%repo_url = "http://this.does/not/exist",
-                 name = "doesnt_exist"},
-  self()),
+                        DummyApp#app{name = "doesnt_exist"}),
   % It should fail when fetching
   ?assertEqual(ErrorObj#app_error.stage, fetching),
   ?assertEqual(ErrorObj#app_error.exit_status, 128),
@@ -94,8 +91,7 @@ teardown_an_instance_t() ->
   end,
   passed.
 
-start_dummy_app(From) -> start_dummy_app(bh_test_util:dummy_app(), From).
-start_dummy_app(App, _From) ->
+start_dummy_app(App) ->
   app_manager:request_to_start_new_bee_by_app(App, self()),
   receive
     {bee_started_normally, Bee, _App} ->
@@ -106,7 +102,7 @@ start_dummy_app(App, _From) ->
     X ->
       erlang:display({start_dummy_app, X}),
       X
-    after 9000 ->
+    after 3000 ->
       erlang:display({timeout})
   end.
 
