@@ -24,6 +24,7 @@
 
 -include("common.hrl").
 -define(LOCAL_REPO_ROOT, ?BEEHIVE_HOME ++ "/git_repos").
+-define(TEMPLATE_ARG, "--template=" ++ filename:absname(?BH_ROOT) ++ "/priv/git/templates").
 
 -record(state, {repo_dir}).
 
@@ -77,7 +78,8 @@ init(_Args) ->
 
 handle_call({create, Name}, _From, State) ->
   RepoName = Name ++ ".git",
-  Status = run_git_command(["init", "--bare", RepoName], State#state.repo_dir),
+  run_git_command(["init", "--bare", ?TEMPLATE_ARG , RepoName],
+                  State#state.repo_dir),
   {reply, ok, State};
 handle_call({add_user, Username, Name}, _From, State) ->
   {reply, ok, State};
