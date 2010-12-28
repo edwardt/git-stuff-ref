@@ -307,7 +307,7 @@ stop_error(Msg, #state{from = From, caller = Caller,
            [{app, App}, {bee, Bee},
             {output, lists:reverse(Output)}, {caller, Caller}]},
   From ! Tuple,
-  {stop, Tuple, State}.
+  {stop, normal, State}.
 
 % a name
 registered_name(#app{name = Name}) ->
