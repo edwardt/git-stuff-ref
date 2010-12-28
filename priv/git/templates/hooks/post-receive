@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+#
+# If master is updated, we'll call BH and ask for a restart.
+
+puts "Running post-receive hook on the server."
+
+head = $stdin.read.split(" ").last
+if head =~ /master/
+  puts "Master branch updated, asking beehive to restart the app..."
+  name = File.dirname(File.expand_path(__FILE__)).split("/")[-2]
+  if name =~ /\.git\Z/
+    name = name[0, name.length - 4]
+  end
+  puts `curl "http://localhost:4999/apps/#{name}/restart"`
+end
