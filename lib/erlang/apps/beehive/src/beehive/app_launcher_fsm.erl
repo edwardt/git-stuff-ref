@@ -307,7 +307,6 @@ stop_error(Msg, #state{from = From, caller = Caller,
            [{app, App}, {bee, Bee},
             {output, lists:reverse(Output)}, {caller, Caller}]},
   From ! Tuple,
-  Caller ! Tuple,
   {stop, Tuple, State}.
 
 % a name

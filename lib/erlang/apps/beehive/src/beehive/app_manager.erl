@@ -398,7 +398,7 @@ handle_info({app_launcher_fsm, error, {StateName, Code}, Props}, State) ->
   App = proplists:get_value(app, Props),
   Output = proplists:get_value(output, Props),
   Bee = proplists:get_value(bee, Props),
-  From = proplists:get_value(from, Props),
+  From = proplists:get_value(caller, Props),
 
   Error = #app_error{
     stage = StateName,
@@ -406,6 +406,7 @@ handle_info({app_launcher_fsm, error, {StateName, Code}, Props}, State) ->
     exit_status = Code, % Erp
     timestamp = date_util:now_to_seconds()
   },
+
   ?LOG(debug, "app_manager caught error: ~p", [App, StateName, Code]),
   {ok, _NewApp} = apps:save(App#app{latest_error = Error}),
 
