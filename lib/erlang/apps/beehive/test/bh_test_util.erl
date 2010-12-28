@@ -13,35 +13,35 @@ setup() ->
   setup([]).
 
 setup(Proplist) when is_list(Proplist) ->
-  Dir = filename:dirname(filename:dirname(code:which(?MODULE))),
-  ConfigFile = filename:join([Dir, "test", "fixtures", "beehive.cfg"]),
+  %% only run this setup if we don't have apps loaded
+  case application:get_application(sasl) of
+    undefined ->
+      Dir = filename:dirname(filename:dirname(code:which(?MODULE))),
+      ConfigFile = filename:join([Dir, "test", "fixtures", "beehive.cfg"]),
 
-  application:set_env(beehive, node_type,
-                      proplists:get_value(node_type, Proplist, test_type)),
-  application:set_env(beehive, config_file,
-                      proplists:get_value(config_file, Proplist, ConfigFile)),
-  application:set_env(beehive, beehive_home,
-                      proplists:get_value(beehive_home, Proplist,
-                                          "/tmp/beehive/test")),
-  application:set_env(beehive, database_dir,
-                      proplists:get_value(database_dir, Proplist,
-                                          "/tmp/beehive/test/test_db")),
-  GlitterConfig = filename:join([Dir, "test", "gitolite-admin",
-                                 "conf", "gitolite.conf"]),
-  application:set_env(glitter, config_file, GlitterConfig),
-  application:start(sasl),
-  beehive:start([{beehive_db_srv, testing}]),
+      application:set_env(beehive, node_type,
+                          proplists:get_value(node_type, Proplist, test_type)),
+      application:set_env(beehive, config_file,
+                          proplists:get_value(config_file, Proplist, ConfigFile)),
+      application:set_env(beehive, beehive_home,
+                          proplists:get_value(beehive_home, Proplist,
+                                              "/tmp/beehive/test")),
+      application:set_env(beehive, database_dir,
+                          proplists:get_value(database_dir, Proplist,
+                                              "/tmp/beehive/test/test_db")),
+      GlitterConfig = filename:join([Dir, "test", "gitolite-admin",
+                                     "conf", "gitolite.conf"]),
+      application:set_env(glitter, config_file, GlitterConfig),
+      application:start(sasl),
+      %% We don't need any error output here.
+      beehive:start([{beehive_db_srv, testing}]),
 
-  %% erlang:display({beehive_db_srv, init_databases, start}),
-  %% beehive_db_srv:init_databases(),
-  %% erlang:display({beehive_db_srv, init_databases, done}),
-  %% We don't need any error output here
-  inets:start(),
-  ok;
+      inets:start();
+    {ok, _} -> ok
+  end;
+
 
 setup(Table) ->
-  %% beehive_db_srv:start_link(),
-  %% application:start(sasl),
   setup(),
   clear_table(Table),
   ok.
@@ -103,7 +103,7 @@ request(Sock, Acc) ->
       %% If there is no activity for a while and the socket has not
       %% already closed, we'll assume that the connection is tired and
       %% should close, so we'll close it
-  after 1000 ->
+  after 800 ->
       {error, timeout}
   end.
 
@@ -111,20 +111,12 @@ parse_http_request(Acc) ->
   [Headers|Body] = string:tokens(Acc, "\r\n"),
   {ok, Headers, Body}.
 
-teardown() ->
-  application:set_env(beehive, beehive_home, "/tmp/beehive/test"),
-  beehive:stop(),
-  ok.
-
-clear_table(Table) ->
-  beehive_db_srv:delete_all(Table),
-  ok.
-
 start(Count)      -> start(Count, example_cluster_srv, 0, []).
 start(Count, Mod) -> start(Count, Mod, 0, []).
 start(Count, _Mod, Count, Acc) -> {ok, Acc};
 start(Count, Mod, CurrentCount, Acc) ->
-  Name = erlang:list_to_atom(lists:flatten(["node", erlang:integer_to_list(CurrentCount)])),
+  Name = erlang:list_to_atom(
+           lists:flatten(["node", erlang:integer_to_list(CurrentCount)])),
   Seed = case erlang:length(Acc) of
            0 -> undefined;
            _ -> whereis(erlang:hd(Acc))
@@ -181,11 +173,11 @@ create_user(NewUser) ->
 
 %% Utils
 delete_all(Table) ->
-  Pluralized =
-    erlang:list_to_atom(lists:append([erlang:atom_to_list(Table), "s"])),
-  lists:map(fun(O) ->
-                Pluralized:delete(O)
-            end, Pluralized:all()).
+  clear_table(Table).
+
+clear_table(Table) ->
+  beehive_db_srv:delete_all(Table),
+  ok.
 
 response_json(Response) ->
   Json = lists:last(Response),
