@@ -528,14 +528,6 @@ run_hook_action_str(CmdStr,
       end
   end.
 
-%% Attempt to extract the type of the vcs from the url
-check_type_from_the_url_string(_Str, []) -> unknown;
-check_type_from_the_url_string(Str, [H|Rest]) ->
-  case string:str(Str, H) of
-    0 -> check_type_from_the_url_string(Str, Rest);
-    _ -> H
-  end.
-
 %% Ensure the repos exists with the current revision clone
 ensure_repos_exists(#bee_object{bundle_dir = BundleDir} = BeeObject, From) ->
   ?LOG(debug, "ensure_repos_exists on directory: ~p is ~p",
@@ -549,8 +541,7 @@ ensure_repos_exists(#bee_object{bundle_dir = BundleDir} = BeeObject, From) ->
 clone_repos(#bee_object{repo_url = undefined} = BeeObject, From) ->
   Repo = beehive_repository:clone_url(BeeObject#bee_object.name),
   clone_repos(BeeObject#bee_object{ repo_url = Repo }, From);
-clone_repos(#bee_object{bundle_dir = BundleDir, repo_url = RepoUrl} = BeeObject,
-            From)   ->
+clone_repos(#bee_object{bundle_dir = BundleDir} = BeeObject, From)   ->
   case proplists:get_value(clone, config_props(git)) of
     undefined -> throw({error, action_not_defined, clone});
     FoundAction ->

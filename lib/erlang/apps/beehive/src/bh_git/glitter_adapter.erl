@@ -74,14 +74,14 @@ handle_call({create, Name}, _From, State) ->
   Resp = glitter:add_repos(Name),
   {reply, Resp, State};
 handle_call({add_user, Username, Name}, _From, State) ->
-  Resp = glitter:add_user_to_repos({Username, "RW+"}, Name),
+  glitter:add_user_to_repos({Username, "RW+"}, Name),
   {reply, ok, State};
 handle_call({remove_user, Username, Name}, _From, State) ->
-  Resp = glitter:remove_user_from_repos(Username, Name),
+  glitter:remove_user_from_repos(Username, Name),
   {reply, ok, State};
-handle_call({clone, Name, Path}, _From, State) ->
+handle_call({clone, _Name, _Path}, _From, State) ->
   {reply, ok, State};
-handle_call({add_pubkey, Name, Key}, _From, State) ->
+handle_call({add_pubkey, _Name, _Key}, _From, State) ->
   {reply, ok, State};
 handle_call(_Request, _From, State) ->
   Reply = ok,

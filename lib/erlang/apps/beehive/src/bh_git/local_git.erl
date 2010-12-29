@@ -81,16 +81,16 @@ handle_call({create, Name}, _From, State) ->
   run_git_command(["init", "--bare", ?TEMPLATE_ARG , RepoName],
                   State#state.repo_dir),
   {reply, ok, State};
-handle_call({add_user, Username, Name}, _From, State) ->
+handle_call({add_user, _Username, _Name}, _From, State) ->
   {reply, ok, State};
-handle_call({remove_user, Username, Name}, _From, State) ->
+handle_call({remove_user, _Username, _Name}, _From, State) ->
   {reply, ok, State};
-handle_call({clone, Name, Path}, _From, State) ->
+handle_call({clone, _Name, _Path}, _From, State) ->
   {reply, ok, State};
 handle_call({clone_url, Name}, _From, State) ->
   Url = filename:join(State#state.repo_dir,  Name ++ ".git"),
   {reply, Url ,State};
-handle_call({add_pubkey, Name, Key}, _From, State) ->
+handle_call({add_pubkey, _Name, _Key}, _From, State) ->
   {reply, ok, State};
 handle_call(_Request, _From, State) ->
   Reply = ok,
@@ -170,7 +170,7 @@ cmd_receive(Port, Out) ->
       {ok, lists:reverse(Out)};
     {Port, {exit_status, N}}  ->
       {error, {N, lists:reverse(Out)}};
-    E ->
+    _ ->
       cmd_receive(Port, Out)
     after 500 ->
       % We don't want it to hang infinitely, so if it does, we'll close it off
