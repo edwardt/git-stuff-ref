@@ -22,6 +22,7 @@
           terminate_app_instances/1,
           add_application/1, add_application/2,
           update_application/2,
+          restart_by_name/1,
           spawn_update_bee_status/3,
           request_to_start_new_bee_by_name/1,
           request_to_start_new_bee_by_name/2,
@@ -104,6 +105,9 @@ request_to_save_app(App) ->
 
 terminate_app_instances(Appname) ->
   gen_server:cast(?SERVER, {terminate_app_instances, Appname}).
+
+restart_by_name(Name) ->
+  gen_server:call(?SERVER, {restart_by_name, Name}).
 
 terminate_all() -> gen_server:cast(?SERVER, {terminate_all}).
 
@@ -208,6 +212,9 @@ handle_call({update_application, Name, ConfigProplist}, From, State) ->
 
 handle_call({request_to_save_app, App}, From, State) ->
   handle_queued_call(fun() -> apps:save(App) end, From, State);
+
+handle_call({restart_by_name, Name}, From, State) ->
+  handle_queued_call(fun() -> apps:restart_by_name(Name) end, From, State);
 
 handle_call({start_new_bee_by_name, Name, Caller}, From, State) ->
   case apps:find_by_name(Name) of
