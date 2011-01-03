@@ -22,6 +22,8 @@ if [ -z "$BEEHIVE_DOMAIN" ]; then
   export BEEHIVE_DOMAIN=`hostname -f`
 fi
 
+export BH_CODE_ROOT=`pwd`
+
 mkdir -p $BEEHIVE_HOME
 
 # Start Beehive
