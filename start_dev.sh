@@ -1,5 +1,19 @@
 #!/bin/sh
 #cd `dirname $0`
+if [ -z $BH_CODE_ROOT ]; then
+    echo "WARNING!!!\nBad things will probably happen if you try to deploy
+repos without setting the following value.\n\n"
+    echo "export BH_CODE_ROOT=`pwd`\n\n"
+    echo "exiting..."
+    exit 1
+elif [ $BH_CODE_ROOT != `pwd` ]; then
+    echo "ACK! WARNING!!!"
+    echo "If you're trying to use repos, terrible things may or may not happen,
+because your BH_CODE_ROOT isn\'t equal to your current directory\n\n"
+    echo "export BH_CODE_ROOT=`pwd`\n\n"
+    echo "exiting..."
+    exit 1
+fi
 
 # Compile
 make compile
@@ -21,8 +35,6 @@ fi
 if [ -z "$BEEHIVE_DOMAIN" ]; then
   export BEEHIVE_DOMAIN=`hostname -f`
 fi
-
-export BH_CODE_ROOT=`pwd`
 
 mkdir -p $BEEHIVE_HOME
 
