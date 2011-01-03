@@ -11,7 +11,7 @@ RUNNER_ETC_DIR=$RUNNER_BASE_DIR/etc
 
 echo $RUNNER_ETC_DIR
 
-NAME_ARG=`grep -e '-[s]*name' $RUNNER_ETC_DIR/vm.args | awk '{print $1}'`
+NAME_ARG=`grep -e '-[s]*name' $RUNNER_ETC_DIR/vm.args | awk '{print $2}'`
 if [ -z "$NAME_ARG" ]; then
     echo "vm.args needs to have either -name or -sname parameter."
     exit 1
@@ -24,4 +24,5 @@ if [ -z "$COOKIE_ARG" ]; then
     exit 1
 fi
 
+cd $RUNNER_SCRIPT_DIR
 erl $COOKIE_ARG -noinput -name rpc -run beehive-rpc restart_app $NAME_ARG $1

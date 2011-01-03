@@ -11,5 +11,11 @@ if head =~ /master/
   if name =~ /\.git\Z/
     name = name[0, name.length - 4]
   end
-  puts `curl "http://localhost:4999/apps/#{name}/restart"`
+  if ENV['BH_CODE_ROOT']
+
+    system "sh #{ENV['BH_CODE_ROOT']}/bin/restart-app.sh #{name}"
+  else
+    puts "Error: $BH_CODE_ROOT must be set on the server.\n
+Contact your Beehive admin about this problem."
+  end
 end
