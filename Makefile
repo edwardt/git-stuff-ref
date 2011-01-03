@@ -21,10 +21,24 @@ clean:
 rel: all
 	@(cp -Rf ./etc ./rel/files/etc)
 	@(make rel_erlang)
-	@(chmod u+x ./rel/beehive/bin/*)
+	@(chmod u+x ./rel/beehive/bin/beehive)
+	@(make rel_message)
 
 rel_erlang:
 	@./rebar generate force=1
+
+rel_message:
+	@echo "\
+Beehive code generated in ./rel/beehive\n\
+*----------------------------------------------------------*\n\
+* IMPORTANT                                                *\n\
+*----------------------------------------------------------*\n\
+To use git commit hooks properly, set the following value.\n\n\
+export BH_CODE_ROOT=`pwd`/rel/beehive\n\n\
+This value will need to always reflect the current root of\n\
+your beehive release.  Otherwise git commit hooks won't know\n\
+where to find scripts to trigger app actions.\n\
+*----------------------------------------------------------*"
 
 doc:
 	@./rebar doc skip_deps=true
