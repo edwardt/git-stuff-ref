@@ -36,6 +36,11 @@ if [ -z "$BEEHIVE_DOMAIN" ]; then
   export BEEHIVE_DOMAIN=`hostname -f`
 fi
 
+if [ -z "$BEEHIVE_REPOSITORY"]
+then
+    export BEEHIVE_REPOSITORY=local_git
+fi
+
 mkdir -p $BEEHIVE_HOME
 
 # Start Beehive

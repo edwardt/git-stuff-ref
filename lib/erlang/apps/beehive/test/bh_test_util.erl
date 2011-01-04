@@ -26,6 +26,8 @@ setup(Proplist) when is_list(Proplist) ->
       application:set_env(beehive, beehive_home,
                           proplists:get_value(beehive_home, Proplist,
                                               "/tmp/beehive/test")),
+      application:set_env(beehive, repository, "local_git"),
+
       application:set_env(beehive, database_dir,
                           proplists:get_value(database_dir, Proplist,
                                               "/tmp/beehive/test/test_db")),

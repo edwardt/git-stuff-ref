@@ -97,7 +97,7 @@ add_user_pubkey(Name, Key) ->
 %% @end
 %%--------------------------------------------------------------------
 start_link() ->
-  gen_server:start_link({local, ?SERVER}, ?MODULE, [local_git], []).
+  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -114,14 +114,15 @@ start_link() ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([Backend]) ->
-  {ok,Pid} = case Backend of
+init(_) ->
+  Adapter = config:search_for_application_value(repository, gitolite),
+  {ok,Pid} = case list_to_atom(Adapter) of
     local_git ->
       gen_server:start(local_git, [], []);
     gitolite ->
       gen_server:start(glitter_adapter, [], [])
   end,
-  {ok, #state{ pid = Pid, name = Backend }}.
+  {ok, #state{ pid = Pid, name = Adapter }}.
 
 
 %%--------------------------------------------------------------------
