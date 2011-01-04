@@ -81,6 +81,10 @@ handle_call({remove_user, Username, Name}, _From, State) ->
   {reply, ok, State};
 handle_call({clone, _Name, _Path}, _From, State) ->
   {reply, ok, State};
+handle_call({clone_url, Name}, _From, State) ->
+  Domain = config:search_for_application_value(domain),
+  Url = lists:flatten(["beehive@",Domain ,":", Name, ".git"]),
+  {reply, Url ,State};
 handle_call({add_pubkey, _Name, _Key}, _From, State) ->
   {reply, ok, State};
 handle_call(_Request, _From, State) ->
