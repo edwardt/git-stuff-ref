@@ -29,7 +29,7 @@ rel_erlang:
 
 rel_message:
 	@echo "\
-Beehive code generated in ./rel/beehive\n\
+Beehive code generated in `pwd`/rel/beehive\n\
 *----------------------------------------------------------*\n\
 * IMPORTANT                                                *\n\
 *----------------------------------------------------------*\n\
