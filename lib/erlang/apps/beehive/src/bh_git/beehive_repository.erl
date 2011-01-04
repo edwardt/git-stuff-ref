@@ -116,7 +116,7 @@ start_link() ->
 %%--------------------------------------------------------------------
 init(_) ->
   Adapter = config:search_for_application_value(repository, gitolite),
-  {ok,Pid} = case list_to_atom(Adapter) of
+  {ok,Pid} = case misc_utils:to_atom(Adapter) of
     local_git ->
       gen_server:start(local_git, [], []);
     gitolite ->
