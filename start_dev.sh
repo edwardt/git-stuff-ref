@@ -46,6 +46,7 @@ mkdir -p $BEEHIVE_HOME
 # Start Beehive
 echo "Starting beehive"
 eval "erl \
+    -setcookie beehive \
     -name beehive@127.0.0.1 \
     -pa deps/*/ebin -pa lib/erlang/apps/*/ebin -pa lib/erlang/apps/*/include  \
     -beehive database_dir '\"$BEEHIVE_HOME/db\"' \
