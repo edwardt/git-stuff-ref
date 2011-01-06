@@ -3,9 +3,9 @@ PACKAGE_VERSION = 0.1
 
 .PHONY: deps compile rel test
 
-all: deps compile
+all: compile
 
-compile:
+compile: deps
 	@./rebar compile
 
 deps:
@@ -37,13 +37,17 @@ Beehive code generated in `pwd`/rel/beehive\n\
 To use git commit hooks properly, set the following value.\n\n\
 code_root: `pwd`/rel/beehive\n\
 \n\
-This should be set in a beehive config file, found at\n\g
+This should be set in a beehive config file, found at\n\
 ~/.beehive.conf or /etc/beehive.conf.  See docs for more info.\
 \n\n\
 This value will need to always reflect the current root of\n\
 your beehive release.  Otherwise git commit hooks won't know\n\
 where to find scripts to trigger app actions.\n\
 *----------------------------------------------------------*"
+
+gitolite_setup:
+	@git clone $(GITOLITE_REPOS_DIR)/gitolite_admin rel/beehive/gitolite
+	@cp priv/git/templates/post-receive ~/.gitolite/hooks/post-receive
 
 doc:
 	@./rebar doc skip_deps=true
@@ -52,7 +56,7 @@ package:
 	@(mkdir -p ./builds)
 	@(tar -C rel -c beehive | gzip > ./builds/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz)
 
-test: deps compile
+test: compile
 	@./test/bootstrap.sh
     ifdef suite
 	@./rebar skip_deps=true eunit suite=$(suite)

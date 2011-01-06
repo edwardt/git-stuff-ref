@@ -1,0 +1,57 @@
+%h2 Guides - Client Gem
+
+%div= link_to("<< Back to guides", "#/guides")
+
+%h3 Installation
+%code gem install beehive_client
+
+%h3 beehive config file
+%div
+  The gem supports a .beehive file in your home directory. 
+  It expects a yaml format, and allows you to set user, password and
+  host fields.  Setting these in the .beehive config file negates the
+  need for command arguments of the same name.
+
+%div
+  Example:
+
+  %pre
+    ---
+    %br
+    host: mybeehive.com:4999
+    %br
+    user: &lt;registered email address&gt;
+    %br
+    password: &lt;password&gt;
+
+  %p 
+    All of these parameters can be supplied as command line arguments as
+    well. Argument details are included in the gem help command.
+
+
+%h3 Commands
+
+%p More details on all commands can be found by using the gem's 'help' command.
+
+%h4 apps
+
+%p Displays the apps that you have access to.
+
+%h4 bees
+
+%p Displays info about the bees running for your apps.
+
+%h4 create
+
+%p Create a new app.
+
+%h4 create_bee
+
+%p 
+  Manually start up a bee for an app.  (Maybe this shouldn't be generally 
+  accessible?  What's the usecase for starting bees like this?)
+
+%h4 restart
+
+%p Restart bees for an app.
+

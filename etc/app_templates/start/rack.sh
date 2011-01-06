@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-echo "Starting rack '$NAME'"
+echo "Starting rack '$NAME' on '$PORT'"
 
 export RACK_ENV=$DEPLOY_ENV
 

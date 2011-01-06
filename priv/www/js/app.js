@@ -9,6 +9,7 @@
     this.use(apps_controller);
     this.use(bees_controller);
     this.use(events_controller);
+    this.use(guides_controller);
     this.use(log_controller);
     this.use(login_controller);
     this.use(overview_controller);

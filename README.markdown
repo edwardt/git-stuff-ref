@@ -14,20 +14,22 @@ Beehive
 
 ## Quickstart ##
 
-    make
     ./start_dev.sh
 
 This will start beehive on your local machine with the root
-/var/lib/beehive. If you want to use a different directory, (such as
-/tmp/beehive) run:
+/tmp/beehive. If you want to use a different directory, (such as
+something less transient like ~/beehive_data) run:
 
-    export BEEHIVE_HOME=/tmp/beehive
+    export BEEHIVE_HOME=~/beehive_data
+
+When starting beehive in a non-dev mode, the beehive root will default
+to /var/lib/beehive.
 
 ## Running tests ##
 
      make test
 
-Make sure you have ruby gems rack and thin installed.  Various tests
+**Make sure you have ruby gems rack and thin installed.**  Various tests
 depend up them, and tests likely won't complete properly without them.
 
 How it works
@@ -82,6 +84,7 @@ are READMEs in each of the appropriate directories.
   * Mad props for the super smart folks at [Heroku](http://heroku.com) for their sweet architecture ideas and for providing such a rad interface and an unmatched user experience.
   * [Daniel Fischer](http://www.danielfischer.com/) for his web design help
   * AT&T for their support of the project
+  * Beehive is a part of the [Poolparty](http://poolpartyrb.com) project suite.
 
 ### Note on Patches/Pull Requests
  

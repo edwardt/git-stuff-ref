@@ -153,8 +153,12 @@ del {
   color: #666; }
 
 pre {
-  margin: 1.5em 0;
-  white-space: pre; }
+  margin: 1em 0;
+  padding: 0.5em;
+  white-space: pre;
+  border: 1px dotted #666;
+  background-color: #eed;
+}
 
 pre, code, tt {
   font: 1em 'andale mono', 'lucida console', monospace;
