@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : bh_storage_sup.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  Wed Dec  2 21:09:27 PST 2009
 %%%-------------------------------------------------------------------
@@ -45,11 +45,11 @@ start_link(Args) ->
 %% to find out about restart strategy, maximum restart frequency and child
 %% specifications.
 %%--------------------------------------------------------------------
-init(_Args) ->  
+init(_Args) ->
    Children = lists:flatten([
     ?CHILD(beehive_dashboard_srv, worker)
   ]),
-  
+
   {ok,{{one_for_one,5,10}, Children}}.
 
 %%====================================================================
