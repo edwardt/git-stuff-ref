@@ -92,6 +92,24 @@ engage_bee(ClientSock,
            Req, Timeout, 
            {ok, #bee{host = Host, port = Port}, ServerSock});
  
+  
+engage_bee(ClientSock,
+           _RequestPid,
+           Hostname,
+           _ForwardReq,
+           _Req,
+           {error, Reason}) ->
+  erlang:display({engage_bee,error,Reason}),
+  send_and_terminate(
+    ClientSock, Reason,
+    ?APP_ERROR(404, io_lib:format("Error on ~p: ~p", [Hostname, Reason]))
+  );
+engage_bee(ClientSock, _RequestPid, Hostname, _ForwardReq, _Req, Else) ->
+  send_and_terminate(
+    ClientSock, Else,
+    ?APP_ERROR(404, io_lib:format("Error on ~p: ~p", [Hostname, Else]))
+  ).
+
 engage_bee(ClientSock,
            _RequestPid,
            RoutingKey,
@@ -123,26 +141,7 @@ engage_bee(ClientSock,
 
   NewState = State#state{server_pid = ServerPid, client_pid = ClientPid},
 
-  proxy_loop(NewState);  
-  
-  
-engage_bee(ClientSock,
-           _RequestPid,
-           Hostname,
-           _ForwardReq,
-           _Req,
-           {error, Reason}) ->
-  erlang:display({engage_bee,error,Reason}),
-  send_and_terminate(
-    ClientSock, Reason,
-    ?APP_ERROR(404, io_lib:format("Error on ~p: ~p", [Hostname, Reason]))
-  );
-engage_bee(ClientSock, _RequestPid, Hostname, _ForwardReq, _Req, Else) ->
-  send_and_terminate(
-    ClientSock, Else,
-    ?APP_ERROR(404, io_lib:format("Error on ~p: ~p", [Hostname, Else]))
-  ).
-
+  proxy_loop(NewState).
 % Handle all the proxy functions here
 proxy_loop(#state{client_socket = CSock, server_socket = SSock,
                   server_pid = SPid, client_pid = CPid} = State) ->
