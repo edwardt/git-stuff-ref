@@ -90,7 +90,7 @@ engage_bee(ClientSock,
            RoutingKey,
            ForwardReq,
            Req, Timeout, 
-           {ok, #bee{host = Host, port = Port}, ServerSock});
+           {ok, Bee, ServerSock});
  
   
 engage_bee(ClientSock,
