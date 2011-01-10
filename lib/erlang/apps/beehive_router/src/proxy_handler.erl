@@ -39,6 +39,7 @@ start_link(ClientSock) ->
   Fun = fun() -> proxy_init(ClientSock) end,
   Pid = ?BENCHMARK_LOG("------Spawn-linking proxy_init------",
                        erlang, spawn_link, [Fun]),
+  
   {ok, Pid}.
 
 %% Receive the initial request and socket. Use the packet_decoder (http
@@ -92,7 +93,6 @@ engage_bee(ClientSock,
            Req, Timeout, 
            {ok, Bee, ServerSock});
  
-  
 engage_bee(ClientSock,
            _RequestPid,
            Hostname,
@@ -104,6 +104,7 @@ engage_bee(ClientSock,
     ClientSock, Reason,
     ?APP_ERROR(404, io_lib:format("Error on ~p: ~p", [Hostname, Reason]))
   );
+  
 engage_bee(ClientSock, _RequestPid, Hostname, _ForwardReq, _Req, Else) ->
   send_and_terminate(
     ClientSock, Else,
@@ -116,7 +117,8 @@ engage_bee(ClientSock,
            ForwardReq,
            Req, Timeout, 
            {ok, #bee{host = Host, port = Port} = Bee, ServerSock}) ->
-  ?NOTIFY({bee, used, Bee}),
+  %?NOTIFY({bee, used, Bee}),
+  bh_router_util:notify_manager({bee, used, Bee}),
   % Sending raw request to bee server
   gen_tcp:send(ServerSock, ForwardReq),
 
@@ -202,8 +204,11 @@ terminate1(Reason, #state{server_socket = SSock, client_socket = CSock,
     RealBee1 -> RealBee1
   end,
 
-  ?NOTIFY({bee, ready, RealBee}),
-  ?NOTIFY({bee, closing_stats, RealBee, StatsProplist}),
+  %?NOTIFY({bee, ready, RealBee}),
+  %?NOTIFY({bee, closing_stats, RealBee, StatsProplist}),
+  bh_router_util:notify_manager({bee, ready, RealBee}),
+  bh_router_util:notify_manager({bee, closing_stats, RealBee, StatsProplist}),
+ 
   gen_tcp:close(SSock), gen_tcp:close(CSock),
   exit(Reason).
 
