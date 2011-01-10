@@ -83,11 +83,26 @@ engage_bee(ClientSock,
            ForwardReq,
            Req,
            {ok, #bee{host = Host, port = Port} = Bee, ServerSock}) ->
+
+  Timeout = 10,
+  engage_bee(ClientSock,
+           _RequestPid,
+           RoutingKey,
+           ForwardReq,
+           Req, Timeout, 
+           {ok, #bee{host = Host, port = Port}, ServerSock});
+ 
+engage_bee(ClientSock,
+           _RequestPid,
+           RoutingKey,
+           ForwardReq,
+           Req, Timeout, 
+           {ok, #bee{host = Host, port = Port} = Bee, ServerSock}) ->
   ?NOTIFY({bee, used, Bee}),
   % Sending raw request to bee server
   gen_tcp:send(ServerSock, ForwardReq),
 
-  Timeout = timer:seconds(10),
+  Timeout1 = timer:seconds(Timeout),
   ProxyPid = self(),
 
   State = #state{
@@ -98,7 +113,7 @@ engage_bee(ClientSock,
       routing_key = RoutingKey,
       host = Host,
       port = Port,
-      timeout = Timeout,
+      timeout = Timeout1,
       bee = Bee},
 
   ClientPid =
@@ -108,7 +123,9 @@ engage_bee(ClientSock,
 
   NewState = State#state{server_pid = ServerPid, client_pid = ClientPid},
 
-  proxy_loop(NewState);
+  proxy_loop(NewState);  
+  
+  
 engage_bee(ClientSock,
            _RequestPid,
            Hostname,
