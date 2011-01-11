@@ -80,18 +80,10 @@ read(ConfigFile) ->
 %%--------------------------------------------------------------------
 get(Key) -> get(Key, read()).
 get(_Key, []) -> {error, not_found};
-get(Key, [{Key, Value} | _Config]) -> {ok, Value};
-get(Key, [{_Other, _Value} | Config]) -> get(Key, Config).
-
-%%--------------------------------------------------------------------
-%% Function: get_or_default (Key, Default, Config) -> Value
-%% Description: Get the config element or default
-%%--------------------------------------------------------------------
-get_or_default(Key, Default, Config) ->
-  case get(Key, Config) of
-    {ok, undefined} -> Default;
-    {ok, V} -> V;
-    {error, not_found} -> Default
+get(Key, Config) ->
+  case proplists:get_value(Key, Config) of
+    undefined -> {error, not_found};
+    V -> {ok, V}
   end.
 
 %%--------------------------------------------------------------------
@@ -101,7 +93,7 @@ get_or_default(Key, Default, Config) ->
 find_config_file() ->
   case find_config_file_in_app() of
     false ->
-      case find_config_file_in_beehive_root() of
+      case find_config_file_in_user_dir() of
         false ->
           case find_config_file_in_etc() of
             false -> undefined;
@@ -122,17 +114,9 @@ find_config_file_in_app() ->
     undefined -> false
   end.
 
-find_config_file_in_beehive_root() ->
-  case is_file(?BEEHIVE_DIR("etc/beehive.conf")) of
-    false -> false;
-    E -> E
-  end.
+find_config_file_in_user_dir() -> is_file("~/.beehive.conf").
 
-find_config_file_in_etc() ->
-  case is_file("/etc/beehive.conf") of
-    false -> false;
-    E -> E
-  end.
+find_config_file_in_etc() -> is_file("/etc/beehive.conf").
 
 is_file(Path) ->
   case filelib:is_file(Path) of
