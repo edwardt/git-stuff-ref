@@ -17,6 +17,7 @@ check:
 
 clean:
 	@./rebar clean
+	@rm -rf ./rel/files/etc
 
 rel: all
 	@(cp -Rf ./etc ./rel/files/etc)

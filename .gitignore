@@ -10,6 +10,7 @@ logs
 pkg
 deps
 rel/beehive
+rel/files/etc
 node.log
 .eunit
 gproc_dist_beehive@127.0.0.1
