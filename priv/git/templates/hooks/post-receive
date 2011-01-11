@@ -11,11 +11,10 @@ if head =~ /master/
   if name =~ /\.git\Z/
     name = name[0, name.length - 4]
   end
-  if ENV['BH_CODE_ROOT']
-
-    system "sh #{ENV['BH_CODE_ROOT']}/bin/restart-app.sh #{name}"
+  if ENV['BEEHIVE_CODE_ROOT']
+    system "sh #{ENV['BEEHIVE_CODE_ROOT']}/bin/restart-app.sh #{name}"
   else
-    puts "Error: $BH_CODE_ROOT must be set on the server.\n
+    puts "Error: beehive code_root must be set on the server.\n
 Contact your Beehive admin about this problem."
   end
 end
