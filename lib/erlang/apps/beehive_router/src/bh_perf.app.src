@@ -1,0 +1,8 @@
+{application, bh_perf,
+ [
+  {vsn, "0.1"},
+  {description, "Performance collector"},
+  {applications, [kernel, stdlib, osmon]},
+  {mod, {bh_perf_app, []}},
+  {env, []}
+ ]}.
