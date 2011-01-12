@@ -11,15 +11,6 @@
     %input{ type: "text", name: "name" }    
     %br
     
-    %label App Repo URL:
-    %input{ type: "text", name: "repo_url" }
-    %br
-    
-    %label VCS type
-    %select{name: "repo_type"}
-      :each type in vcs_types
-        %option= type
-    
     %label App Template:
     %select{name: "template"}
       :each type in app_types

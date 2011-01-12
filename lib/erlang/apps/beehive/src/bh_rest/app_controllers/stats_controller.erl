@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : stats_controller.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  Thu Nov  5 02:14:23 PST 2009
 %%%-------------------------------------------------------------------
@@ -13,7 +13,7 @@
 -include ("http.hrl").
 
 -export ([get/2, post/2, put/2, delete/2]).
-    
+
 % PATH HANDLING
 get([], _Data) ->
   format_proxy_state();
@@ -22,10 +22,9 @@ get(_UnsupportedPath, _Data) ->
   "GET".
 
 post("/new", Data) ->
-  
+
   Name      = proplists:get_value(name, Data),
   Path      = proplists:get_value(path, Data),
-  Url       = proplists:get_value(repo_url, Data),
   Hostname  = proplists:get_value(hostname, Data),
   Instances = proplists:get_value(instances, Data),
   Timeout   = proplists:get_value(timeout, Data),
@@ -34,11 +33,10 @@ post("/new", Data) ->
   MinInst   = proplists:get_value(min_instances, Data),
   StartCmd  = proplists:get_value(start_command, Data),
   StopCmd   = proplists:get_value(stop_command, Data),
-  
+
   ConfigProplist = [
     {name, Name},
     {path, Path},
-    {repo_url, Url},
     {hostname, Hostname},
     {instances, Instances},
     {timeout, Timeout},
@@ -47,15 +45,15 @@ post("/new", Data) ->
     {start_command, StartCmd},
     {stop_command, StopCmd}
   ],
-  
+
   apps:create(ConfigProplist),
-  
+
   Out = {added, misc_utils:to_bin(Name)},
   {json, 200, [], Out};
-  
+
 post(_UnsupportedPath, _Data) ->
   "POST!!!".
-  
+
 put(_Path, _Data) -> "unhandled".
 delete(_Path, _Data) -> "unhandled".
 
@@ -92,7 +90,7 @@ format_bee_list([B|Bs], Acc) ->
     average_req_time = AvgTime,
     packet_count = PacketCount,
     bytes_received = RecvBytes
-  } = 
+  } =
     _BackendStat = case bh_bee_stats_srv:bee_dump(B#bee.id) of
     [{_Name, Q}|_] -> Q;
     _ -> bh_bee_stats_srv:new_bee_stat()
@@ -115,4 +113,4 @@ format_bee_list([B|Bs], Acc) ->
     {"packet_count", PacketCount},
     {"bytes_received", RecvBytes}
   ]|Acc]).
-      
+

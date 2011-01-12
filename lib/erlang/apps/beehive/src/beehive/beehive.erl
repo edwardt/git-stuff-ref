@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : beehive.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  Thu Oct  8 18:29:29 PDT 2009
 %%%-------------------------------------------------------------------
@@ -15,7 +15,7 @@
 
 start() -> start([], []).
 start(Args) -> start([], Args).
-start(_Type, Args) -> 
+start(_Type, Args) ->
   beehive_sup:start_link(Args).
 
 stop() -> stop([]).

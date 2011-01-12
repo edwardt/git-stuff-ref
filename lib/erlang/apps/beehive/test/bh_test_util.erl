@@ -13,33 +13,37 @@ setup() ->
   setup([]).
 
 setup(Proplist) when is_list(Proplist) ->
-  Dir = filename:dirname(filename:dirname(code:which(?MODULE))),
-  ConfigFile = filename:join([Dir, "test", "fixtures", "beehive.cfg"]),
+  %% only run this setup if we don't have apps loaded
+  case application:get_application(sasl) of
+    undefined ->
+      Dir = filename:dirname(filename:dirname(code:which(?MODULE))),
+      ConfigFile = filename:join([Dir, "test", "fixtures", "beehive.cfg"]),
 
-  application:set_env(beehive, node_type,
-                      proplists:get_value(node_type, Proplist, test_type)),
-  application:set_env(beehive, config_file,
-                      proplists:get_value(config_file, Proplist, ConfigFile)),
-  application:set_env(beehive, beehive_home,
-                      proplists:get_value(beehive_home, Proplist,
-                                          "/tmp/beehive/test")),
-  application:set_env(beehive, database_dir,
-                      proplists:get_value(database_dir, Proplist,
-                                          "/tmp/beehive/test/test_db")),
-  application:start(sasl),
-  beehive:start([{beehive_db_srv, testing}]),
+      application:set_env(beehive, node_type,
+                          proplists:get_value(node_type, Proplist, test_type)),
+      application:set_env(beehive, config_file,
+                          proplists:get_value(config_file, Proplist, ConfigFile)),
+      application:set_env(beehive, beehive_home,
+                          proplists:get_value(beehive_home, Proplist,
+                                              "/tmp/beehive/test")),
+      application:set_env(beehive, repository, "local_git"),
 
-  %% erlang:display({beehive_db_srv, init_databases, start}),
-  %% beehive_db_srv:init_databases(),
-  %% erlang:display({beehive_db_srv, init_databases, done}),
-  timer:sleep(200),
-  %% We don't need any error output here
-  inets:start(),
-  ok;
+      application:set_env(beehive, database_dir,
+                          proplists:get_value(database_dir, Proplist,
+                                              "/tmp/beehive/test/test_db")),
+      GlitterConfig = filename:join([Dir, "test", "gitolite-admin",
+                                     "conf", "gitolite.conf"]),
+      application:set_env(glitter, config_file, GlitterConfig),
+      application:start(sasl),
+      %% We don't need any error output here.
+      beehive:start([{beehive_db_srv, testing}]),
+
+      inets:start();
+    {ok, _} -> ok
+  end;
+
 
 setup(Table) ->
-  %% beehive_db_srv:start_link(),
-  %% application:start(sasl),
   setup(),
   clear_table(Table),
   ok.
@@ -101,7 +105,7 @@ request(Sock, Acc) ->
       %% If there is no activity for a while and the socket has not
       %% already closed, we'll assume that the connection is tired and
       %% should close, so we'll close it
-  after 1000 ->
+  after 800 ->
       {error, timeout}
   end.
 
@@ -109,20 +113,12 @@ parse_http_request(Acc) ->
   [Headers|Body] = string:tokens(Acc, "\r\n"),
   {ok, Headers, Body}.
 
-teardown() ->
-  application:set_env(beehive, beehive_home, "/tmp/beehive/test"),
-  beehive:stop(),
-  ok.
-
-clear_table(Table) ->
-  beehive_db_srv:delete_all(Table),
-  ok.
-
 start(Count)      -> start(Count, example_cluster_srv, 0, []).
 start(Count, Mod) -> start(Count, Mod, 0, []).
 start(Count, _Mod, Count, Acc) -> {ok, Acc};
 start(Count, Mod, CurrentCount, Acc) ->
-  Name = erlang:list_to_atom(lists:flatten(["node", erlang:integer_to_list(CurrentCount)])),
+  Name = erlang:list_to_atom(
+           lists:flatten(["node", erlang:integer_to_list(CurrentCount)])),
   Seed = case erlang:length(Acc) of
            0 -> undefined;
            _ -> whereis(erlang:hd(Acc))
@@ -145,12 +141,15 @@ context_run(Count, Fun) ->
   shutdown(Nodes).
 
 %% FIXTURE
+dummy_git_repos_path() ->
+  filename:join([?BH_ROOT, "test", "fixtures",
+                 "incredibly_simple_rack_app.git"]).
+
 dummy_git_repos_url() ->
-  ReposDir = filename:join([?BH_ROOT, "test", "fixtures", "incredibly_simple_rack_app.git"]),
-  lists:concat(["file://", ReposDir]).
+  lists:concat(["file://", dummy_git_repos_path()]).
 
 dummy_app(Name) ->
-  apps:new(#app{name = Name, repo_url = dummy_git_repos_url()}).
+  apps:new(#app{name = Name}).
 dummy_app() -> dummy_app("test_app").
 
 dummy_user() ->
@@ -176,11 +175,11 @@ create_user(NewUser) ->
 
 %% Utils
 delete_all(Table) ->
-  Pluralized =
-    erlang:list_to_atom(lists:append([erlang:atom_to_list(Table), "s"])),
-  lists:map(fun(O) ->
-                Pluralized:delete(O)
-            end, Pluralized:all()).
+  clear_table(Table).
+
+clear_table(Table) ->
+  beehive_db_srv:delete_all(Table),
+  ok.
 
 response_json(Response) ->
   Json = lists:last(Response),
@@ -191,9 +190,12 @@ parse_json_struct({struct, List}) ->  parse_json_struct(List);
 parse_json_struct({Key, Value}) ->
   {binary_to_list(Key), parse_json_struct(Value) };
 parse_json_struct(List) when is_list(List) ->
-  lists:map( fun(E) ->
-                 parse_json_struct(E)
-             end, List);
+  lists:map( fun(E) -> parse_json_struct(E) end, List);
 parse_json_struct(Binary) when is_binary(Binary) ->  binary_to_list(Binary);
-parse_json_struct(Int) when is_integer(Int) -> Int.
+parse_json_struct(Else) ->  Else.
 
+replace_repo_with_fixture(RepoPath) ->
+  Command = lists:append(["rm -rf ", RepoPath, " && cp -r ",
+                          bh_test_util:dummy_git_repos_path(), " ",
+                          RepoPath]),
+  os:cmd(Command).

@@ -89,13 +89,8 @@ validate_bee() ->
 
 delete_bee() ->
   bh_test_util:setup(bee),
-  ?assertMatch([], bees:all()),
   {ok, Bee} = bees:create(#bee{app_name = "boxcar"}),
   ?assertMatch([Bee], bees:all()),
   bees:delete(Bee),
-  ?assertMatch([], bees:all()),
-  {ok, BeeName} = bees:create(#bee{app_name = "nametest"}),
-  ?assertMatch([BeeName], bees:all()),
-  bees:delete("nametest"),
   ?assertMatch([], bees:all()),
   passed.

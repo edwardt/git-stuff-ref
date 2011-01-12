@@ -17,16 +17,15 @@ get([Email, "apps"], _Data) ->
     not_found -> {error, 404, {Email, "does_not_exist"}};
     User ->
       Apps = user_apps:all_apps(User#user.email),
-      {
-        user, [{"email", User#user.email}, {"level", User#user.level},
-               {apps, lists:map(fun(App) -> {name, App#app.name} end, Apps)}]
-      }
+      {apps, lists:map(fun(App) -> [{name, App#app.name}] end, Apps)}
   end;
 get([Email], _Data) ->
   case users:find_by_email(Email) of
     not_found -> {error, 404, {Email, "does_not_exist"}};
     User -> {
-      "user", [{"email", User#user.email}, {"level", User#user.level}]
+      "user", [{"email", User#user.email},
+               {"level", User#user.level},
+               {"pubkey", User#user.pubkey}]
      }
   end;
 get(_, _Data) ->
@@ -36,45 +35,53 @@ get(_, _Data) ->
                        end, All)
   }.
 
-post([Name, "keys", "new"], Data) ->
-  auth_utils:run_if_admin(fun(_) ->
-                              case proplists:get_value(key, Data) of
-                                undefined -> app_error("No key defined");
-                                Key ->
-                                  case users:find_by_email(Name) of
-                                    User when is_record(User, user) ->
-                                      case users:create(User#user{key = Key}) of
-                                        User when is_record(User, user) ->
-                                          [{"user", User#user.email}, {"key", "added key"}];
-                                        _Else ->
-                                          app_error("There was an error adding bee")
-                                      end;
-                                    _E ->
-                                      app_error("Error finding user")
-                                  end
-                              end
-                          end, Data);
+post([Name, "pubkeys"], Data) ->
+  case proplists:get_value(pubkey, Data) of
+    undefined -> app_error("No pubkey defined", 400);
+    Pubkey ->
+      case auth_utils:get_authorized_user(Data) of
+        AuthorizedUser when is_record(AuthorizedUser, user) ->
+          case auth_utils:is_admin_user(AuthorizedUser) of
+            true ->
+              case users:find_by_email(Name) of
+                User when is_record(User, user) ->
+                  add_pubkey(User, Pubkey);
+                _E ->
+                  app_error("Error finding user")
+              end;
+            false ->
+              Email = AuthorizedUser#user.email,
+              case Name of
+                Email ->
+                  add_pubkey(AuthorizedUser, Pubkey);
+                _Err ->
+                  app_error("You can not add a key for another user", 401)
+              end
+          end
+      end
+  end;
 
 post([], Data) ->
-  auth_utils:run_if_admin(fun(_) ->
-                              case proplists:get_value(email, Data) of
-                                undefined -> {error, "No email defined"};
-                                Email ->
-                                                % The user has been submitted with an email
-                                  case users:exist(Email) of
-                                    true -> {error, "The user already exists"};
-                                    false ->
-                                      case users:create(Data) of
-                                        {ok, User} when is_record(User, user) ->
-                                          {user, [{email, User#user.email}]};
-                                        E ->
-                                          io:format("Error: ~p~n", [E]),
-                                          {error, "There was an error creating user"}
-                                      end
-                                  end
-                              end
+  auth_utils:run_if_admin(
+    fun(_) ->
+        case proplists:get_value(email, Data) of
+          undefined -> {error, "No email defined"};
+          Email ->
+            %% The user has been submitted with an email
+            case users:exist(Email) of
+              true -> {error, "The user already exists"};
+              false ->
+                case users:create(Data) of
+                  {ok, User} when is_record(User, user) ->
+                    {user, [{email, User#user.email}]};
+                  E ->
+                    io:format("Error: ~p~n", [E]),
+                    {error, "There was an error creating user"}
+                end
+            end
+        end
 
-                          end, Data);
+    end, Data);
 
 post(Path, _Data) ->
   io:format("Path: ~p~n", [Path]),
@@ -92,5 +99,16 @@ delete([], Data) ->
                           end, Data);
 delete(_Path, _Data) -> "unhandled".
 
+add_pubkey(User, Pubkey) ->
+  case users:save(User#user{pubkey = Pubkey}) of
+    {ok, SavedUser} ->
+      [{"user", SavedUser#user.email}, {"pubkey", "added pubkey"}];
+    _Else ->
+      app_error("There was an error updating the user")
+  end.
+
+app_error(Msg, Status) ->
+  {error, Status, misc_utils:to_bin(Msg)}.
+
 app_error(Msg) ->
-  {struct, [{error, misc_utils:to_bin(Msg)}]}.
+  {error, misc_utils:to_bin(Msg)}.

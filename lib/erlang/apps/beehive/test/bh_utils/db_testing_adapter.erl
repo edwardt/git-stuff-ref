@@ -51,15 +51,15 @@ save(Fun) when is_function(Fun) ->
 delete_all(Table) ->
   ets:delete_all_objects(Table).
 
-delete(Table, Record) ->
-  ets:delete(Table, Record).
+delete(Table, Key) ->
+  ets:delete(Table, Key).
 
 run(Fun) ->   qlc:eval( Fun() ).
 
-all(Table) -> 
+all(Table) ->
   List = lists:flatten(ets:match(Table, '$1')),
   get_bee(List).
-  
+
 % Thanks to RabbitMQ for the idea
 add_slave([]) -> create_tables();
 add_slave(Nodes) ->
@@ -75,13 +75,13 @@ init_databases(Nodes) ->
 
 % Create the tables
 create_tables() ->
-  Databases = table_definitions(),  
+  Databases = table_definitions(),
   lists:foreach(fun(Tab) ->
     case ets:info(Tab) of
-      undefined -> 
-        spawn(fun() -> 
+      undefined ->
+        spawn(fun() ->
           % write_concurrency == true so we don't overlap in tests
-          ets:new(Tab, [public, named_table, ordered_set, {write_concurrency, true}]), 
+          ets:new(Tab, [public, named_table, ordered_set, {write_concurrency, true}]),
           infinite_loop()
         end);
       _ -> ok

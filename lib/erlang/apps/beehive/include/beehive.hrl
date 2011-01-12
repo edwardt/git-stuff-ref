@@ -62,10 +62,9 @@
   name,         % name of the bee
   branch,       % branch to checkout
   revision,     % revision
-  repo_type,    % git | svn
-  repo_url,     % url
   template,     % type of app to match conf files
   run_dir,      % location of the unpacked bee_file
+  repo_url,
   bundle_dir,   % location of the root of the bundle
   bee_size,     % size of the bee_file
   bee_file,     % location of the file
@@ -81,8 +80,6 @@
 % Application configuration
 -record (app, {
   name,
-  repo_url,
-  repo_type     = git,              % git | svn | etc.
   dynamic       = dynamic,          % dynamic | static (if this is set to static, we cannot launch a new one)
   routing_param = 'Host',
   timeout,
@@ -106,7 +103,7 @@
 -record (user, {
   email,
   password,
-  key,
+  pubkey,
   token,
   level   = ?REGULAR_USER_LEVEL
 }).
@@ -116,6 +113,7 @@
 
 % User to app acl
 -record (user_app, {
+  id,                               % {email, app_name}
   user_email,
   app_name,
   level       = ?OWNER_APP_ROLE

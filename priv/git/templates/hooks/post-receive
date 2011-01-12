@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+#
+# If master is updated, we'll call BH and ask for a restart.
+
+def grab_code_root(filename)
+  if File.exists?(filename) && File.read(filename) =~ /code_root:(.+)/
+    puts "found config in #{filename}"
+    $1.strip
+  else
+    err
+  end
+end
+
+def err
+  puts "Error: beehive code_root must be set on the server.
+Contact your Beehive admin about this problem."
+  exit
+end
+
+
+
+puts "Running post-receive hook on the server."
+
+head = $stdin.read.split(" ").last
+
+if head =~ /master/
+  name = File.dirname(File.expand_path(__FILE__)).split("/")[-2]
+  if name =~ /\.git\Z/
+    name = name[0, name.length - 4]
+  end
+
+  if code_root = ENV['BEEHIVE_CODE_ROOT'] ||
+      grab_code_root(File.expand_path("~/.beehive.conf")) ||
+      grab_code_root("/etc/beehive.conf")
+
+    puts "Master branch updated, asking beehive to restart the app..."
+    system "sh #{code_root}/bin/restart-app.sh #{name}"
+  else
+    err
+  end
+end

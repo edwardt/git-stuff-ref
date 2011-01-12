@@ -1,10 +1,10 @@
-% 
+%
 %  dashboard_event_handler.erl
 %  beehive
-%  
+%
 %  Created by Ari Lerner and David Guttman
 %  Copyright 2010 Ari Lerner. All rights reserved.
-% 
+%
 -module (dashboard_event_handler).
 -include ("beehive.hrl").
 -include ("common.hrl").
@@ -53,19 +53,18 @@ handle_event({user, Atom, User}, State) ->
   {ok, handle_msg(Msg, State)};
 handle_event({app, Event, App}, State) when is_record(App, app) ->
   Msg = [
-    {context, app}, 
-    {event, Event}, 
+    {context, app},
+    {event, Event},
     {app, [
-      {name, App#app.name}, 
-      {url, App#app.repo_url}, 
+      {name, App#app.name},
       {updated_at, App#app.updated_at}
       ]
     }],
   {ok, handle_msg(Msg, State)};
 handle_event({bee, Event, Bee}, State) when is_record(Bee, bee) ->
   Msg = [
-    {context, bee}, 
-    {event, Event}, 
+    {context, bee},
+    {event, Event},
     {bee, bee_to_proplist(Bee)}
     ],
   {ok, handle_msg(Msg, State)};
@@ -117,12 +116,12 @@ terminate(_Reason, _State) ->
 %%--------------------------------------------------------------------
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
-  
+
 % INTERNAL METHODS
 bee_to_proplist(Bee) ->
   [
-    {host, web_utils:ip_to_list(Bee#bee.host)}, 
-    {port, Bee#bee.port}, 
+    {host, web_utils:ip_to_list(Bee#bee.host)},
+    {port, Bee#bee.port},
     {app_name, Bee#bee.app_name}
   ].
 

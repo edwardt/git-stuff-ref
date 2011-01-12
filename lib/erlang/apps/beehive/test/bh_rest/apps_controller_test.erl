@@ -21,13 +21,15 @@ starting_test_() ->
     fun setup/0,
     fun teardown/1,
     [
-     fun get_index/0,
-     fun get_index_with_name/0,
+     fun get_index_as_user/0,
+     fun get_index_as_admin/0,
+     fun get_index_with_name_as_admin/0,
+     fun get_index_with_name_as_user/0,
+     fun get_index_with_name_as_invalid_user/0,
      fun get_index_with_wrong_name/0,
      fun get_bee_logs/0,
      fun get_bee_logs_with_wrong_name/0,
      fun post_create_new_app/0,
-     fun post_create_new_app_no_repo_url/0,
      fun post_create_new_app_bad_token/0,
      fun post_create_new_app_no_token/0,
      fun put_app/0,
@@ -40,10 +42,13 @@ starting_test_() ->
    }
   }.
 
-get_index() ->
+get_index_as_user() ->
+  User = bh_test_util:dummy_user(),
+  user_apps:create(User#user.email, "test_app"),
   {ok, Header, Response} =
     bh_test_util:fetch_url(get,
-                           [{path, "/apps.json"}]),
+                           [{path, path_with_token("/apps.json",
+                                                   User#user.token)}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
   [Json|_] = bh_test_util:response_json(Response),
   {"apps", Apps} = Json,
@@ -53,31 +58,84 @@ get_index() ->
                     end, Apps)),
   passed.
 
-get_index_with_name() ->
+get_index_as_admin() ->
+  User = bh_test_util:admin_user(),
   {ok, Header, Response} =
     bh_test_util:fetch_url(get,
-                           [{path, "/apps/test_app.json"}]),
+                           [{path, path_with_token("/apps.json",
+                                                   User#user.token)}]),
+  ?assertEqual("HTTP/1.0 200 OK", Header),
+  [Json|_] = bh_test_util:response_json(Response),
+  {"apps", Apps} = Json,
+  ?assert(is_list(Apps)),
+  ?assert(lists:any(fun(E) ->
+                        proplists:get_value("name", E) =:= "test_app"
+                    end, Apps)),
+  passed.
+
+
+get_index_with_name_as_admin() ->
+  User = bh_test_util:admin_user(),
+  {ok, Header, Response} =
+    bh_test_util:fetch_url(get,
+                           [{path, path_with_token("/apps/test_app.json",
+                                                   User#user.token)}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
   [App|_] = bh_test_util:response_json(Response),
   {"application",[{"name","test_app"}|_]} = App,
   passed.
 
-get_index_with_wrong_name() ->
+get_index_with_name_as_user() ->
+  User = bh_test_util:dummy_user(),
   {ok, Header, Response} =
     bh_test_util:fetch_url(get,
-                           [{path, "/apps/unfound_app.json"}]),
+                           [{path, path_with_token("/apps/test_app.json",
+                                                   User#user.token)}]),
+  ?assertEqual("HTTP/1.0 200 OK", Header),
+  [App|_] = bh_test_util:response_json(Response),
+  {"application",[{"name","test_app"}|_]} = App,
+  passed.
+
+get_index_with_name_as_invalid_user() ->
+  User = bh_test_util:create_user(#user{email    = "noapps@getbeehive.com",
+                                        password = "test",
+                                        token    = "noapptoken" }),
+  {ok, Header, Response} =
+    bh_test_util:fetch_url(get,
+                           [{path, path_with_token("/apps/test_app.json",
+                                                   User#user.token)}]),
+  ?assertEqual("HTTP/1.0 404 Object Not Found", Header),
+  passed.
+
+get_index_with_name_with_bad_token() ->
+  {ok, Header, Response} =
+    bh_test_util:fetch_url(get,
+                           [{path, path_with_token("/apps/test_app.json",
+                                                   "asdfwrong")}]),
+  ?assertEqual("HTTP/1.0 401 Unauthorized", Header),
+  passed.
+
+get_index_with_wrong_name() ->
+  User = bh_test_util:admin_user(),
+  {ok, Header, Response} =
+    bh_test_util:fetch_url(get,
+                           [{path, path_with_token("/apps/unfound_app.json",
+                                                   User#user.token)}]),
   ?assertEqual("HTTP/1.0 404 Object Not Found", Header),
   ?assertMatch([{"error", "App not found"}],
                bh_test_util:response_json(Response)),
   passed.
 
 get_bee_logs() ->
-  LogFile = filename:join([?BEEHIVE_HOME, "logs/bee_events", "app"]),
+  User = bh_test_util:admin_user(),
+  LogFile = filename:join([?BEEHIVE_HOME, "logs/bee_events", "test_app"]),
   filelib:ensure_dir(LogFile),
   file:write_file(LogFile, "Some log data"),
   {ok, Header, Response} =
     bh_test_util:fetch_url(get,
-                           [{path, "/apps/app/bee_logs.json"}]),
+                           [{path,
+                             path_with_token("/apps/test_app/bee_logs.json",
+                                             User#user.token)}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
   ?assertMatch([{"bee_log", "Some log data"}],
                bh_test_util:response_json(Response)),
@@ -85,11 +143,13 @@ get_bee_logs() ->
 
 
 get_bee_logs_with_wrong_name() ->
+  User = bh_test_util:admin_user(),
   {ok, Header, Response} =
     bh_test_util:fetch_url(get,
-                           [{path, "/apps/unfound_app/bee_logs.json"}]),
+                           [{path, path_with_token("/apps/noapp/bee_logs.json",
+                                                   User#user.token)}]),
   ?assertEqual("HTTP/1.0 404 Object Not Found", Header),
-  ?assertMatch([{"error", "file_not_found"}],
+  ?assertMatch([{"error", "App not found"}],
                bh_test_util:response_json(Response)),
   passed.
 
@@ -102,17 +162,6 @@ post_create_new_app() ->
                          {token, User#user.token}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
   ?assertMatch([{"ok","created"}],
-               bh_test_util:response_json(Response)),
-  passed.
-
-post_create_new_app_no_repo_url() ->
-  User = bh_test_util:dummy_user(),
-  {ok, Header, Response} =
-    perform_post_create([{app_name, "creationtest"},
-                         {token, User#user.token}]),
-  ?assertEqual("HTTP/1.0 404 Object Not Found", Header),
-
-  ?assertMatch([{"error",[{"invalid_app", "no_repo_url_given"}]}],
                bh_test_util:response_json(Response)),
   passed.
 
@@ -213,3 +262,5 @@ perform_post_create(Params) ->
                           {params, Params}
                          ]).
 
+path_with_token(Path, Token) ->
+  lists:flatten([Path, "?token=", Token]).

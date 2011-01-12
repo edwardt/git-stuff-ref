@@ -6,7 +6,6 @@
   %thead
     %tr
       %th name
-      %th url
       %th branch
       %th template
       %th owners
@@ -14,13 +13,9 @@
       %th type
       %th deploy_env
       %th delete
-  %tfoot
-    %tr
-      %td ...
   %tbody
     %tr
       %td= link_to(application.name, "#/apps/"+ application.name)
-      %td= application.repo_url
       %td= application.branch
       %td= application.template
       %td= application.owners
@@ -28,6 +23,19 @@
       %td= application.dynamic
       %td= application.deploy_env
       %td= link_to("delete?", "#/apps/delete/"+ application.name)
+
+%div 
+  Clone your repo at:
+  %code
+    git clone 
+    = application.clone_url
+
+%div 
+  Add a git remote to a current repo:
+  %code
+    git remote add beehive 
+    = application.clone_url
+
 
 :if application.latest_error != "undefined"
   %h4 Latest Error

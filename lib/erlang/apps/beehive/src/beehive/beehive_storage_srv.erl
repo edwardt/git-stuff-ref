@@ -118,10 +118,12 @@ handle_call({build_bee, App, Caller}, _From, State) ->
         exit_status = ExitCode,
         timestamp = date_util:now_to_seconds()
       },
-      {ok, NewApp} = app_manager:request_to_save_app(App#app{latest_error = Error}),
+      {ok, NewApp} =
+               app_manager:request_to_save_app(App#app{latest_error = Error}),
       {error, NewApp};
     Props when is_list(Props) ->
-      {updated, NewApp} = apps:update(App#app{latest_error = undefined}, Props),
+      {updated, NewApp} =
+               apps:update(App#app{latest_error = undefined}, Props),
       Bee = bees:new(Props),
       {ok, NewApp, Bee}
   end,
@@ -241,53 +243,22 @@ fetch_bee(#app{name = Name} = _App, Caller, _State) ->
 internal_build_bee(App, Caller, _State) ->
   case handle_repos_lookup(App) of
     {ok, ReposUrl} ->
-      O = beehive_bee_object:bundle(apps:to_proplist(App#app{repo_url = ReposUrl}), Caller),
-      ?LOG(debug, "internal_build_bee(~p, ~p) returned {ok, ~p} and bundle returned ~p", [App, Caller, ReposUrl, O]),
+      Proplist = apps:to_proplist(App),
+      Proplist1 = lists:append(Proplist, [{repo_url, ReposUrl}]),
+      O = beehive_bee_object:bundle(Proplist1, Caller),
+      ?LOG(debug,
+           "internal_build_bee(~p, ~p) returned {ok, ~p} bundle returned ~p",
+           [App, Caller, ReposUrl, O]),
       O;
     {error, _} = T -> T
-    %   case babysitter_integration:command(bundle, App#app{repo_url = ReposUrl}, unusued, Proplist) of
-    %     {ok, _OsPid, 0} ->
-    %       case fetch_bee(App, State) of
-    %         {bee_built, _Resp} = T -> T;
-    %         E -> E
-    %       end;
-    %     {error, Stage, _OsPid, ExitCode, Stdout, Stderr} ->
-    %       % stage,        % stage at which the app failed
-    %       % stderr,       % string with the stderr
-    %       % stdout,       % string with the stdout
-    %       % exit_status,  % exit status code
-    %       % timestamp     % time when the exit happened
-    %       Error = #app_error{
-    %         stage = Stage,
-    %         stderr = Stderr,
-    %         stdout = Stdout,
-    %         exit_status = ExitCode,
-    %         timestamp = date_util:now_to_seconds()
-    %       },
-    %       % {ok, NewApp} = app_manager:request_to_save_app(App#app{latest_error = Error}),
-    %       {error, {babysitter, App#app{latest_error = Error}}};
-    %     Else ->
-    %       erlang:display({got_something_else,babysitter_run, Else}),
-    %       {error, Else}
-    %   end;
-    % {error, _} = T -> T
   end.
 
-handle_repos_lookup(App) ->
-  case config:search_for_application_value(git_store, offsite) of
-    offsite ->
-      {ok, handle_offsite_repos_lookup(App)};
-    _ ->
-      io:format("Looking in local repos not yet supported~n"),
-      {error, repos_not_found}
-  end.
-
-handle_offsite_repos_lookup([]) -> false;
-handle_offsite_repos_lookup(App) when is_record(App, app) ->
-  App#app.repo_url;
-handle_offsite_repos_lookup(AppName) ->
+handle_repos_lookup([]) -> {error, repos_not_found};
+handle_repos_lookup(App) when is_record(App, app) ->
+  {ok, beehive_repository:clone_url(App#app.name)};
+handle_repos_lookup(AppName) ->
   case apps:find_by_name(AppName) of
     App when is_record(App, app) ->
-      handle_offsite_repos_lookup(App);
-    _ -> false
+      handle_repos_lookup(App);
+    _ -> {error, repos_not_found}
   end.

@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : beehive_sup.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  Sun Oct 25 13:09:07 PDT 2009
 %%%-------------------------------------------------------------------
@@ -17,9 +17,9 @@
 %% Supervisor callbacks
 -export([init/1]).
 
--define(CHILD(I, Type, Args), 
-  {I, 
-    {I, start_link, lists:flatten([proplists:get_value(I, Args, [])])}, 
+-define(CHILD(I, Type, Args),
+  {I,
+    {I, start_link, lists:flatten([proplists:get_value(I, Args, [])])},
     permanent, 5000, Type, [I]
   }).
 -define (IF (Bool, A, B), if Bool -> A; true -> B end).
@@ -37,10 +37,10 @@ start_link() -> start_link([]).
 start_link(Args) ->
   % Start os_mon
   application:start(os_mon),
-  
+
   % Seed the random number generator
   random:seed(now()),
-  
+
   % Start the whole chain
   supervisor:start_link({local, ?SERVER}, ?MODULE, Args).
 
@@ -60,13 +60,12 @@ init(Args) ->
   RestServer    = ?CHILD(rest_server_sup, worker, Args),
   BeehiveRouter = ?CHILD(beehive_router_sup, supervisor, Args),
   % Setup beehive
-  NodeType = config:search_for_application_value(node_type, beehive_router),  
+  NodeType = config:search_for_application_value(node_type, beehive_router),
   ShouldRunRouter     = case NodeType of
     beehive_router -> true;
     _ -> false
   end,
   ShouldRunRestServer = config:search_for_application_value(run_rest_server, true),
-  
   Children = lists:flatten([
     % For the distributed database
     ?CHILD(beehive_db_srv, worker, Args),
@@ -78,17 +77,18 @@ init(Args) ->
     % ?CHILD(babysitter, worker, Args),
     % Storage stuff
     ?CHILD(beehive_storage_srv, worker, Args),
-    ?CHILD(beehive_git_srv, worker, Args),
+    %% Gitolite integration - glitter
+    ?CHILD(beehive_repository, worker, Args),
     % Rest server, should we run it?
-    ?IF(ShouldRunRouter, BeehiveRouter, []),    
+    ?IF(ShouldRunRouter, BeehiveRouter, []),
     ?IF(ShouldRunRestServer, RestServer, [])
   ]),
-  
+
   % AFTER
   beehive_db_srv:init_databases(),
-  
+
   {ok,{{one_for_one,10,10}, Children}}.
-  
+
 %%====================================================================
 %% Internal functions
 %%====================================================================

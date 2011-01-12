@@ -158,18 +158,14 @@ from_proplists([{email, V}|Rest], User) ->
   from_proplists(Rest, User#user{email = V});
 from_proplists([{password, V}|Rest], User) ->
   from_proplists(Rest, User#user{password = V});
-from_proplists([{key, V}|Rest], User) ->
-  from_proplists(Rest, User#user{key = V});
+from_proplists([{pubkey, V}|Rest], User) ->
+  from_proplists(Rest, User#user{pubkey = V});
 from_proplists([{token, V}|Rest], User) ->
   from_proplists(Rest, User#user{token = V});
 from_proplists([{level, V}|Rest], User) ->
   from_proplists(Rest, User#user{level = V});
 from_proplists([_Other|Rest], User) ->
   from_proplists(Rest, User).
-
-%% to_proplist(User) -> to_proplist(record_info(fields, user), User, []).
-%% to_proplist([], _User, Acc) -> Acc;
-%% to_proplist([_Other|Rest], User, Acc) -> to_proplist(Rest, User, Acc).
 
 validate_user(User) when is_record(User, user) ->
   validate_user(record_info(fields, user), User).
@@ -185,7 +181,7 @@ validate_user([email|Rest], #user{email = Email} = User) ->
 
 validate_user([password|Rest], #user{password = undefined} = User) ->
   validate_user(Rest, User#user{password = date_util:now_to_seconds()});
-validate_user([key|Rest], User) -> validate_user(Rest, User);
+validate_user([pubkey|Rest], User) -> validate_user(Rest, User);
 validate_user([token|Rest], User) -> validate_user(Rest, User);
 %% Validate level
 validate_user([level|Rest], #user{level = undefined} = User) ->

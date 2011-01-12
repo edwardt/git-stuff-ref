@@ -1,0 +1,24 @@
+%h2= user.email
+
+%h3 Details
+
+%h4 Apps
+  %ul
+  :each app in apps
+    %li
+      %td= link_to(app.name, "#/apps/" + app.name)
+
+%h4 Public Key
+
+:if user.pubkey
+  %code= user.pubkey
+
+:if user.pubkey == null
+  :if error
+    #error Failed to save ssh pubkey.  Whoops!
+  %form{ action :"#/account/pubkeys", method: "post" }
+    %label Ssh pubkey:
+    %textarea{name:"pubkey", cols: 50, rows: 5}
+    %br
+    %input{ type: "submit", value: "Save key"}
+

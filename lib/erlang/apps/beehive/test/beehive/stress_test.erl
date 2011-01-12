@@ -3,38 +3,46 @@
 -include ("beehive.hrl").
 
 all_test_() ->
-  % Add the router ebin
-  RootDir = filename:dirname(filename:dirname((filename:dirname(code:which(?MODULE))))),
+                                                % Add the router ebin
+  RootDir =
+    filename:dirname(filename:dirname(filename:dirname(code:which(?MODULE)))),
   code:add_path(filename:join([RootDir, "beehive_router", "ebin"])),
-  
+
   {inparallel,
-    [
-      {timeout, 60, fun stress_apps/0},
-      {timeout, 60, fun start_multiple_bees_for_an_app/0}
-    ]
+   [
+    {timeout, 60, fun stress_apps/0},
+    {timeout, 60, fun start_multiple_bees_for_an_app/0}
+   ]
   }.
 
 stress_apps() ->
-  Bees = lists:map(fun(N) ->
-    Name = lists:flatten(["app", integer_to_list(N)]),
-    App = bh_test_util:dummy_app(),
-    RealApp = App#app{name = Name},
-    apps:save(RealApp),
-    app_manager:request_to_start_new_bee_by_app(RealApp, self()),
-    receive
-      {bee_started_normally, Bee, _App} -> {RealApp, Bee}
-    after 2000 ->
-      erlang:display({stress_apps, bee_didnt_stop, N})
-    end
-  end, lists:seq(1,5)),
+  Bees = lists:map(
+           fun(N) ->
+               Name = lists:flatten(["app", integer_to_list(N)]),
+               App = bh_test_util:dummy_app(),
+               RealApp = App#app{name = Name},
+               apps:save(RealApp),
+               Path = beehive_repository:clone_url(RealApp#app.name),
+               bh_test_util:replace_repo_with_fixture(Path),
+               app_manager:request_to_start_new_bee_by_app(RealApp, self()),
+               receive
+                 {bee_started_normally, Bee, _App} -> {RealApp, Bee}
+               after 2000 ->
+                   erlang:display({stress_apps, bee_didnt_stop, N})
+               end
+           end, lists:seq(1,5)),
   lists:map(fun({_RealApp, Bee}) ->
-    {ok, B, Socket} = bee_store:get_bee(Bee#bee.app_name),
-    gen_tcp:close(Socket),
-    {ok, _, ReturnedData} = bh_test_util:fetch_url(get, [{host, B#bee.host}, {port, B#bee.port}, {path, "/"}]),
-    Body = hd(lists:reverse(ReturnedData)),
-    ?assertEqual(lists:flatten(["Hello World ", B#bee.app_name]), Body)
-  end, lists:reverse(Bees)),
-  % Cleanup
+                {ok, B, Socket} = bee_store:get_bee(Bee#bee.app_name),
+                gen_tcp:close(Socket),
+                {ok, _, ReturnedData} =
+                  bh_test_util:fetch_url(get, [{host, B#bee.host},
+                                               {port, B#bee.port},
+                                               {path, "/"}]),
+                Body = hd(lists:reverse(ReturnedData)),
+                ?assertEqual(lists:flatten(["Hello World ", B#bee.app_name]),
+                             Body)
+            end, lists:reverse(Bees)),
+                                                % Cleanup
   terminate_bees(Bees),
   passed.
 
@@ -44,33 +52,34 @@ start_multiple_bees_for_an_app() ->
   RealApp = App#app{name = Name},
   Num = 3,
   apps:save(RealApp),
-  % Start new bees
+  Path = beehive_repository:clone_url(RealApp#app.name),
+  bh_test_util:replace_repo_with_fixture(Path),
+                                                % Start new bees
   Bees = lists:map(fun(_N) ->
-    start_new_bee_by_app(RealApp)
-  end, lists:seq(1,Num)),
-  
+                       start_new_bee_by_app(RealApp)
+                   end, lists:seq(1,Num)),
+
   ?assertEqual(Num, length(bees:find_all_by_name(Name))),
-  
+
   terminate_bees(Bees),
-  timer:sleep(100),
   passed.
 
-% HELPERS
+                                                % HELPERS
 start_new_bee_by_app(App) ->
   app_manager:request_to_start_new_bee_by_app(App, self()),
   F = fun(This) ->
-    receive
-      {bee_started_normally, Bee, App} -> 
-        {App, Bee};
-      {already_started, _} ->
-        ok;
-      X -> 
-        erlang:display({app_manager,request_to_start_new_bee_by_app,X}),
-        This(This)
-    end
-  end,
+          receive
+            {bee_started_normally, Bee, App} ->
+              {App, Bee};
+            {already_started, _} ->
+              ok;
+            X ->
+              erlang:display({app_manager,request_to_start_new_bee_by_app,X}),
+              This(This)
+          end
+      end,
   F(F).
-  
+
 terminate_bees([]) -> ok;
 terminate_bees([Bee|Rest]) ->
   case Bee of

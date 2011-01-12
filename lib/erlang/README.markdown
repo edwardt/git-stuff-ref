@@ -7,34 +7,13 @@ Getting started
 To start the router:
 
     make
-    ./bin/start_beehive
+    make rel
+    cd rel/beehive
+    bin/beehive start    
 
 This will start the basic router with the default options. The default
-node type that gets started is the router type. You can start a node
-(see glossary below) with the following command. Node that the -s
-argument refers to a seed node. This is any node already in the mesh.
+node type that gets started is the router type. 
 
-    ./scripts/start_beehive.sh -t node -n bob@mymac.local -s router@mymac.local
-
-You also need to start some storage backends to store the squashed
-bees. This is easy to do with the ./scripts/start_beehive.sh script:
-
-    ./scripts/start_beehive.sh -t storage -s router@mymac.local
-
-There are many options to starting the router, for more information
-and options, type:
-
-    ./scripts/start_beehive.sh -h
-
-To start with a list of bees, use the -i option to point to a file
-that looks like:
-
-    {"app1", "ec2-67-202-21-173.compute-1.amazonaws.com", 8080}.
-    {"app2", "ec2-174-129-54-214.compute-1.amazonaws.com", 8080}.
-
-To start it, run:
-
-    ./scripts/start_beehive.sh -i /path/to/the/file/from/above
 
 How it works
 ===
@@ -57,50 +36,47 @@ configure the router the same way every time, the recommended method
 is to write a configuration file and pass in the location of the
 configuration file at the start command with the -c option, like so:
 
-    ./scripts/start_beehive.sh -c "/path/to/configuration/file"
+The config file currently expects a yaml format. These will be converted to
+a proplist of erlang tuples.
     
-The configuration file must be in the following format:
-    
-    {parameter_name, value}.
-    
-These are erlang tuples, which is how beehive parses the configuration
-file. For samples, check out the sample configuration files here:
-[http://github.com/auser/beehive/tree/master/lib/erlang/config](http://github.com/auser/beehive/tree/master/lib/erlang/config).
+Beehive searches for config files at ~/.beehive.conf and
+/etc/beehive.conf as well.
 
-All of the available variables that can be overridden can be
-overridden on the command-line as well. To see all of the available
-variables, run ./start_beehive.sh with the '-h' switch.
+## Valid Config Variables
 
-
-## Environment Variables
-
-Beehive will use these values if they're found in the environment.
-
-### BEEHIVE_HOME
+### home
 
 Sets the base directory for the running beehive instance, which will
 include the DB, running apps and log files.  The default value is
 /var/lib/beehive
 
-### BEEHIVE_ROUTING_PARAM
+### code_root
+
+
+### routing_param
 
 Defaults to 'Host', which means that the router will use the first
 subdomain of the given url to handle app routing.
 
-Alternate value, provided by BEEHIVE_ROUTING_PARAM is 'subdirectory',
+Alternate value, provided by routing_param is 'subdirectory',
 which will instead expect app names to appear as the first component
 of the path in the url.  http://domain.com/<app-name>/path
 
-### BEEHIVE_DASHBOARD_PORT
+### dashboard_port
 
 Defaults to 4999.  Port that the dashboard app will be listening on.
 
-### BEEHIVE_CLIENT_PORT
+### client_port
 
 Defaults to 8080.  Port that the router will be listening on.
 
-### BEEHIVE_DEBUG
-If BEEHIVE_DEBUG=true, beehive will increase logging output in console/log files.
+### debug
+If debug=true, beehive will increase logging output in console/log files.
+
+
+## Environment Variables
+
+Beehive will use these values if they're found in the environment. Beehive config expects that env variables will be upper case and start with BEEHIVE_, so the 'home' config key will be overridden by a BEEHIVE_HOME env variable.
 
 
 ## Proxy

@@ -11,11 +11,12 @@ module BeehiveClient
 
       def run
         parse_args
+        get_token unless @token
         pp apps_list
       end
 
       def apps_list
-        get("apps.json")
+        get("apps.json", {"token" => @token})
       end
 
     end
