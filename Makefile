@@ -37,7 +37,7 @@ Beehive code generated in `pwd`/rel/beehive\n\
 To use git commit hooks properly, set the following value.\n\n\
 code_root: `pwd`/rel/beehive\n\
 \n\
-This should be set in a beehive config file, found at\n\g
+This should be set in a beehive config file, found at\n\
 ~/.beehive.conf or /etc/beehive.conf.  See docs for more info.\
 \n\n\
 This value will need to always reflect the current root of\n\
