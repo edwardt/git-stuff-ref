@@ -45,6 +45,10 @@ your beehive release.  Otherwise git commit hooks won't know\n\
 where to find scripts to trigger app actions.\n\
 *----------------------------------------------------------*"
 
+gitolite_setup:
+	@git clone $(GITOLITE_REPOS_DIR)/gitolite_admin rel/beehive/gitolite
+	@cp priv/git/templates/post-receive ~/.gitolite/hooks/post-receive
+
 doc:
 	@./rebar doc skip_deps=true
 
