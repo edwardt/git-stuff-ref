@@ -3,10 +3,9 @@
 -type bh_counter_name()::atom().
 -type stat_enable()::boolean().
 
-
 -type protocol():: 'http' | 'https' | 'tcp' |'udp' |'http-alt'.
 
--define (default_conf, string:concat(erlang:atom_to_list(?MODULE),".conf").
+-define(Default_Conf, string:concat(erlang:atom_to_list(?MODULE),".conf")).
 
 
 -record(bh_stats, {
