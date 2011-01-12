@@ -13,8 +13,19 @@ start()->
 	start(Config).
 
 start(Config)->
+ 	ensure_file(Config),
  	
 	ok.
+	
+init(Args)->
+
+	ok.
+	
+stop()->
+	.
+
+
+	
 	
 
 

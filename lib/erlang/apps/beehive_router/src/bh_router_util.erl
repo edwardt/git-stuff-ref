@@ -44,6 +44,12 @@ compare(A,B) when A>B -> greater.
 equal(Same, Same) -> true;
 equal(_Other, _Other) -> false.
 
+
+%%%%%%%%%%%% File/Folder Util %%%%%%%%%%%%%
+%-spec ensure_file(FileName::nonempty_string()) -> 'ok' | {error, term()}.
+%ensure_file(FileName)
+	
+
 %%%%%%%%%% Config util %%%%%%%%%%%%%%%%%%%%
 
 	

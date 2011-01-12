@@ -28,10 +28,10 @@
 % TODO: Move to proc_lib:start_link
 start_link()          -> init().
 % Start listening on the application port
-% this can be modified with a config file or an environment variable
+% this can be modified with a config file or an environment variable 
 % e.g. BEEHIVE_CLIENT_PORT=80
 init()                ->
-  init(config:search_for_application_value(client_port, 8080)).
+  init(get_client_port()).
 init(LocalPort) ->
   Pid = spawn_link(?MODULE, init_accept, [LocalPort]),
   {ok, Pid}.
@@ -78,3 +78,33 @@ pass_on_to_proxy(ClientSock) ->
   {ok, ProxyPid} = ?SUP:start_client(ClientSock),
   gen_tcp:controlling_process(ClientSock, ProxyPid),
   ProxyPid ! {start, ClientSock, ProxyPid}.
+  
+  
+%%%%%%%%%%%%% Internal Functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-spec get_client_port() -> port() | {error, term()}.
+get_client_port()->
+  PortNum = get_port(http-alt),
+  config:search_for_application_value(client_port, 8080).
+  
+-spec get_port(Protocol::protocol()) -> port() | 'undefined'.
+get_port(Protocol) ->
+  case (Protocol) of
+	http-alt -> 8080;
+	ELSE -> undefined
+  end.
+    
+
+send_to(To, {Tag, Msg, From}) when To == From ->
+	send_to(To, {Tag, Msg, From}).
+
+send_to(To, {Tag, Msg, From}) ->
+  To ! {Tag, Msg, From}.
+  
+send_to(To, {Tag, Msg, From}, Debug)->
+  send_to(To, {Tag, Msg}) 
+  %TODO log
+  .
+	
+ 
+
+
