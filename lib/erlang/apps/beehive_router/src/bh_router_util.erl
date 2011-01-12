@@ -30,6 +30,13 @@ ensure_deps_loaded(Apps) when is_list(Apps)->
 		Apps)
 	.
 	
+%%%%%%%%%% Data type Util %%%%%%%%%%%%%%%%%%%%5
+compare(A,B) when A<B -> less;
+compare(A, B) when A == B -> equal;
+compare(A,B) when A>B --> greater.
+
+equal(Same, Same) -> true;
+equal(_Other, _Other) -> false.
 	
 %%%%%% Print %%%%%%%%%%%%%%%%%
 %print_list([])->ok;
