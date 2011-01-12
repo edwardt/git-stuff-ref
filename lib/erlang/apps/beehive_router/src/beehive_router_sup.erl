@@ -47,8 +47,11 @@ start_link(Args) ->
 %% specifications.
 %%--------------------------------------------------------------------
 init(_Args) ->
-  Dashboard = ?CHILD(beehive_dashboard_sup, worker),
 
+%TODO Should be a different management module%%
+%Router shall focus on one responsibility, that is to route to active workers
+
+  Dashboard = ?CHILD(beehive_dashboard_sup, worker),
   ShouldRunDashboard = config:search_for_application_value(dashboard, true),
 
   Children = lists:flatten([
@@ -64,6 +67,7 @@ init(_Args) ->
 %% Internal functions
 %%====================================================================
 
+opt
 	
 	
 	

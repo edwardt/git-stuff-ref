@@ -4,9 +4,11 @@
 
 -export([ensure_loaded/1, ensure_deps_loaded/1]).
 
+-export([compare/2,equal/2]).
+
+-export().
+
 notify_manager(Event)-> node_manager:notify(Event).
-
-
 
 %%%% Application Runtime %%%%
 ensure_loaded(App) when is_atom(App) ->
@@ -30,13 +32,25 @@ ensure_deps_loaded(Apps) when is_list(Apps)->
 		Apps)
 	.
 	
+
+	
 %%%%%%%%%% Data type Util %%%%%%%%%%%%%%%%%%%%5
+-spec compare(A::term(), B::term()) -> 'less' | 'equal' | 'greater'.
 compare(A,B) when A<B -> less;
 compare(A, B) when A == B -> equal;
 compare(A,B) when A>B --> greater.
 
+-spec equal(Same::term(),Same::term()) -> 'true' | 'false'.
 equal(Same, Same) -> true;
 equal(_Other, _Other) -> false.
+
+%%%%%%%%%% Config util %%%%%%%%%%%%%%%%%%%%
+-spec opts(Options::list())-> 
+opts([])-> ok.
+opts([Option|Options]) ->
+	
+-spec opt(
+opt(Option)->
 	
 %%%%%% Print %%%%%%%%%%%%%%%%%
 %print_list([])->ok;
