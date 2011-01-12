@@ -2,20 +2,42 @@
 #
 # If master is updated, we'll call BH and ask for a restart.
 
+def grab_code_root(filename)
+  if File.read(filename) =~ /code_root:(.+)/
+    $1.strip
+  else
+    err
+  end
+end
+
+def err
+  puts "Error: beehive code_root must be set on the server.
+Contact your Beehive admin about this problem."
+  exit
+end
+
+
+
 puts "Running post-receive hook on the server."
 
 head = $stdin.read.split(" ").last
+
 if head =~ /master/
-  puts "Master branch updated, asking beehive to restart the app..."
   name = File.dirname(File.expand_path(__FILE__)).split("/")[-2]
   if name =~ /\.git\Z/
     name = name[0, name.length - 4]
   end
-  if ENV['BH_CODE_ROOT']
-
-    system "sh #{ENV['BH_CODE_ROOT']}/bin/restart-app.sh #{name}"
+  if ENV['BEEHIVE_CODE_ROOT']
+    code_root = ENV['BEEHIVE_CODE_ROOT']
+  elsif File.exists? File.expand_path("~/.beehive.conf")
+    puts "found .beehive.conf"
+    code_root = grab_code_root(File.expand_path("~/.beehive.conf"))
+  elsif File.exists? "/etc/beehive.conf"
+    puts "found /etc/beehive.conf"
+    code_root = grab_code_root("/etc/beehive.conf")
   else
-    puts "Error: $BH_CODE_ROOT must be set on the server.\n
-Contact your Beehive admin about this problem."
+    err
   end
+  puts "Master branch updated, asking beehive to restart the app..."
+  system "sh #{code_root}/bin/restart-app.sh #{name}"
 end
