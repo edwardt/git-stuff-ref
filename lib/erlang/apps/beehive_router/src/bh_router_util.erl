@@ -6,7 +6,7 @@
 
 -export([compare/2,equal/2]).
 
--export().
+
 
 notify_manager(Event)-> node_manager:notify(Event).
 
@@ -38,19 +38,14 @@ ensure_deps_loaded(Apps) when is_list(Apps)->
 -spec compare(A::term(), B::term()) -> 'less' | 'equal' | 'greater'.
 compare(A,B) when A<B -> less;
 compare(A, B) when A == B -> equal;
-compare(A,B) when A>B --> greater.
+compare(A,B) when A>B -> greater.
 
 -spec equal(Same::term(),Same::term()) -> 'true' | 'false'.
 equal(Same, Same) -> true;
 equal(_Other, _Other) -> false.
 
 %%%%%%%%%% Config util %%%%%%%%%%%%%%%%%%%%
--spec opts(Options::list())-> 
-opts([])-> ok.
-opts([Option|Options]) ->
-	
--spec opt(
-opt(Option)->
+
 	
 %%%%%% Print %%%%%%%%%%%%%%%%%
 %print_list([])->ok;
