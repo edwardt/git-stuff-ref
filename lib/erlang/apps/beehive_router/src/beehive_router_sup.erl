@@ -53,15 +53,15 @@ init(_Args) ->
 
   Dashboard = ?CHILD(beehive_dashboard_sup, worker),
   ShouldRunDashboard = config:search_for_application_value(dashboard, true),
-  Re
-  Children = lists:flatten([
+  MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
+  ChildrenSpec = lists:flatten([
     ?CHILD(tcp_socket_server_sup, worker),
     ?CHILD(bh_node_stats_srv, worker),
     ?CHILD(bh_perf,worker),
     ?IF(ShouldRunDashboard, Dashboard, [])
   ]),
-
-  {ok,{{one_for_one,5,10}, Children}}.
+  RestartStrategy = {ok, {{one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}, ChildrenSpec}},
+  {ok,RestartStrategy}.
 
 
 %%====================================================================
