@@ -9,9 +9,12 @@
 	handle_call/3, handle_cast/2, handle_info/2]).
 
 start()->
-	Config = ?defaultConfigSet,	
-	start(config).
+	Config = ?default_conf,	
+	start(Config).
 
-start(ConfigSet)->
+start(Config)->
+ 	
 	ok.
+	
+
 

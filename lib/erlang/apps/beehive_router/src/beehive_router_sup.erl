@@ -52,7 +52,7 @@ init(_Args) ->
 %Router shall focus on one responsibility, that is to route to active workers
 
   Dashboard = ?CHILD(beehive_dashboard_sup, worker),
-  ShouldRunDashboard = config:search_for_application_value(dashboard, true),
+  ShouldRunDashboard = should_run_dashboard(),
   MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
   ChildrenSpec = lists:flatten([
     ?CHILD(tcp_socket_server_sup, worker),
@@ -68,7 +68,8 @@ init(_Args) ->
 %% Internal functions
 %%====================================================================
 
-
+should_run_dashboard()->
+	config:search_for_application_value(dashboard, true).
 	
 	
 	
