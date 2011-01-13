@@ -87,11 +87,10 @@ get_client_port()->
   PortNum = get_port(http-alt),
   config:search_for_application_value(client_port, 8080).
   
-%-spec get_port(Protocol::protocol()) -> port() | 'undefined'.
+-spec get_port(Protocol::protocol()) -> port() | 'undefined'.
 get_port('http-alt') -> 8080;
 get_port(_Unsupported_Protocol) -> undefined.
     
-
 send_to(To, {Tag, Msg, To}) ->
 	send_to(To, {Tag, Msg, To});
 
