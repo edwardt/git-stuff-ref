@@ -97,9 +97,13 @@ send_to(To, {Tag, Msg, To}) ->
 send_to(To, {Tag, Msg, From}) ->
   To ! {Tag, Msg, From}.
   
-send_to(To, {Tag, Msg, From}, Debug)->
+send_to(To, {Tag, Msg, From}, 'debug')->
   send_to(To, {Tag, Msg}) 
   %TODO log
+  ;
+send_to(To, {Tag, Msg, From}, _Other)->
+  send_to(To, {Tag, Msg}).
+
   .
 	
  
