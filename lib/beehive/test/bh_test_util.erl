@@ -23,8 +23,8 @@ setup(Proplist) when is_list(Proplist) ->
                           proplists:get_value(node_type, Proplist, test_type)),
       application:set_env(beehive, config_file,
                           proplists:get_value(config_file, Proplist, ConfigFile)),
-      application:set_env(beehive, beehive_home,
-                          proplists:get_value(beehive_home, Proplist,
+      application:set_env(beehive, home,
+                          proplists:get_value(home, Proplist,
                                               "/tmp/beehive/test")),
       application:set_env(beehive, repository, "local_git"),
 

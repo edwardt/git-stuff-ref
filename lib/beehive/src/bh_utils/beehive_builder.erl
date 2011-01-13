@@ -24,35 +24,35 @@ start() ->
     port      = Port,
     args = CliArgs1
     } = parse_args(FullCommand, #params{}),
-  
+
   App = build_app_from_args(AppFile),
-  
+
   RootDir = case RootDir1 of
-    undefined -> 
+    undefined ->
       {ok, D} = file:get_cwd(),
       D;
     _ -> RootDir1
   end,
 
-  application:set_env(beehive, beehive_home, RootDir),
-  
+  application:set_env(beehive, home, RootDir),
+
   % Build all the args here
-  ScratchDisk = config:search_for_application_value(scratch_dir, "/tmp/beehive/scratch"),  
+  ScratchDisk = config:search_for_application_value(scratch_dir, "/tmp/beehive/scratch"),
   SquashedDisk = config:search_for_application_value(squashed_disk, "/tmp/beehive/squashed"),
   BeeImage = filename:join([filename:absname(SquashedDisk), App#app.name, lists:append([App#app.name, ".bee"])]),
   HostIp = bh_host:myip(),
-  
+
   CliArgs = [
     {bee_image, BeeImage},
     {port, Port},
     {host, HostIp},
-    {scratch_dir, ScratchDisk}, 
+    {scratch_dir, ScratchDisk},
     {squashed_disk, SquashedDisk}
   |CliArgs1],
-  
+
   ok = validate_args(CliArgs),
   Bee = build_bee_from_args(App, CliArgs),
-  
+
   start_it_up(),
   case babysitter_integration:command(Command, App, Bee, CliArgs) of
     {ok, OsPid, ExitCode} ->
@@ -81,7 +81,7 @@ io:format("
 ", [])
   end,
   shut_it_down().
-  
+
 %% INTERNAL
 
 start_it_up() ->
@@ -91,29 +91,29 @@ start_it_up() ->
 
 shut_it_down() ->
   application:stop(babysitter).
-  
+
 parse_args([ "-h" | _Rest], _Params) -> show_usage();
 parse_args([ "-a", AppFile | Rest], Params) -> parse_args(Rest, Params#params{app_file = AppFile});
 parse_args([ "-d", Dir | Rest], Params) -> parse_args(Rest, Params#params{root_dir = Dir});
 parse_args([ "-p", Port | Rest], Params) -> parse_args(Rest, Params#params{port = list_to_integer(Port)});
-parse_args([H | Rest], #params{command = undefined} = Params) -> 
+parse_args([H | Rest], #params{command = undefined} = Params) ->
   parse_args(Rest, Params#params{command = list_to_atom(H)});
-parse_args([H | Rest], #params{args = CurrArgs} = Params) -> 
+parse_args([H | Rest], #params{args = CurrArgs} = Params) ->
   parse_args(Rest, Params#params{args = lists:flatten([H|CurrArgs])});
 parse_args([], P) -> P.
 
 
 build_app_from_args(undefined) -> [];
-build_app_from_args(Args) -> 
+build_app_from_args(Args) ->
   Proplist = fetch_file_proplist(Args),
   apps:new(Proplist).
-  
+
 build_bee_from_args(undefined, _) -> [];
-build_bee_from_args(#app{name = AppName, revision = Sha} = _App, Args) -> 
+build_bee_from_args(#app{name = AppName, revision = Sha} = _App, Args) ->
   Port = proplists:get_value(port, Args),
   Host = proplists:get_value(host, Args),
   StartedAt = date_util:now_to_seconds(),
-  
+
   #bee{
     id                      = {AppName, Host, Port},
     app_name                = AppName,
@@ -127,14 +127,14 @@ build_bee_from_args(#app{name = AppName, revision = Sha} = _App, Args) ->
 
 fetch_file_proplist(Filename) ->
   case filelib:is_file(Filename) of
-    true -> 
+    true ->
       {ok, Props} = file:consult(Filename),
       Props;
     false ->
       {ok, Dir} = file:get_cwd(),
       NewFilename = filename:join(Dir, Filename),
       case filelib:is_file(NewFilename) of
-        true -> 
+        true ->
           {ok, Props} = file:consult(Filename),
           Props;
         false -> []
@@ -177,7 +177,7 @@ validate_args([]) -> ok;
 validate_args([ {port, Port} | Rest]) ->
   case Port =< 65535 andalso Port >= 5000 of
     true -> validate_args(Rest);
-    false -> 
+    false ->
       error("Invalid port. The port must be between 5000 and 65535")
   end;
 validate_args([_K|Rest]) -> validate_args(Rest).

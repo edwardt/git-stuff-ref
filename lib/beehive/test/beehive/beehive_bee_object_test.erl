@@ -372,7 +372,7 @@ responding_loop(Acc) ->
   end.
 
 related_dir() ->
-  {ok, Dir} = application:get_env(beehive, beehive_home),
+  {ok, Dir} = application:get_env(beehive, home),
   Dir.
 
 setup_populated_repo(Name) ->

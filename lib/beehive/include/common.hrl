@@ -58,16 +58,10 @@ end()).
 -endif.
 
 % Defined beehive home path
--define (BEEHIVE_HOME, fun() ->
-  case application:get_env(beehive, beehive_home) of
-    undefined ->
-      case os:getenv("BEEHIVE_HOME") of
-        false -> "/var/lib/beehive";
-        E -> E
-      end;
-    {ok, F} -> F
-  end
-end()).
+-define (BEEHIVE_HOME,
+         fun() ->
+             config:search_for_application_value(home, "/var/lib/beehive")
+         end()).
 
 -define (BEEHIVE_DIR (List),
          filename:join([?BEEHIVE_HOME, lists:flatten(List)])).
