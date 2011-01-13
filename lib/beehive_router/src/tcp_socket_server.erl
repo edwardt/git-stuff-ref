@@ -74,35 +74,46 @@ accept(LSock) ->
 %% defined by routing_parameter tphen starting a proxy handler proxy
 %% process and finally passing the socket to the proxy handler process
 pass_on_to_proxy(ClientSock) ->
+	pass_on_to_proxy(ClientSock, 'no_debug').
+
+pass_on_to_proxy(ClientSock, 'debug') ->
+	pass_on_to_proxy(ClientSock, 'debug');
+
+pass_on_to_proxy(ClientSock, Debug) ->
   %% Chose here the type of response... for now, it'll just be http,
   %% but in the future... maybe tcp/udp?
   {ok, ProxyPid} = ?SUP:start_client(ClientSock),
   gen_tcp:controlling_process(ClientSock, ProxyPid),
-  ProxyPid ! {start, ClientSock, ProxyPid}.
+  send_to(ProxyPid, {start, ClientSock, ProxyPid}, Debug).
+  %ProxyPid ! {start, ClientSock, ProxyPid}.
   
   
 %%%%%%%%%%%%% Internal Functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -spec get_client_port() -> port() | {error, term()}.
 get_client_port()->
-  PortNum = get_port(http-alt),
-  config:search_for_application_value(client_port, 8080).
+  PortNum = get_port('http-alt'),
+  config:search_for_application_value(client_port, PortNum).
   
 -spec get_port(Protocol::protocol()) -> port() | 'undefined'.
 get_port('http-alt') -> 8080;
 get_port(_Unsupported_Protocol) -> undefined.
-    
+
+-spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}) -> {ok, term()} | 
+								  {error, term()}.
 send_to(To, {Tag, Msg, To}) ->
 	send_to(To, {Tag, Msg, To});
 
 send_to(To, {Tag, Msg, From}) ->
   To ! {Tag, Msg, From}.
   
+-spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}, 'debug' | any()) -> {ok, term()} | 
+								  {error, term()}.
 send_to(To, {Tag, Msg, From}, 'debug')->
-  send_to(To, {Tag, Msg}) 
+  send_to(To, {Tag, Msg, From}) 
   %TODO log
   ;
 send_to(To, {Tag, Msg, From}, _Other)->
-  send_to(To, {Tag, Msg}).
+  send_to(To, {Tag, Msg, From}).
 
 	
  
