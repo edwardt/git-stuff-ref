@@ -6,12 +6,6 @@
 
 -type stat_enable()::boolean(). %whether to enable that stat collection or not
 
--type protocol():: 'http'  | 
-		   'https' | 
-		   'tcp' |
-		   'udp' |
-		   'http-alt'. %supported protocol
-
 -type timestamp() :: non_neg_integer().  % microseconds with a special epoch
 
 

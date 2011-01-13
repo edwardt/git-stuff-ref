@@ -11,6 +11,7 @@
 -include ("beehive.hrl").
 -include ("http.hrl").
 -include ("common.hrl").
+-include ("../include/router.hrl").
 
 %% API
 -export([
@@ -87,9 +88,9 @@ get_client_port()->
   config:search_for_application_value(client_port, 8080).
   
 -spec get_port(Protocol::protocol()) -> port() | 'undefined'.
-get_port(Protocol) ->
+get_port(Protocol) when is_atom(Protocol) ->
   case (Protocol) of
-	http-alt -> 8080;
+	'http-alt' -> 8080;
 	ELSE -> undefined
   end.
     

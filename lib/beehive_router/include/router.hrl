@@ -3,4 +3,10 @@
 -define (CONNECTION_TIMEOUT, timer:seconds(30)).
 -define (NODE_CONNECT_TIMEOUT, timer:seconds(3)).
 
+-type protocol():: 'http'  | 
+		   'https' | 
+		   'tcp' |
+		   'udp' |
+		   'http-alt'. %supported protocol
+
 
