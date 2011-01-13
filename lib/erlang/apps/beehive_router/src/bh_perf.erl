@@ -22,7 +22,7 @@ start(Config)->
  	%ensure_file(Config),
  	
 	ok.
--spec init(Args::[terms()]) -> 'ok' | {error, reason()} | {'EXIT', reason()}.
+-spec init(Args::[term()]) -> 'ok' | {error, reason()} | {'EXIT', reason()}.
 init(Args)->
 
 	ok.

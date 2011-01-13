@@ -14,7 +14,7 @@
 
 -type timestamp() :: non_neg_integer().  % microseconds with a special epoch
 
--type bh_stat_option():: 
+
 
 -record (counter, 
 	{name::counter_name(), 
@@ -27,8 +27,8 @@
 	}).
 
 -record(bh_stats, {
-	hit::bh_counter_val(),
-	sent::bh_stat_val()		
+	hit::counter_val(),
+	sent::stat_val()		
 	}).
 
 
