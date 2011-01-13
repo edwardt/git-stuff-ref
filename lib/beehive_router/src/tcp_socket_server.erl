@@ -104,7 +104,6 @@ send_to(To, {Tag, Msg, From}, 'debug')->
 send_to(To, {Tag, Msg, From}, _Other)->
   send_to(To, {Tag, Msg}).
 
-  .
 	
  
 
