@@ -31,11 +31,6 @@ The user_app table stores the mappings between users and their apps
 
 ## Configuration
 
-There are multiple methods of configuration. If you are going to
-configure the router the same way every time, the recommended method
-is to write a configuration file and pass in the location of the
-configuration file at the start command with the -c option, like so:
-
 The config file currently expects a yaml format. These will be converted to
 a proplist of erlang tuples.
     
@@ -52,6 +47,8 @@ include the DB, running apps and log files.  The default value is
 
 ### code_root
 
+Used by git post-receive hooks to determine how to call restart-app
+scripts.  Git hooks won't work properly without it.
 
 ### routing_param
 
