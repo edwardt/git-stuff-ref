@@ -33,7 +33,7 @@ echo "Starting beehive"
 eval "erl \
     -setcookie beehive \
     -name beehive@127.0.0.1 \
-    -pa deps/*/ebin -pa lib/erlang/apps/*/ebin -pa lib/erlang/apps/*/include  \
+    -pa deps/*/ebin -pa lib/*/ebin -pa lib/*/include  \
     -beehive database_dir '\"$BEEHIVE_HOME/db\"' \
     -eval \"application:start(sasl)\" \
     -eval \"application:start(os_mon)\" \

@@ -51,7 +51,7 @@ end()).
                {error, bad_name} ->
                  filename:join([filename:dirname(code:which(?MODULE)), "..", ".."]);
                Dir ->
-                 filename:join([filename:dirname(Dir), "..", "..", "..", ".."])
+                 filename:join([filename:dirname(Dir), "..", ".."])
              end
          end()).
 
