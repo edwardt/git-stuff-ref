@@ -18,7 +18,7 @@
 -export([init/1]).
 
 -define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
--define (IF (Bool, A, B), if Bool -> A; true -> B end).
+-define (GetValOrDefault (Bool, A, DefaultValue), if Bool -> A; true -> DefaultValue end).
 
 -define(SERVER, ?MODULE).
 
@@ -51,34 +51,46 @@ init(_Args) ->
 %TODO Should be a different management module%%
 %Router shall focus on one responsibility, that is to route to active workers
   ChildSpecSet = lists:flatten([
-    get_worker_childspec(tcp_socket_server_sup), 
-    get_worker_childspec(bh_node_stats_srv),
-    get_worker_childspec(bh_perf),
-    get_dashboard_childspec()
+    tcp_socket_server_sup_spec(), 
+    node_stat_server_spec(),
+    perfcounter_server_spec(),
+    optional_dashboard_childspec()
    ]),
-  {ok, get_worker_restartstrategy(), ChildSpecSet}.
+  {ok, worker_restart_strategy(), ChildSpecSet}.
   
 
 %%====================================================================
 %% Internal functions
 %%====================================================================
 
--spec get_dashboard_childspec()-> list() | [].	
-get_dashboard_childspec()->
+-spec optional_dashboard_childspec()-> list() | [].	
+optional_dashboard_childspec()->
   Dashboard = ?CHILD(beehive_dashboard_sup, worker),
   ShouldRunDashboard = should_run_dashboard(),
-  ?IF(ShouldRunDashboard, Dashboard, []).
+  ?GetValOrDefault(ShouldRunDashboard, Dashboard, []).
 
 -spec should_run_dashboard() -> {dashboard, boolean()}.
 should_run_dashboard()->
   config:search_for_application_value(dashboard, true).
 
--spec get_worker_childspec(application:application()) -> list().
+-spec tcp_socket_server_sup_spec()->tuple().
+tcp_socket_server_sup_spec()->
+  get_worker_childspec(tcp_socket_server_sup).
+
+-spec node_stat_server_spec()-> tuple().
+node_stat_server_spec()->
+  get_worker_childspec(bh_node_stats_srv).
+
+-spec perfcounter_server_spec() -> tuple().
+perfcounter_server_spec()->
+  get_worker_childspec(bh_perf).	
+
+-spec get_worker_childspec(application:application()) -> tuple().
 get_worker_childspec(Name) when is_atom(Name) ->
   ?CHILD(Name, worker).
 
--spec get_worker_restartstrategy() -> tuple().
-get_worker_restartstrategy() ->
+-spec worker_restart_strategy() -> tuple().
+worker_restart_strategy() ->
   MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
   {one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}.
 
