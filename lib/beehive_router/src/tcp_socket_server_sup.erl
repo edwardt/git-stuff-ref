@@ -29,7 +29,10 @@ start_client(Args) ->
   supervisor:start_child(the_proxy_srv, [Args]).
 
 init([]) ->
-  WorkerSpecSet =  list:flattern([tcp_socket_server_spec(),proxy_server_spec()]),
+  WorkerSpecSet =  list:flattern([
+	tcp_socket_server_spec(),
+	proxy_server_spec()
+	]),
   {ok, {worker_restart_strategy(), 
 	WorkerSpecSet}};
 
