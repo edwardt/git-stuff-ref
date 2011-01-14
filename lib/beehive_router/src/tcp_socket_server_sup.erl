@@ -67,4 +67,10 @@ proxy_server_spec()->
     supervisor,
     []}.
 
+%error() ->
+%  try throw(a) of
+%   _ -> a
+%  catch
+%    _:_ -> io:format("track is ~p~n", erlang:get_stacktrace())
+%  end.
 
