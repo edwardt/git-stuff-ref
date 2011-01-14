@@ -85,7 +85,7 @@ node_stat_server_spec()->
 perfcounter_server_spec()->
   get_worker_childspec(bh_perf).	
 
--spec get_worker_childspec(application:application()) -> tuple().
+-spec get_worker_childspec(application:application()) -> supervisor:childspec().
 get_worker_childspec(Name) when is_atom(Name) ->
   ?CHILD(Name, worker).
 
