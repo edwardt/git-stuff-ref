@@ -19,6 +19,8 @@
 
 -define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
 -define (GetValOrDefault (Bool, A, DefaultValue), if Bool -> A; true -> DefaultValue end).
+-define (MaxRestartTrial, 5).
+-define (MaxTimeBetweenRestartInSec, 10).
 
 -define(SERVER, ?MODULE).
 
@@ -92,8 +94,7 @@ get_worker_childspec(Name) when is_atom(Name) ->
 
 -spec worker_restart_strategy() -> {supervisor:strategy(), pos_integer(), pos_integer()}.
 worker_restart_strategy() ->
-  MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
-  {one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}.
+  {one_for_one, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec}.
 
 
 %%====================================================================
