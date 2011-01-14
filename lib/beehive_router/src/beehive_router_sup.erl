@@ -63,7 +63,7 @@ init(_Args) ->
 %% Internal functions
 %%====================================================================
 
--spec optional_dashboard_childspec()-> list() | [].	
+-spec optional_dashboard_childspec()-> supervisor:childspec() | [].	
 optional_dashboard_childspec()->
   Dashboard = ?CHILD(beehive_dashboard_sup, worker),
   ShouldRunDashboard = should_run_dashboard(),
@@ -73,15 +73,15 @@ optional_dashboard_childspec()->
 should_run_dashboard()->
   config:search_for_application_value(dashboard, true).
 
--spec tcp_socket_server_sup_spec()->tuple().
+-spec tcp_socket_server_sup_spec()->supervisor:childspec().
 tcp_socket_server_sup_spec()->
   get_worker_childspec(tcp_socket_server_sup).
 
--spec node_stat_server_spec()-> tuple().
+-spec node_stat_server_spec()-> supervisor:childspec().
 node_stat_server_spec()->
   get_worker_childspec(bh_node_stats_srv).
 
--spec perfcounter_server_spec() -> tuple().
+-spec perfcounter_server_spec() -> supervisor:childspec().
 perfcounter_server_spec()->
   get_worker_childspec(bh_perf).	
 
@@ -89,7 +89,7 @@ perfcounter_server_spec()->
 get_worker_childspec(Name) when is_atom(Name) ->
   ?CHILD(Name, worker).
 
--spec worker_restart_strategy() -> tuple().
+-spec worker_restart_strategy() -> {supervisor:strategy(), pos_integer(), pos_integer()}.
 worker_restart_strategy() ->
   MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
   {one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}.
