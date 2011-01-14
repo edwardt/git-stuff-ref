@@ -69,7 +69,7 @@ init(_Args) ->
 
 -spec optional_dashboard_childspec()-> supervisor:childspec() | [].	
 optional_dashboard_childspec()->
-  Dashboard = ?CHILD(beehive_dashboard_sup, worker),
+  Dashboard = get_worker_childspec(beehive_dashboard_sup),
   ShouldRunDashboard = should_run_dashboard(),
   ?GetValOrDefault(ShouldRunDashboard, Dashboard, []).
 
@@ -91,7 +91,7 @@ perfcounter_server_spec()->
 
 -spec get_worker_childspec(application:application()) -> supervisor:childspec().
 get_worker_childspec(Name) when is_atom(Name) ->
-  {Name, {Name, start_link, []}, permanent, ?ShutdownAfterTimeoutInSec, worker, [Name]}).
+  {Name, {Name, start_link, []}, permanent, ?ShutdownAfterTimeoutInSec, worker, [Name]}.
 
 -spec worker_restart_strategy() -> {supervisor:strategy(), pos_integer(), pos_integer()}.
 worker_restart_strategy() ->
