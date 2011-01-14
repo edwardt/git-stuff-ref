@@ -40,7 +40,7 @@ init([]) ->
 
 init([Module]) ->
   ProxySrv = {undefined,{Module,start_link,[]},temporary,2000,worker,[]},
-  {ok, {{worker_restart_strategy('simple_one_for_one'), [ProxySrv]}}.
+  {ok, {worker_restart_strategy('simple_one_for_one'), [ProxySrv]}}.
 
 stop(_Args) ->
   ok.
@@ -51,7 +51,7 @@ stop(_Args) ->
 -spec worker_restart_strategy(supervisor:strategy())->{supervisor:strategy(), pos_integer(), pos_integer()}.
 %Support only 2 restart types
 worker_restart_strategy(RestartType) when ?is_simple(RestartType), ?is_one_for_one(RestartType)->
-  {RestartType, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec}.
+  {RestartType, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec};
 worker_restart_strategy(UnknownRestartType) -> throw ({unsupported_restart_type, UnknownRestartType}).
 
 tcp_socket_server_spec()->
