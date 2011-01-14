@@ -53,7 +53,7 @@ init_accept(LPort, SockOpts) ->
 		 "There was an error listening to the socket for port ~p: ~p",
 		 [LPort, Error]),
     		increment_counter(
-    		error
+    		{error, Error}
   end.
 
 %% Accept a new socket connection to the server. If the socket
@@ -73,6 +73,8 @@ accept(LSock) ->
            [LSock, Error]),
       exit(Error)
   end.
+
+
 
 %% Take the socket and decode the routing key from the packet. For
 %% http, this means accept enough on the request to pull off the

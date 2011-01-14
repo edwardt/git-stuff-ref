@@ -50,26 +50,35 @@ init(_Args) ->
 
 %TODO Should be a different management module%%
 %Router shall focus on one responsibility, that is to route to active workers
-
-  Dashboard = ?CHILD(beehive_dashboard_sup, worker),
-  ShouldRunDashboard = should_run_dashboard(),
-  MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
   ChildrenSpec = lists:flatten([
-    ?CHILD(tcp_socket_server_sup, worker),
-    ?CHILD(bh_node_stats_srv, worker),
-    ?CHILD(bh_perf,worker),
-    ?IF(ShouldRunDashboard, Dashboard, [])
-  ]),
-  RestartStrategy = {ok, {{one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}, ChildrenSpec}},
-  {ok,RestartStrategy}.
+    get_worker_process_runspec(tcp_socket_server_sup), 
+    get_worker_process_runspec(bh_node_stats_srv),
+    get_worker_process_runspec(bh_perf),
+    get_run_dashboard_runspec()
+   ]),
+  {ok,get_worker_restartstrategy(ChildrenSpec)}.
 
 
 %%====================================================================
 %% Internal functions
 %%====================================================================
 
+-spec get_run_dashboard_runspec()-> list() | [].	
+get_run_dashboard_runspec()->
+  Dashboard = ?CHILD(beehive_dashboard_sup, worker),
+  ShouldRunDashboard = should_run_dashboard(),
+  ?IF(ShouldRunDashboard, Dashboard, []).
+
+-spec should_run_dashboard() -> {dashboard, boolean()}.
 should_run_dashboard()->
-	config:search_for_application_value(dashboard, true).
-	
-	
+  config:search_for_application_value(dashboard, true).
+
+-spec get_worker_process_runspec(application:application()) -> list().
+get_worker_process_runspec(Name) when is_atom(Name) ->
+  ?CHILD(Name, worker).
+
+-spec get_worker_restartstrategy(list()) -> tuple().
+get_worker_restartstrategy(WorkerProcessSpec) when is_list(WorkerProcessSpec), WorkerProcessSpec =/= []->
+  MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
+  {ok, {{one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}, WorkerProcessSpec}}.
 	
