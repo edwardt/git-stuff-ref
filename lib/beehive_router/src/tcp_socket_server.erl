@@ -34,7 +34,7 @@ start_link()          -> init().
 init()                ->
   init(get_client_port()).
 init(LocalPort) ->
-  Pid = spawn_link(?MODULE, init_accept, [LocalPort]),
+  Pid = proc_lib:spawn_link(?MODULE, init_accept, [LocalPort]),
   {ok, Pid}.
 
 % accept responses on the port given by the application configuration
@@ -48,6 +48,7 @@ init_accept(LPort) ->
 	    ?LOG(error,
                  "There was an error listening to the socket for port ~p: ~p",
                  [LPort, Error]),
+	    increment_counter(
 	    error
 	end.
 
@@ -115,6 +116,9 @@ send_to(To, {Tag, Msg, From}, 'debug')->
 send_to(To, {Tag, Msg, From}, _Other)->
   send_to(To, {Tag, Msg, From}).
 
+-spec add_counter(CounterName::counter_name(), Value::counter_val())-> no_return().
+increment_counter(CounterName, Value) ->
+	bh_perf::increment
 	
  
 
