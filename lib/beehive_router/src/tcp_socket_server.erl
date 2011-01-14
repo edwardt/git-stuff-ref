@@ -38,19 +38,23 @@ init(LocalPort) ->
   {ok, Pid}.
 
 % accept responses on the port given by the application configuration
+
 init_accept(LPort) ->
   SockOpts = [binary, {backlog, 256}, {nodelay, false},
               {reuseaddr, true},{active, false}],
-	case gen_tcp:listen(LPort, SockOpts) of
-	  {ok, ListenSocket} ->
-	    accept(ListenSocket);
-	  Error ->
-	    ?LOG(error,
-                 "There was an error listening to the socket for port ~p: ~p",
-                 [LPort, Error]),
-	    increment_counter(
-	    error
-	end.
+  init_accept(LPort, SockOpts).
+
+init_accept(LPort, SockOpts) ->
+  case gen_tcp:listen(LPort, SockOpts) of
+  	{ok, ListenSocket} ->
+    			   accept(ListenSocket); %TODO: debug
+  	Error ->
+	    	?LOG(error,
+		 "There was an error listening to the socket for port ~p: ~p",
+		 [LPort, Error]),
+    		increment_counter(
+    		error
+  end.
 
 %% Accept a new socket connection to the server. If the socket
 %% connection is successful, then move on and decode the socket type
@@ -59,14 +63,15 @@ init_accept(LPort) ->
 %% request in this process so that we are never blocking the socket
 %% server
 accept(LSock) ->
+  
   case gen_tcp:accept(LSock) of
     {ok, ClientSock} ->
-      spawn(fun() -> pass_on_to_proxy(ClientSock) end),
+      spawn(fun() -> pass_on_to_proxy(ClientSock) end), %TODO: debug
 	    accept(LSock);
     Error ->
       ?LOG(error, "There was an error accepting the socket ~p: ~p",
            [LSock, Error]),
-      exit(error)
+      exit(Error)
   end.
 
 %% Take the socket and decode the routing key from the packet. For
@@ -75,13 +80,13 @@ accept(LSock) ->
 %% defined by routing_parameter tphen starting a proxy handler proxy
 %% process and finally passing the socket to the proxy handler process
 pass_on_to_proxy(ClientSock) ->
-	pass_on_to_proxy(ClientSock, 'no_debug').
+  pass_on_to_proxy(ClientSock, 'no_debug').
 
 pass_on_to_proxy(ClientSock, 'debug') ->
-	pass_on_to_proxy(ClientSock, 'debug');
+  pass_on_to_proxy(ClientSock, 'debug');
 
 pass_on_to_proxy(ClientSock, Debug) ->
-  %% Chose here the type of response... for now, it'll just be http,
+  %% Choose here the type of response... for now, it'll just be http,
   %% but in the future... maybe tcp/udp?
   {ok, ProxyPid} = ?SUP:start_client(ClientSock),
   gen_tcp:controlling_process(ClientSock, ProxyPid),
@@ -93,16 +98,17 @@ pass_on_to_proxy(ClientSock, Debug) ->
 -spec get_client_port() -> port() | {error, term()}.
 get_client_port()->
   PortNum = get_port('http-alt'),
-  config:search_for_application_value(client_port, PortNum).
+  config:search_for_application_value(client_port, PortNum). %TODO: I don't know why we need to hide usage like this
   
 -spec get_port(Protocol::protocol()) -> port() | 'undefined'.
-get_port('http-alt') -> 8080;
+get_port('http-alt') -> 8080; %TODO: get from dets later instead
+get_port('https')-> 443;
 get_port(_Unsupported_Protocol) -> undefined.
 
 -spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}) -> {ok, term()} | 
 								  {error, term()}.
 send_to(To, {Tag, Msg, To}) ->
-	send_to(To, {Tag, Msg, To});
+  send_to(To, {Tag, Msg, To});
 
 send_to(To, {Tag, Msg, From}) ->
   To ! {Tag, Msg, From}.
@@ -116,9 +122,9 @@ send_to(To, {Tag, Msg, From}, 'debug')->
 send_to(To, {Tag, Msg, From}, _Other)->
   send_to(To, {Tag, Msg, From}).
 
--spec add_counter(CounterName::counter_name(), Value::counter_val())-> no_return().
-increment_counter(CounterName, Value) ->
-	bh_perf::increment
+-spec add_counter(CounterName::counter_name())-> no_return().
+increment_counter(CounterName) ->
+  bh_perf::increment_hit_counter(CounterName).
 	
  
 
