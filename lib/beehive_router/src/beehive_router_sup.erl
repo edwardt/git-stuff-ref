@@ -29,6 +29,7 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the supervisor
 %%--------------------------------------------------------------------
+-spec start_link()-> supervisor:startlink_ret() | supervisor:startlink_err().
 start_link() ->
   start_link([]).
 start_link(Args) ->
@@ -46,8 +47,8 @@ start_link(Args) ->
 %% to find out about restart strategy, maximum restart frequency and child
 %% specifications.
 %%--------------------------------------------------------------------
+-spec init(list()) -> {'ok', supervisor:state()} | 'ignore' | {'stop', supervisor:stop_rsn()}.
 init(_Args) ->
-
 %TODO Should be a different management module%%
 %Router shall focus on one responsibility, that is to route to active workers
   ChildSpecSet = lists:flatten([
