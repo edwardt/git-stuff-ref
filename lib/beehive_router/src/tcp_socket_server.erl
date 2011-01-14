@@ -12,6 +12,7 @@
 -include ("http.hrl").
 -include ("common.hrl").
 -include ("../include/router.hrl").
+-include ("../include/bh_stat.hrl").
 
 %% API
 -export([
@@ -52,7 +53,7 @@ init_accept(LPort, SockOpts) ->
 	    	?LOG(error,
 		 "There was an error listening to the socket for port ~p: ~p",
 		 [LPort, Error]),
-    		increment_counter(
+    		%increment_counter(
     		{error, Error}
   end.
 
@@ -105,7 +106,7 @@ get_client_port()->
 -spec get_port(Protocol::protocol()) -> port() | 'undefined'.
 get_port('http-alt') -> 8080; %TODO: get from dets later instead
 get_port('https')-> 443;
-get_port(_Unsupported_Protocol) -> undefined.
+get_port(UnknownProtocol) -> throw({unsupported_protocol_type, UnknownProtocol}).
 
 -spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}) -> {ok, term()} | 
 								  {error, term()}.
@@ -124,9 +125,9 @@ send_to(To, {Tag, Msg, From}, 'debug')->
 send_to(To, {Tag, Msg, From}, _Other)->
   send_to(To, {Tag, Msg, From}).
 
--spec add_counter(CounterName::counter_name())-> no_return().
+-spec increment_counter(CounterName::counter_name())-> no_return().
 increment_counter(CounterName) ->
-  bh_perf::increment_hit_counter(CounterName).
+  bh_perf:increment_hit_counter(CounterName).
 	
  
 
