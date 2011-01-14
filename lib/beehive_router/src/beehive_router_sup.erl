@@ -50,7 +50,7 @@ start_link(Args) ->
 -spec init(list()) -> {'ok', supervisor:state()} | 'ignore' | {'stop', supervisor:stop_rsn()}.
 init(_Args) ->
 %TODO Should be a different management module%%
-%Router shall focus on one responsibility, that is to route to active workers
+%Router shall focus on one responsibility, ie. routing to active workers
   ChildSpecSet = lists:flatten([
     tcp_socket_server_sup_spec(), 
     node_stat_server_spec(),
