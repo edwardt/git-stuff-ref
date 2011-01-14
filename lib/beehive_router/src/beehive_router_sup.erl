@@ -17,12 +17,12 @@
 %% Supervisor callbacks
 -export([init/1]).
 
--define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
--define (GetValOrDefault (Bool, A, DefaultValue), if Bool -> A; true -> DefaultValue end).
+-define(SERVER, ?MODULE).
 -define (MaxRestartTrial, 5).
 -define (MaxTimeBetweenRestartInSec, 10).
-
--define(SERVER, ?MODULE).
+%-define ().
+-define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+-define (GetValOrDefault (Bool, A, DefaultValue), if Bool -> A; true -> DefaultValue end).
 
 %%====================================================================
 %% API functions
