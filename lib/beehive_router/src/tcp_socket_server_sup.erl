@@ -21,6 +21,8 @@
 -define (MaxRestartTrial, 5).
 -define (MaxTimeBetweenRestartInSec, 10).
 -define (TcpTimeoutInSec, 2000).
+-define(is_simple(Strategy), Strategy =:= simple_one_for_one).
+-define(is_one_for_one(Strategy), Strategy =:= one_for_one).
 
 start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
@@ -33,12 +35,12 @@ init([]) ->
 	tcp_socket_server_spec(),
 	proxy_server_spec()
 	]),
-  {ok, {worker_restart_strategy(), 
+  {ok, {worker_restart_strategy('one_for_one'), 
 	WorkerSpecSet}};
 
 init([Module]) ->
   ProxySrv = {undefined,{Module,start_link,[]},temporary,2000,worker,[]},
-  {ok, {{simple_one_for_one, 5, 10}, [ProxySrv]}}.
+  {ok, {{worker_restart_strategy('simple_one_for_one'), [ProxySrv]}}.
 
 stop(_Args) ->
   ok.
@@ -46,9 +48,11 @@ stop(_Args) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
--spec worker_restart_strategy()->{supervisor:strategy(), pos_integer(), pos_integer()}.
-worker_restart_strategy()->
-  {simple_one_for_one, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec}.
+-spec worker_restart_strategy(supervisor:strategy())->{supervisor:strategy(), pos_integer(), pos_integer()}.
+%Support only 2 restart types
+worker_restart_strategy(RestartType) when ?is_simple(RestartType), ?is_one_for_one(RestartType)->
+  {RestartType, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec}.
+worker_restart_strategy(UnknownRestartType) -> throw ({unsupported_restart_type, UnknownRestartType}).
 
 tcp_socket_server_spec()->
   {the_tcp_socket_server,
