@@ -56,8 +56,8 @@ init(_Args) ->
     get_worker_childspec(bh_perf),
     get_dashboard_childspec()
    ]),
-  {ok,get_worker_restartstrategy(ChildSpecSet)}.
-
+  {ok, get_worker_restartstrategy(), ChildSpecSet}.
+  
 
 %%====================================================================
 %% Internal functions
@@ -77,8 +77,22 @@ should_run_dashboard()->
 get_worker_childspec(Name) when is_atom(Name) ->
   ?CHILD(Name, worker).
 
--spec get_worker_restartstrategy(list()) -> tuple().
-get_worker_restartstrategy(WorkerProcessSpec) when is_list(WorkerProcessSpec), WorkerProcessSpec =/= []->
+-spec get_worker_restartstrategy() -> tuple().
+get_worker_restartstrategy() ->
   MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
-  {ok, {{one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}, WorkerProcessSpec}}.
+  {one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}.
+
+
+%%====================================================================
+%% Unit test
+%%====================================================================
+%-ifdef(ETEST)
+%-define().
+
+
+
+
+
+%-endif
+
 	
