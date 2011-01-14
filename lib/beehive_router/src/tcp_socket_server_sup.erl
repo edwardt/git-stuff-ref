@@ -20,6 +20,7 @@
 
 -define (MaxRestartTrial, 5).
 -define (MaxTimeBetweenRestartInSec, 10).
+-define (TcpTimeoutInSec, 2000).
 
 start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
@@ -29,7 +30,6 @@ start_client(Args) ->
 
 init([]) ->
   WorkerSpecSet =  list:flattern([tcp_socket_server_spec(),proxy_server_spec()]),
-
   {ok, {worker_restart_strategy(), 
 	WorkerSpecSet}};
 
@@ -51,7 +51,7 @@ tcp_socket_server_spec()->
   {the_tcp_socket_server,
    {tcp_socket_server, start_link, []},
     permanent,
-    2000,
+    ?TcpTimeoutInSec,
     worker,
     [tcp_socket_server]}.
 
