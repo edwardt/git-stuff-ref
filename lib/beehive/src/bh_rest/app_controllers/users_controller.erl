@@ -102,6 +102,7 @@ delete(_Path, _Data) -> "unhandled".
 add_pubkey(User, Pubkey) ->
   case users:save(User#user{pubkey = Pubkey}) of
     {ok, SavedUser} ->
+      ok = beehive_repository:add_user_pubkey(SavedUser#user.email, Pubkey),
       [{"user", SavedUser#user.email}, {"pubkey", "added pubkey"}];
     _Else ->
       app_error("There was an error updating the user")
