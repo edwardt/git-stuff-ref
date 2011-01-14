@@ -50,21 +50,21 @@ init(_Args) ->
 
 %TODO Should be a different management module%%
 %Router shall focus on one responsibility, that is to route to active workers
-  ChildrenSpec = lists:flatten([
-    get_worker_process_runspec(tcp_socket_server_sup), 
-    get_worker_process_runspec(bh_node_stats_srv),
-    get_worker_process_runspec(bh_perf),
-    get_run_dashboard_runspec()
+  ChildSpecSet = lists:flatten([
+    get_worker_childspec(tcp_socket_server_sup), 
+    get_worker_childspec(bh_node_stats_srv),
+    get_worker_childspec(bh_perf),
+    get_dashboard_childspec()
    ]),
-  {ok,get_worker_restartstrategy(ChildrenSpec)}.
+  {ok,get_worker_restartstrategy(ChildSpecSet)}.
 
 
 %%====================================================================
 %% Internal functions
 %%====================================================================
 
--spec get_run_dashboard_runspec()-> list() | [].	
-get_run_dashboard_runspec()->
+-spec get_dashboard_childspec()-> list() | [].	
+get_dashboard_childspec()->
   Dashboard = ?CHILD(beehive_dashboard_sup, worker),
   ShouldRunDashboard = should_run_dashboard(),
   ?IF(ShouldRunDashboard, Dashboard, []).
@@ -73,8 +73,8 @@ get_run_dashboard_runspec()->
 should_run_dashboard()->
   config:search_for_application_value(dashboard, true).
 
--spec get_worker_process_runspec(application:application()) -> list().
-get_worker_process_runspec(Name) when is_atom(Name) ->
+-spec get_worker_childspec(application:application()) -> list().
+get_worker_childspec(Name) when is_atom(Name) ->
   ?CHILD(Name, worker).
 
 -spec get_worker_restartstrategy(list()) -> tuple().
