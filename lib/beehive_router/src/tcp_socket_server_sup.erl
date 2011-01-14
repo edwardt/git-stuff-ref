@@ -17,6 +17,10 @@
   stop/1
 ]).
 
+
+-define (MaxRestartTrial, 5).
+-define (MaxTimeBetweenRestartInSec, 10).
+
 start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
@@ -24,9 +28,10 @@ start_client(Args) ->
   supervisor:start_child(the_proxy_srv, [Args]).
 
 init([]) ->
-  {ok, {get_child_spec(), 
-	[init_tcp_socket_server(), 
-	init_proxy_server()]}};
+  WorkerSpecSet =  list:flattern([tcp_socket_server_spec(),proxy_server_spec()]),
+
+  {ok, {worker_restart_strategy(), 
+	WorkerSpecSet}};
 
 init([Module]) ->
   ProxySrv = {undefined,{Module,start_link,[]},temporary,2000,worker,[]},
@@ -38,11 +43,11 @@ stop(_Args) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
-get_worker_restartstrategy()->
-  MaxRestartTrial = 5, MaxTimeBetweenRestartInSec =10,
-  {one_for_one, MaxRestartTrial, MaxTimeBetweenRestartInSec}.
+-spec worker_restart_strategy()->{supervisor:strategy(), pos_integer(), pos_integer()}.
+worker_restart_strategy()->
+  {simple_one_for_one, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec}.
 
-init_tcp_socket_server()->
+tcp_socket_server_spec()->
   {the_tcp_socket_server,
    {tcp_socket_server, start_link, []},
     permanent,
@@ -50,7 +55,7 @@ init_tcp_socket_server()->
     worker,
     [tcp_socket_server]}.
 
-init_proxy_server()->
+proxy_server_spec()->
   {the_proxy_srv,
    {supervisor,start_link,[{local, the_proxy_srv},
     ?MODULE, [proxy_handler]]},
