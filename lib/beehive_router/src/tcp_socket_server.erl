@@ -170,10 +170,15 @@ get_stacktrace()->
 -ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
 
-get_port_test_()->
+get_client_port_test()->
+  TestPort = 100,
+  application:unsetenv(client_port),
+  ?assertEqual(TestPort, get_client_port()).
+
+get_port_test()->
   ?assertEqual(8080, get_port()).
 
-get_port_unknown_prototcol_test_()->
+get_port_unknown_prototcol_test()->
   UnknownProtocol = 'whatever',
   ?assertThrow({unsupported_protocol_type, UnknownProtocol}, 
    get_port(UnkownProtocol)).

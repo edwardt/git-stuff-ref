@@ -174,7 +174,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%====================================================================
 -spec ensure_apps_started()-> no_return() | {error, term()}.
 ensure_apps_started()->  
-  bh_route_util:ensure_deps_started(['sasl','os_mon']).
+  bh_router_util:ensure_deps_started(['sasl','os_mon']).
   
   
 %% Return node cpu utilisation
@@ -235,7 +235,7 @@ get_os_data(packets, {unix, linux},File) ->
 -ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
 
-ensure_apps_started_test_()->
+ensure_apps_started_test()->
   Result = ensure_apps_started().
   ?assertMatch({ok, _Whatever}, Result).
 

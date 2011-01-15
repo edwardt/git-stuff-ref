@@ -58,6 +58,9 @@ package:
 	@(mkdir -p ./builds)
 	@(tar -C rel -c beehive | gzip > ./builds/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz)
 
+*TODO: Put static code analysis and spec check as one of the option
+*code_check:
+
 test: compile
 	@./test/bootstrap.sh
     ifdef suite

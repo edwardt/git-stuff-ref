@@ -3,7 +3,7 @@
 
 -export([notify_manager/1]).
 
--export([ensure_loaded/1, ensure_deps_loaded/1]).
+-export([ensure_loaded/1, ensure_deps_loaded/1, ensure_deps_started/1]).
 
 -export([compare/2,equal/2]).
 
@@ -118,3 +118,15 @@ get_stacktrace() ->
   catch
     _:_ -> io:format("StackTrace is ~p ~n", [erlang:get_stacktrace()])
   end.	
+
+%%--------------------------------------------------------------------
+%% Unit Test 
+%%-------------------------------------------------------------------- 
+-ifdef(TEST).
+-ifdef(EUNIT).
+-include_lib("eunit/include/eunit.hrl").
+
+
+-endif.
+-endif.
+

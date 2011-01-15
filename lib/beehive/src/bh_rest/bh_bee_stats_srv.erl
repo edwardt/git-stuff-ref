@@ -175,7 +175,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 
 ensure_apps_started()->  
-  bh_route_util:ensure_deps_started(['sasl','os_mon']).
+  bh_router_util:ensure_deps_started(['sasl','os_mon']).
 
 new_bee_stat() ->
   #bee_stat{
