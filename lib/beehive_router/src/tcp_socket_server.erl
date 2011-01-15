@@ -164,7 +164,7 @@ get_stacktrace()->
 
 
 %%--------------------------------------------------------------------
-%% Unit Test
+%% Unit Test Only for internal unexported function
 %%--------------------------------------------------------------------  
 -ifdef(TEST).
 -ifdef(EUNIT).
