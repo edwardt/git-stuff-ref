@@ -31,7 +31,7 @@ list_head(List) when is_list(List) ->
   erlang:hd(List).
   
 is_list_item(Item, List) when is_list(List) ->
-  lists:member(Out, List).
+  lists:member(Item, List).
   
 least_loaded() ->
   List = [
