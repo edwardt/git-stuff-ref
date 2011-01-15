@@ -7,7 +7,7 @@
 %%%-------------------------------------------------------------------
 
 -module (beehive_dashboard).
--include ("beehive.hrl").
+%-include ("beehive.hrl").
 -behaviour(application).
 
 -export([start/2, stop/1]).

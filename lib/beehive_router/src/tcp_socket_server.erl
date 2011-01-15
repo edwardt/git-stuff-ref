@@ -108,8 +108,8 @@ get_port('http-alt') -> 8080; %TODO: get from dets later instead
 get_port('https')-> 443;
 get_port(UnknownProtocol) -> throw({unsupported_protocol_type, UnknownProtocol}).
 
--spec get_socket_sup(protocol())
-get_socket_sup(Protocol)->
+%-spec get_socket_sup(protocol())
+%get_socket_sup(Protocol)->
  
 
 -spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}) -> {ok, term()} | 

@@ -75,7 +75,8 @@ optional_dashboard_childspec()->
 
 -spec should_run_dashboard() -> {dashboard, boolean()}.
 should_run_dashboard()->
-  config:search_for_application_value(dashboard, true).
+  config:search_for_application_value(dashboard, true). %TODO: That should not bee TOOO many ways to do config. 
+							%TODO: Invitation to user error!! Reject being 'cute'.
 
 -spec tcp_socket_server_sup_spec()->supervisor:childspec().
 tcp_socket_server_sup_spec()->
@@ -97,6 +98,21 @@ get_worker_childspec(Name) when is_atom(Name) ->
 worker_restart_strategy() ->
   {one_for_one, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec}.
 
+-spec get_app_env(Application::application:application(), 
+		  Key::atom(), 
+		  Default::any()) -> term().
+get_app_env(App, Key, Default)->
+  case application:get_env(application:get_application(App), Key) of
+       {ok, Val} -> Val;
+  	_Other ->
+		case init:get_argument(Key) of
+       		   [[Val | _]] -> Val;
+                   error -> Default
+                end
+  end.
+get_app_env(Key, Default) ->
+  get_app_env('beehive', Key, Default).
+  
 
 %%====================================================================
 %% Unit test

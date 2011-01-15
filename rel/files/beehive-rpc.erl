@@ -1,7 +1,8 @@
 -module('beehive-rpc').
 -export([restart_app/1]).
 
-restart_app([NodeString, App]) ->
+-spec restart_app([NodeString::list(), App::application:application()] -> {'EXIT', complete}.
+restart_app([NodeString, App]) when is_list(NodeString), NodeString =/=[] , is_atom(App) ->
   Node = list_to_atom(NodeString),
   io:fwrite("Restarting ~s on ~s...~n~n", [App, Node]),
 

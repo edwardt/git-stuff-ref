@@ -72,13 +72,13 @@ init([]) ->
   Docroot = filename:join([Dir, "priv", "www"]),
   Port = config:search_for_application_value(dashboard_port, 4998),
 
-	State = #state{
+  State = #state{
     docroot = Docroot,
     web_port = Port,
     live_websockets = []
   },
 
-	start_web_server(State),
+  start_web_server(State),
 
   {ok, State}.
 
@@ -177,8 +177,9 @@ handle_web(_, _, Req, Docroot) ->
   not_found_web(Req, Docroot).
 
 not_found_web(Req, Docroot) -> serve_file(["not_found.html"], Req, Docroot).
+
 serve_file(Path, Req, Docroot) ->
-	RealPath = filename:join(Path),
+  RealPath = filename:join(Path),
   FullPath = filename:join([Docroot, RealPath]),
   case filelib:is_file(FullPath) of
     true -> Req:file(FullPath);
