@@ -38,6 +38,7 @@ start_link()          -> init().
 init()                ->
   init(get_client_port()).
 init(LocalPort) ->
+  ensure_environment(),
   Pid = proc_lib:spawn_link(?MODULE, init_accept, [LocalPort]),
   {ok, Pid}.
 
@@ -111,6 +112,15 @@ pass_on_to_proxy(ClientSock, Debug) ->
   
   
 %%%%%%%%%%%%% Internal Functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-spec ensure_environment()-> {ok, all_runtime_deps_ok} | {error, term()}.
+ensure_environment()->
+ % ok = check port is ok
+ % ok = check erlang cookie present not nonode...enforce proper cookie
+ % ok = check 
+ %ALL the runtime environment should be done
+ ok.
+
+
 -spec get_client_port() -> port() | {error, term()}.
 get_client_port()->
   PortNum = get_port(),
@@ -186,7 +196,11 @@ get_port_unknown_prototcol_test()->
 debug_msg_unknown_option__ensure_do_nothing_test()->  
   ?assertEqual(ok, debug_msg(somefunc, "some reason", 'whetever')).
   
+get_stacktrace_test()->
+  ok.
 
+get_error_msg_test()->
+  ok.
 
 -endif.
 -endif.

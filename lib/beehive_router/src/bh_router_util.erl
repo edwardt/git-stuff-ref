@@ -19,7 +19,7 @@ notify_manager(Event)-> node_manager:notify(Event).
 % Hosts higher order of utility functions for router on the 
 % application level
 %%%% Application Runtime %%%%
--spec ensure_loaded(App::application:application()) -> {ok, app_loaded} | {error, term()}.
+-spec ensure_loaded(App::application:application()) -> {ok, 'app_loaded'} | {error, term()} | {'error_load_app', term()}.
 ensure_loaded(App) when is_atom(App) ->
   case application:loaded(App) of
        ok -> {ok, app_loaded};
@@ -27,13 +27,21 @@ ensure_loaded(App) when is_atom(App) ->
        Error -> throw({error_load_app, Error})
   end.
 	
--spec ensure_started(App::application:application()) -> {ok, app_started} | {error, term()}.	
+-spec ensure_started(App::application:application()) -> {ok, 'app_started'} | {error, term()} | {'error_start_app', term()}.	
 ensure_started(App) when is_atom(App) ->
   case application:start(App) of
        {ok, _Reason } -> {ok, app_started};
        {error , {already_started, App}} -> {ok, app_started};
        {error, Error} -> throw({error_start_app, Error})
   end. 
+
+-spec ensure_stopped(App::application:application()) -> {ok, 'app_stopped'} | {error, term()} |{'error_stop_app', term()}.
+ensure_stopped(App) when is_atom(App)->
+  case application:stop(App) of
+ 	{ok, _Reason} -> {ok, app_stopped};
+	{error, {already_stopped, App}} -> {ok, app_stopped};
+	{error, Error} -> throw({error_stop_app, Error})
+  end.
 		
 ensure_deps_loaded([])-> {ok, app_loaded};
 ensure_deps_loaded(Apps) when is_list(Apps)->
@@ -117,10 +125,12 @@ current_fun()-> {current_function, ?Function}.
   
 get_stacktrace() ->
   try throw(a) of
-   _ -> a
+   _Hook -> a
   catch
-    _:_ -> io:format("StackTrace is ~p ~n", [erlang:get_stacktrace()])
+    _Term:_Info -> io:format("StackTrace is ~p ~n", [erlang:get_stacktrace()])
   end.	
+
+
 
 %%--------------------------------------------------------------------
 %% Unit Test 
@@ -129,21 +139,33 @@ get_stacktrace() ->
 -ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
 ensure_app_new_loaded_test()->
+  %Buid,, do, check
   ok.
 
 ensure_app_already_loaded_test()->
+  %App start
+  %check load
+  
   ok.
 
 ensure_app_not_found_loaded_test()->
+  %check load
   ok.
 
 ensure_apps_loaded_test()->
+  %appstart sasl, os_mon
+  %check loaded
   ok.
 
-ensure_apps_emptyset_test()->
+ensure_apps_one_failed_loaded_test()->
+  %appstart sasl, inet, os_mon
+  %check loaded
   ok.
 
-ensure_apps_OneElementSet_test()->
+ensure_apps_started_emptyset_test()->
+  ok.
+
+ensure_apps_started_OneElementSet_test()->
   ok.
 
 
@@ -159,10 +181,15 @@ ensure_app_not_found_started_test()->
 ensure_apps_started_test()->
   ok.
 
-ensure_apps_emptyset_test()->
+ensure_apps_started_emptyset_test()->
   ok.
 
-ensure_apps_OneElementSet_test()->
+ensure_apps_started_one_failed_test()->
+  %appstart sasl, inet, os_mon
+  %check loaded
+  ok.
+
+ensure_apps_started_OneElementSet_test()->
   ok.
 
 time_diff_test()->
