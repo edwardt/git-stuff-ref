@@ -56,8 +56,11 @@ compare(A,B) when A>B -> greater.
 equal(Same, Same) -> true;
 equal(_Other, _Other) -> false.
 
+
+
 % TODO: seperate this out to another util, see above
 %%%%%%%%%%%% Date Time Util %%%%%%%%%%%%%%%% 
+%TODO: this is not a good func for time diff, just pull this out from dup code from product
 -spec time_diff(ThisTime::non_neg_integer(), ThatTime::non_neg_integer()) -> integer().
 time_diff(ThisTimeInSec, ThatTimeInSec) -> 
    ThisTimeInSec - ThatTimeInSec.	
@@ -125,6 +128,46 @@ get_stacktrace() ->
 -ifdef(TEST).
 -ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
+ensure_app_new_loaded_test()->
+  ok.
+
+ensure_app_already_loaded_test()->
+  ok.
+
+ensure_app_not_found_loaded_test()->
+  ok.
+
+ensure_apps_loaded_test()->
+  ok.
+
+ensure_apps_emptyset_test()->
+  ok.
+
+ensure_apps_OneElementSet_test()->
+  ok.
+
+
+ensure_app_new_started_test()->
+  ok.
+
+ensure_app_already_started_test()->
+  ok.
+
+ensure_app_not_found_started_test()->
+  ok.
+
+ensure_apps_started_test()->
+  ok.
+
+ensure_apps_emptyset_test()->
+  ok.
+
+ensure_apps_OneElementSet_test()->
+  ok.
+
+time_diff_test()->
+  ok.
+
 
 
 -endif.
