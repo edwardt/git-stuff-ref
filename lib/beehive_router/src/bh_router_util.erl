@@ -31,7 +31,7 @@ ensure_loaded(App) when is_atom(App) ->
 ensure_started(App) when is_atom(App) ->
   case application:start(App) of
        {ok, _Reason } -> {ok, app_started};
-       {error , {already_started, App}} -> ok;
+       {error , {already_started, App}} -> {ok, app_started};
        {error, Error} -> throw({error_start_app, Error})
   end. 
 		

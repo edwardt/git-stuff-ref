@@ -175,7 +175,16 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 
 ensure_apps_started()->  
-  bh_router_util:ensure_deps_started(['sasl','os_mon']).
+  {ok, app_started} = ensure_started('sasl'),
+  {ok, app_started} = ensure_started('os_mon').
+
+%TODO: move this to common util later on
+ensure_started(App) when is_atom(App) ->
+  case application:start(App) of
+       {ok, _Reason } -> {ok, app_started};
+       {error , {already_started, App}} -> {ok, app_started};
+       {error, Error} -> throw({error_start_app, Error})
+  end.
 
 new_bee_stat() ->
   #bee_stat{
