@@ -15,8 +15,7 @@
 
 start() -> start([], []).
 start(Args) -> start([], Args).
-start(_Type, Args) ->
-  beehive_sup:start_link(Args).
+start(_Type, Args) -> beehive_sup:start_link(Args).
 
 stop() -> stop([]).
 stop(_State) -> ok.

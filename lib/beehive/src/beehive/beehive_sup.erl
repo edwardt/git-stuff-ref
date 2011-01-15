@@ -84,9 +84,6 @@ init(Args) ->
     ?IF(ShouldRunRestServer, RestServer, [])
   ]),
 
-  % AFTER
-  beehive_db_srv:init_databases(),
-
   {ok,{{one_for_one,10,10}, Children}}.
 
 %%====================================================================
