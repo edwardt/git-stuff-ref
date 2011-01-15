@@ -25,12 +25,12 @@
   port,                 % port
   bee,                  % Backend
   request,              % client request
-  start_time,           % time proxy started
+  start_time_in_sec,    % time proxy started
   client_socket,        % client socket
   server_socket,        % server socket
   client_pid,           % client listening pid
   server_pid,           % server listening pid
-  timeout               % timeout
+  timeout_in_sec        % timeout
 }).
 
 %% Start the proxy by spawning off an init with the socket.
@@ -126,14 +126,14 @@ engage_bee(ClientSock,
   ProxyPid = self(),
 
   State = #state{
-      start_time = date_util:now_to_seconds(),
+      start_time_in_sec = date_util:now_to_seconds(),
       client_socket = ClientSock,
       server_socket = ServerSock,
       request = Req,
       routing_key = RoutingKey,
       host = Host,
       port = Port,
-      timeout = Timeout1,
+      timeout_in_sec = Timeout1,
       bee = Bee},
 
   ClientPid =
@@ -190,7 +190,7 @@ terminate(Reason, State) ->
                  ?MODULE, terminate1, [Reason, State]).
 
 terminate1(Reason, #state{server_socket = SSock, client_socket = CSock,
-                          start_time = STime, bee = Bee} = _State) ->
+                          start_time_in_sec = STime, bee = Bee} = _State) ->
   StatsProplist1 = [{elapsed_time, date_util:now_to_seconds() - STime}],
   StatsProplist = case inet:getstat(CSock) of
     {ok, D} -> [{socket, D}|StatsProplist1];
@@ -216,7 +216,7 @@ terminate1(Reason, #state{server_socket = SSock, client_socket = CSock,
 %% try to receive data on the client socket and pass it onto the proxy
 handle_streaming_data(client, From,
                       #state{client_socket = CSock,
-                             timeout = Timeout} = State) ->
+                             timeout_in_sec = Timeout} = State) ->
   case gen_tcp:recv(CSock, 0, Timeout) of
     {ok, D} ->
       From ! {tcp, CSock, D},
@@ -226,7 +226,7 @@ handle_streaming_data(client, From,
   end;
 handle_streaming_data(server, From,
                       #state{server_socket = SSock,
-                             timeout = Timeout} = State) ->
+                             timeout_in_sec = Timeout} = State) ->
   case gen_tcp:recv(SSock, 0, Timeout) of
     {ok, D} ->
       From ! {tcp, SSock, D},
