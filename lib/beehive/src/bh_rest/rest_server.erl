@@ -56,13 +56,11 @@ init([]) ->
   Dir = ?BH_ROOT,
   Docroot = filename:join([Dir, "priv", "www"]),
 
-  WebServer = case WebServerName of
-    mochiweb -> mochiweb_http;
-    _ -> mochiweb_http
-  end,
+  WebServer = mochiweb_http,
 
   WebServer:start([ {port, Port},
-                    {loop, fun(Req) -> dispatch_requests(WebServerName, Docroot, Req) end}]).
+                    {loop, fun(Req) ->
+                          dispatch_requests(WebServerName, Docroot, Req) end}]).
 
 
 %%--------------------------------------------------------------------

@@ -54,11 +54,8 @@ post([], Data) ->
       case app_manager:add_application(Data, ReqUser) of
         {ok, App} when is_record(App, app) ->
           {ok, created};
-          % case rebuild_bee(App) of
-          %   ok -> {app, misc_utils:to_bin(App#app.name)};
-          %   _ -> {error, "there was an error"}
-          % end;
-        {error, app_exists} -> {error, "App exists already"};
+        {error, app_exists} ->
+          {error, 409, "An app with that name exists already."};
         Err = {error, _} -> Err;
         E ->
           ?LOG(error, "Unknown error adding app: ~p", [E]),
