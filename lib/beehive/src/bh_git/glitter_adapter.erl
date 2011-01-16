@@ -72,12 +72,15 @@ init([]) ->
 %%--------------------------------------------------------------------
 handle_call({create, Name}, _From, State) ->
   Resp = glitter:add_repos(Name),
+  glitter:commit(),
   {reply, Resp, State};
 handle_call({add_user, Username, Name}, _From, State) ->
   glitter:add_user_to_repos({Username, "RW+"}, Name),
+  glitter:commit(),
   {reply, ok, State};
 handle_call({remove_user, Username, Name}, _From, State) ->
   glitter:remove_user_from_repos(Username, Name),
+  glitter:commit(),
   {reply, ok, State};
 handle_call({clone, _Name, _Path}, _From, State) ->
   {reply, ok, State};
