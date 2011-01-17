@@ -72,8 +72,7 @@ format(Where, Why)->
 		
 error_msg(Mod, Func, Line, Why) ->
   error_logger:error_msg(format(Mod, Func, Line, Why)).	
-  
-  	
+    	
 info_msg(Where, Why, StackTrace) when is_function(Where, 0), 
 				 is_function(StackTrace, 0) ->
   error_logger:info_msg(format(Where, Why)).	

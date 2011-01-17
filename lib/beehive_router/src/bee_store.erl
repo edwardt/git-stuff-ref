@@ -28,19 +28,24 @@ get_bee([Hostname|_Rest] = List) ->
  % we have to hack it
  % LAME!
   case io_lib:char_list(List) of
-    true -> get_bee(List, date_util:now_to_seconds()); 
-    false -> get_bee(Hostname, date_util:now_to_seconds())
+     true -> get_bee(List, date_util:now_to_seconds()); 
+     false -> get_bee(Hostname, date_util:now_to_seconds())
+    % true-> get_bee1(List);
+    % false->get_bee1(Hostname)
   end.
 
 %% Choose an available back-end host. If a bee cannot be found within
 %% the requested time (before the CONNECTION_TIMEOUT) then we pass
 %% back a timeout
--spec get_bee(
-get_bee(Hostname, TimeofRequestInSec) -.
+-spec get_bee1(Hostname::list()) -> {error, timeout} | {ok, any(), any()} | {error, term()}.
+get_bee1(Hostname) ->
+  case () of true -> {error, timeout};
+   false ->  get_bee(Hostname, erlang:now())  .
+  end.
   
 get_bee(Hostname, TimeofRequestInSec) ->
   TOTime = date_util:now_to_seconds() - TimeofRequestInSec,
-  case TOTime - TimeofRequest > ?CONNECTION_TIMEOUT of
+  case TOTime - TimeofRequestInSec > ?CONNECTION_TIMEOUT of
     true -> {error, timeout};
     false ->
       case get_bee_by_hostname(Hostname) of
@@ -58,8 +63,8 @@ get_bee(Hostname, TimeofRequestInSec) ->
 
 
 -spec is_connection_expired(non_neg_integer()) -> true | false.
-is_connection_expired(TimeOfRequestInSec)->
-  
+is_request_timeout(TimeOfRequestInSec)->
+   
 
 %%-------------------------------------------------------------------
 %% @spec (Hostname) ->      MUST_WAIT_MSG
