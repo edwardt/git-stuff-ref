@@ -52,7 +52,7 @@ stop(_Args) ->
 %Support only 2 restart types
 worker_restart_strategy(RestartType) when ?is_simple(RestartType), ?is_one_for_one(RestartType)->
   {RestartType, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec};
-worker_restart_strategy(UnknownRestartType) -> throw ({unsupported_restart_type, UnknownRestartType}).
+worker_restart_strategy(UnknownRestartType) -> exit ({unsupported_restart_type, UnknownRestartType}).
 
 tcp_socket_server_spec()->
   {the_tcp_socket_server,

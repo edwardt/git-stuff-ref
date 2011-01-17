@@ -22,7 +22,7 @@
   init_accept/1
 ]).
 
--define (SUP, tcp_socket_server_sup).
+-define (Socket_Server_Sup, tcp_socket_server_sup).
 
 %%====================================================================
 %% API
@@ -91,7 +91,7 @@ pass_on_to_proxy(ClientSock, 'debug') ->
 pass_on_to_proxy(ClientSock, Debug) ->
   %% Choose here the type of response... for now, it'll just be http,
   %% but in the future... maybe tcp/udp?
-  {ok, ProxyPid} = ?SUP:start_client(ClientSock),
+  {ok, ProxyPid} = ?Socket_Server_Sup:start_client(ClientSock),
   gen_tcp:controlling_process(ClientSock, ProxyPid),
   send_to(ProxyPid, {start, ClientSock, ProxyPid}, Debug).
   %ProxyPid ! {start, ClientSock, ProxyPid}.
@@ -107,6 +107,10 @@ get_client_port()->
 get_port('http-alt') -> 8080; %TODO: get from dets later instead
 get_port('https')-> 443;
 get_port(UnknownProtocol) -> throw({unsupported_protocol_type, UnknownProtocol}).
+
+-spec get_socket_sup(protocol())
+get_socket_sup(Protocol)->
+ 
 
 -spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}) -> {ok, term()} | 
 								  {error, term()}.

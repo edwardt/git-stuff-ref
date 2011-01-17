@@ -60,8 +60,8 @@ start_link() ->
 init([]) ->
   io:format("Starting bh_node_stats_srv~n"),
   process_flag(trap_exit, true),
-
-  application:start(os_mon),
+  ensure_app_started(os_mon),
+ % application:start(os_mon),
 
   State = #state{
     node_stats  = dict:new()
@@ -142,3 +142,15 @@ terminate(_Reason, _State) ->
 %%--------------------------------------------------------------------
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
+  
+  
+%%====================================================================
+%% Internal functions
+%%====================================================================
+-spec ensure_app_started(Application::application:application())-> no_return() | {error, start_app_error}.
+ensure_app_started(Application) when is_atom(Application)-> 
+  case(bh_router_util:ensure_loaded(Application)) of
+  	{ok, Reason} -> ok;
+  	_Error: Why -> abort(app_start_error, Why});
+  	UnhandleError -> abort(app_start_error, UnhandleError)
+  end.

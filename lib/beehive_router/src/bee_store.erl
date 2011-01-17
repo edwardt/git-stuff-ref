@@ -28,15 +28,18 @@ get_bee([Hostname|_Rest] = List) ->
  % we have to hack it
  % LAME!
   case io_lib:char_list(List) of
-    true -> get_bee(List, date_util:now_to_seconds());
+    true -> get_bee(List, date_util:now_to_seconds()); 
     false -> get_bee(Hostname, date_util:now_to_seconds())
   end.
 
 %% Choose an available back-end host. If a bee cannot be found within
 %% the requested time (before the CONNECTION_TIMEOUT) then we pass
 %% back a timeout
-get_bee(Hostname, TimeofRequest) ->
-  TOTime = date_util:now_to_seconds() - TimeofRequest,
+-spec get_bee(
+get_bee(Hostname, TimeofRequestInSec) -.
+  
+get_bee(Hostname, TimeofRequestInSec) ->
+  TOTime = date_util:now_to_seconds() - TimeofRequestInSec,
   case TOTime - TimeofRequest > ?CONNECTION_TIMEOUT of
     true -> {error, timeout};
     false ->
@@ -51,7 +54,12 @@ get_bee(Hostname, TimeofRequest) ->
           ?LOG(debug, "get_bee_by_hostname error: ~p", [Reason]),
           {error, Reason}
       end
-  end.
+  end;
+
+
+-spec is_connection_expired(non_neg_integer()) -> true | false.
+is_connection_expired(TimeOfRequestInSec)->
+  
 
 %%-------------------------------------------------------------------
 %% @spec (Hostname) ->      MUST_WAIT_MSG
