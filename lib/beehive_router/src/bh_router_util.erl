@@ -48,7 +48,7 @@ equal(Same, Same) -> true;
 equal(_Other, _Other) -> false.
 
 %%%%%%%%%%%% Date Time Util %%%%%%%%%%%%%%%% 
--spec time_diff(ThisTime:non_neg_integer(), ThatTime:non_neg_integer()) -> integer().
+-spec time_diff(ThisTime::non_neg_integer(), ThatTime::non_neg_integer()) -> integer().
 time_diff(ThisTimeInSec, ThatTimeInSec) -> 
    ThisTimeInSec - ThatTimeInSec.	
 
@@ -78,11 +78,11 @@ info_msg(Where, Why, StackTrace) when is_function(Where, 0),
 				 is_function(StackTrace, 0) ->
   error_logger:info_msg(format(Where, Why)).	
 
-warn_msg(Where, Why, StackTrace) when is_function(Where, 0)
+warning_msg(Where, Why, StackTrace) when is_function(Where, 0),
 				 is_function(StackTrace, 0) ->
-  error_logger:warn_msg(format(Where, Why)).
+  error_logger:warning_msg(format(Where, Why)).
   	
-error_msg(Where, Why, StackTrace) when is_function(Where, 0)
+error_msg(Where, Why, StackTrace) when is_function(Where, 0),
 				 is_function(StackTrace, 0) ->
   error_logger:error_msg(format(Where, Why)).
 
