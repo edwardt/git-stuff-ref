@@ -64,7 +64,11 @@ get_bee(Hostname, TimeofRequestInSec) ->
 
 -spec is_connection_expired(non_neg_integer()) -> true | false.
 is_request_timeout(TimeOfRequestInSec)->
-   
+   TOTime = date_util:now_to_seconds() - TimeofRequestInSec,
+   case TOTime - TimeofRequestInSec > ?CONNECTION_TIMEOUT of
+   	true -> {error, timeout};
+   	false -> false
+   end.  
 
 %%-------------------------------------------------------------------
 %% @spec (Hostname) ->      MUST_WAIT_MSG
