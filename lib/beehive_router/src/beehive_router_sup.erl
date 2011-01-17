@@ -21,7 +21,7 @@
 -define (MaxRestartTrial, 5).
 -define (MaxTimeBetweenRestartInSec, 10).
 %-define ().
--define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+%-define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
 -define (GetValOrDefault (Bool, A, DefaultValue), if Bool -> A; true -> DefaultValue end).
 
 %%====================================================================
@@ -90,7 +90,7 @@ perfcounter_server_spec()->
 
 -spec get_worker_childspec(application:application()) -> supervisor:childspec().
 get_worker_childspec(Name) when is_atom(Name) ->
-  ?CHILD(Name, worker).
+  {Name, {Name, start_link, []}, permanent, 5000, worker, [Name]}).
 
 -spec worker_restart_strategy() -> {supervisor:strategy(), pos_integer(), pos_integer()}.
 worker_restart_strategy() ->
