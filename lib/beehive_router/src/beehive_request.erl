@@ -7,9 +7,16 @@
 
 
 % Create a new beehive request object from a socket
-new(ClientSock) ->
-  inet:setopts(ClientSock, [{packet, http}]),
-  request(ClientSock).
+new(ClientSocket) ->
+  new(ClientSocket, {packet, http}).
+
+new(ClientSocket, Opts = {packet, http}) ->
+    inet:setopts(ClientSock, [Opts]),
+    request(ClientSock);
+    
+new(ClientSocket, Opts) ->
+    throw({unsupported_socket_option, Opts}).
+  
 
 % TODO: Change this...
 request(Socket) ->
