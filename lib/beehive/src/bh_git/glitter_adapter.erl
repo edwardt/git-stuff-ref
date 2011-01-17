@@ -89,7 +89,7 @@ handle_call({clone_url, Name}, _From, State) ->
   Url = lists:flatten(["beehive@",Domain ,":", Name, ".git"]),
   {reply, Url ,State};
 handle_call({add_pubkey, Name, Key}, _From, State) ->
-  ok = glitter:add_user((key_filename(Name), Key),
+  ok = glitter:add_user(key_filename(Name), Key),
   glitter:commit(),
   {reply, ok, State};
 handle_call(_Request, _From, State) ->
