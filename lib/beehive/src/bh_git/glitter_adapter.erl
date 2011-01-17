@@ -14,7 +14,7 @@
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
-         terminate/2, code_change/3, sanitize_name/1]).
+         terminate/2, code_change/3]).
 
 -define(SERVER, ?MODULE).
 
@@ -89,7 +89,7 @@ handle_call({clone_url, Name}, _From, State) ->
   Url = lists:flatten(["beehive@",Domain ,":", Name, ".git"]),
   {reply, Url ,State};
 handle_call({add_pubkey, Name, Key}, _From, State) ->
-  ok = glitter:add_user(key_filename(Name), Key),
+  ok = glitter:add_user(sanitize_name(Name), Key),
   glitter:commit(),
   {reply, ok, State};
 handle_call(_Request, _From, State) ->
