@@ -14,7 +14,7 @@
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
-         terminate/2, code_change/3]).
+         terminate/2, code_change/3, sanitize_name/1]).
 
 -define(SERVER, ?MODULE).
 
@@ -88,7 +88,8 @@ handle_call({clone_url, Name}, _From, State) ->
   Domain = config:search_for_application_value(domain),
   Url = lists:flatten(["beehive@",Domain ,":", Name, ".git"]),
   {reply, Url ,State};
-handle_call({add_pubkey, _Name, _Key}, _From, State) ->
+handle_call({add_pubkey, Name, Key}, _From, State) ->
+  ok = glitter:add_user((key_filename(Name), Key),
   {reply, ok, State};
 handle_call(_Request, _From, State) ->
   Reply = ok,
@@ -149,3 +150,8 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 
+%% The Name we're receiving is usually an email. gitolite doesn't mind
+%% periods, hyphens and underscores, but it won't handle @'s.
+sanitize_name([]) -> [];
+sanitize_name([$@|Rest]) -> "-" ++ sanitize_name(Rest);
+sanitize_name([Ok|Rest]) -> [Ok] ++ sanitize_name(Rest).
