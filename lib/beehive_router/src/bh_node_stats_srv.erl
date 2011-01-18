@@ -105,19 +105,19 @@ handle_call({node_dump, Key, Range},
   Reply = lists:sublist(StatsList, Range),
   {reply, Reply, State};
   
-handle_call({get_cpu_load}}, _From, State) ->
+handle_call({get_cpu_load}, _From, State) ->
   Reply = [cpu_load, get_os_data(cpu)],
   {reply, Reply, State};
   
-handle_call({get_avg_cpu_load}}, _From, State) ->  
+handle_call({get_avg_cpu_load}, _From, State) ->  
   Reply = [avg_cpu_load, get_os_data(cpu_load)],
   {reply, Reply, State};
   
-handle_call(get_free_mem}, _From, State) ->
+handle_call({get_free_mem}, _From, State) ->
   Reply = [free_mem_byte, get_os_data(free_mem)],
   {reply, Reply, State};
 
-handle_call({get_net_stat}}, _From, State) ->
+handle_call({get_net_stat}, _From, State) ->
   Reply = [packets, get_os_data(packets)],
   {reply, Reply, State};  
 
@@ -236,5 +236,5 @@ get_os_data(packets, {unix, linux},File) ->
 -ifdef(EUNIT).
 
 
--end.    
+-endif.    
     
