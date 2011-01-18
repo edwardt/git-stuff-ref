@@ -37,6 +37,8 @@ yet know why that is.]
  * BEEHIVE_HOME (default /tmp/beehive)
  * BEEHIVE_DOMAIN (default `hostname -f`)
 
+See docs/config.markdown for more Beehive configuration info.
+
 [TODO: Explain those.]  
 That will start an instance of Beehive's
 router on localhost:8080, and the Beehive REST service on
