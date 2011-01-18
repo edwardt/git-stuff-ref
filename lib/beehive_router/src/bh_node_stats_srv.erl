@@ -16,7 +16,10 @@
   node_stat/1,
   node_dump/0,
   node_dump/1,
-  node_dump/2
+  node_dump/2,
+  get_avg_cpu_load/0,
+  get_free_memory/0,
+  get_net_stat/0
 ]).
 
 %% gen_server callbacks
@@ -27,6 +30,7 @@
   node_stats   % dict of the node stats
 }).
 
+-define(PROCNET, "/proc/net/dev").
 -define(SERVER, ?MODULE).
 
 %%====================================================================
@@ -38,6 +42,10 @@ node_stat({node_stat, Key, Value, Time})        ->
 node_dump() -> gen_server:call(?SERVER, {node_dump}).
 node_dump(Key) -> gen_server:call(?SERVER, {node_dump, Key}).
 node_dump(Key, Range) -> gen_server:call(?SERVER, {node_dump, Key, Range}).
+
+get_avg_cpu_load()-> gen_server:call(?SERVER, {get_avg_cpu}).
+get_free_memory() -> gen_server:call(?SERVER, {get_free_mem}).
+get_net_stat() -> gen_server:call(?SERVER,{get_net_stat}).
 
 %%--------------------------------------------------------------------
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
@@ -150,7 +158,57 @@ code_change(_OldVsn, State, _Extra) ->
 -spec ensure_app_started(Application::application:application())-> no_return() | {error, start_app_error}.
 ensure_app_started(Application) when is_atom(Application)-> 
   case(bh_router_util:ensure_loaded(Application)) of
-  	{ok, Reason} -> ok;
-  	_Error: Why -> abort(app_start_error, Why});
-  	UnhandleError -> abort(app_start_error, UnhandleError)
+  	{ok, _Reason} -> ok;
+  	Error -> throw({start_app_error, Error})
   end.
+  
+  
+%% Return node cpu utilisation
+get_os_data(cpu) -> cpu_sup:util();
+%% Return node cpu average load on 1 minute;
+get_os_data(cpu_load) -> cpu_sup:avg1()/256;
+get_os_data(DataName) -> get_os_data(DataName,os:type()).
+%%--------------------------------------------------------------------
+%% Func: get_os_data/2
+%%--------------------------------------------------------------------
+%% Return free memory in bytes.
+%% Use the result of the free commands on Linux and os_mon on all
+%% other platforms
+get_os_data(freemem, {unix, linux}) ->
+    Result = os:cmd("free | grep '\\-/\\+'"),
+    [_, _, _, Free] = string:tokens(Result, " \n"),
+    list_to_integer(Free)/1024;
+get_os_data(freemem, {unix, sunos}) ->
+    Result = os:cmd("vmstat 1 2 | tail -1"),
+    [_, _, _, _, Free | _] = string:tokens(Result, " "),
+    list_to_integer(Free)/1024;
+
+get_os_data(freemem, _OS) ->
+    Data = memsup:get_system_memory_data(),
+    {value,{free_memory,FreeMem}} = lists:keysearch(free_memory, 1, Data),
+    %% Megabytes
+    FreeMem/1048576;
+
+%% Return packets sent/received on network interface
+get_os_data(packets, {unix, linux}) ->
+    get_os_data(packets, {unix, linux},?PROCNET);
+%% solaris
+get_os_data(packets, {unix, sunos}) ->
+    Result = os:cmd("netstat -in 1 1 | tail -1"),
+    [_, _, _, _, _, RecvPackets, _, SentPackets | _] = string:tokens(Result, " "),
+    {list_to_integer(RecvPackets), list_to_integer(SentPackets)};
+get_os_data(packets, _OS) ->
+    {0, 0 }. % FIXME: not implemented for other arch.
+
+%% packets Linux, special case with File as a variable to easy testing
+get_os_data(packets, {unix, linux},File) ->
+    {ok, Lines} = ts_utils:file_to_list(File),
+    %% get the cumulative traffic of all ethX interfaces
+    Eth=[io_lib:fread("~d~d~d~d~d~d~d~d~d~d", X) ||
+        {E,X}<-lists:map(fun(Y)->ts_utils:split2(Y,$:,strip) end ,Lines),
+        string:str(E,"eth") /= 0],
+    Fun = fun (A, {Rcv, Sent}) ->
+                  {ok,[_RcvBytes,RcvPkt,_,_,_,_,_,_,_SentBytes,SentPkt],_}=A,
+                  {Rcv+RcvPkt,Sent+SentPkt}
+          end,
+    lists:foldl(Fun, {0,0}, Eth).
