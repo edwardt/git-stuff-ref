@@ -120,13 +120,37 @@ get_app_env(App, Key, Default)->
 %%====================================================================
 %% Unit test
 %%====================================================================
-%-ifdef(ETEST)
-%-define().
+-ifdef(EUNIT).
+-include_lib("eunit/include/eunit.hrl").
 
 
 
+get_worker_childspec_test_()->
+   Name = testApp, 
+   ensure_app_env_absent(Name).
+   Expected = {Name, {Name, start_link, []}, permanent, ?ShutdownAfterTimeoutInSec, worker, [Name]}.
+   ?assertMatch(Expected, get_worker_childspec(Name)).
+
+     	
+get_worker_childspec_invalid_apptype_test_()->
+  ?assertNot(get_worker_childspec("TestApp_As_String").
+
+worker_restart_strategy_test_() ->
+  ?assertEqual({one_for_one,?MaxRestartTrial, ?MaxTimeBetweenRestartInSec },
+  	 	worker_restart_strategy()). 
 
 
-%-endif
+get_app_env_test()_->
+  App = testApp, Key = testKey,
+  ensure_app_env_absent(testApp).
+  Default = defaultVal,
+  ?assertEqual(Default,get_app_env(App, Key, Default)).
+
+
+ensure_app_env_absent(App, Key) when is_atom(App), is_atom(Key)->
+    ok = application:unset_env(App, Key).  
+
+
+-endif
 
 	
