@@ -37,11 +37,11 @@ get_bee([Hostname|_Rest] = List) ->
 %% Choose an available back-end host. If a bee cannot be found within
 %% the requested time (before the CONNECTION_TIMEOUT) then we pass
 %% back a timeout
--spec get_bee1(Hostname::list()) -> {error, timeout} | {ok, any(), any()} | {error, term()}.
-get_bee1(Hostname) ->
-  case () of true -> {error, timeout};
-   false ->  get_bee(Hostname, erlang:now())  .
-  end.
+%-spec get_bee1(Hostname::list()) -> {error, timeout} | {ok, any(), any()} | {error, term()}.
+%get_bee1(Hostname) ->
+%  case () of true -> {error, timeout};
+%   false ->  get_bee(Hostname, erlang:now())  .
+%  end.
   
 get_bee(Hostname, TimeofRequestInSec) ->
   %TOTime = date_util:now_to_seconds() - TimeofRequestInSec,
