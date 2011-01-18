@@ -41,7 +41,8 @@ init(LocalPort) ->
 % accept responses on the port given by the application configuration
 
 init_accept(LPort) ->
-  SockOpts = [binary, {backlog, 256}, {nodelay, false},
+  OsAcceptQueue = 256,
+  SockOpts = [binary, {backlog, OsAcceptQueue}, {nodelay, false},
               {reuseaddr, true},{active, false}],
   init_accept(LPort, SockOpts).
 
