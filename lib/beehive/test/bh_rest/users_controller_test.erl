@@ -33,7 +33,8 @@ starting_test_() ->
      fun post_user_pubkeys_as_admin/0,
      fun post_user_pubkeys_as_user/0,
      fun post_user_pubkeys_as_wrong_user/0,
-     fun post_user_pubkeys_no_pubkey_provided/0
+     fun post_user_pubkeys_no_pubkey_provided/0,
+     fun post_new_user_adds_pubkey/0
     ]
    }
   }.
@@ -184,6 +185,25 @@ post_user_pubkeys_as_wrong_user() ->
                          [{token, CallingUser#user.token},
                           {pubkey, "newkey"}]),
   ?assertEqual("HTTP/1.0 401 Unauthorized", Header),
+  passed.
+
+post_new_user_adds_pubkey() ->
+  Key = "pubkey",
+
+  erlymock:start(),
+  erlymock:stub(beehive_repository, add_user_pubkey,
+                ["pkuser@bhive.com", Key]),
+  erlymock:replay(),
+  Admin = bh_test_util:admin_user(),
+  {ok, Header, Response} =
+    perform_post_new( [
+                     {email, "pkuser@bhive.com"},
+                     {password, "created"},
+                     {token, Admin#user.token },
+                     {pubkey, Key}
+                   ]),
+  ?assertEqual("HTTP/1.0 200 OK", Header),
+  erlymock:verify(),
   passed.
 
 post_user_pubkeys_no_pubkey_provided() ->

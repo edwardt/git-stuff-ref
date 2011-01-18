@@ -73,6 +73,12 @@ post([], Data) ->
               false ->
                 case users:create(Data) of
                   {ok, User} when is_record(User, user) ->
+                    case User#user.pubkey of
+                      Key when is_list(Key) ->
+                        ok = beehive_repository:add_user_pubkey(User#user.email,
+                                                                Key);
+                      _ -> ok
+                    end,
                     {user, [{email, User#user.email}]};
                   E ->
                     io:format("Error: ~p~n", [E]),
