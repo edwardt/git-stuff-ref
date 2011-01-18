@@ -67,7 +67,8 @@ init(_Args) ->
 %% Internal functions
 %%====================================================================
 
--spec optional_dashboard_childspec()-> supervisor:childspec() | [].	
+-spec optional_dashboard_childspec()-> supervisor:childspec() | [].
+  	
 optional_dashboard_childspec()->
   Dashboard = get_worker_childspec(beehive_dashboard_sup),
   ShouldRunDashboard = should_run_dashboard(),
@@ -125,12 +126,14 @@ get_app_env(App, Key, Default)->
 
 
 
+should_run_dashboard_test_()->
+  ?assertTrue(should_run_dashboard()).
+
 get_worker_childspec_test_()->
    Name = testApp, 
    ensure_app_env_absent(Name).
    Expected = {Name, {Name, start_link, []}, permanent, ?ShutdownAfterTimeoutInSec, worker, [Name]}.
    ?assertMatch(Expected, get_worker_childspec(Name)).
-
      	
 get_worker_childspec_invalid_apptype_test_()->
   ?assertNot(get_worker_childspec("TestApp_As_String").
@@ -138,7 +141,6 @@ get_worker_childspec_invalid_apptype_test_()->
 worker_restart_strategy_test_() ->
   ?assertEqual({one_for_one,?MaxRestartTrial, ?MaxTimeBetweenRestartInSec },
   	 	worker_restart_strategy()). 
-
 
 get_app_env_test()_->
   App = testApp, Key = testKey,
