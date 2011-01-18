@@ -44,8 +44,8 @@ get_bee1(Hostname) ->
   end.
   
 get_bee(Hostname, TimeofRequestInSec) ->
-  TOTime = date_util:now_to_seconds() - TimeofRequestInSec,
-  case TOTime - TimeofRequestInSec > ?CONNECTION_TIMEOUT of
+  %TOTime = date_util:now_to_seconds() - TimeofRequestInSec,
+  case is_request_timeout(TimeOfRequestInSec) of
     true -> {error, timeout};
     false ->
       case get_bee_by_hostname(Hostname) of
