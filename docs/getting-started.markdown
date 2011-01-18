@@ -4,15 +4,16 @@ Beehive Router
 Getting started
 ===
 
-To start the router:
+To start the project in developer mode:
 
-    make
-    make rel
-    cd rel/beehive
-    bin/beehive start
+   make
+   ./start_dev.sh
+
 
 This will start the basic router with the default options. The default
 node type that gets started is the router type.
+
+To build the project and use in in a production mode, see docs/installation.markdown.
 
 
 How it works
