@@ -18,24 +18,14 @@ ensure_loaded(App) when is_atom(App) ->
 	case application:loaded(App) of
 		ok -> {ok, app_loaded};
 		{error, {already_loaded, _Name}} -> {ok, app_loaded};
-		Error -> {error, Error}
+		Error -> throw({error_loading_app, Error})
 	end.
 	
-ensure_deps_loaded([])-> ok;
+ensure_deps_loaded([])-> {ok, app_loaded};
 
 ensure_deps_loaded(Apps) when is_list(Apps)->
-	list:map( 
-		fun(App)-> 
-			case (ensure_loaded(App)) of 
-				{ok, app_loaded} -> {ok, app_loaded};
-				Error -> error_msg(?MODULE, ensure_deps_loaded, ?LINE, Error)
-			end
-		
-		end, 
-		Apps)
-	.
+	list:map( fun(App)-> ensure_loaded(App)end, Apps).
 	
-
 	
 %%%%%%%%%% Data type Util %%%%%%%%%%%%%%%%% 
 -spec compare(A::term(), B::term()) -> 'less' | 'equal' | 'greater'.

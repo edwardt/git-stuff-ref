@@ -45,7 +45,7 @@ get_bee([Hostname|_Rest] = List) ->
   
 get_bee(Hostname, TimeofRequestInSec) ->
   %TOTime = date_util:now_to_seconds() - TimeofRequestInSec,
-  case is_request_timeout(TimeOfRequestInSec) of
+  case is_request_timedout(TimeofRequestInSec) of
     true -> {error, timeout};
     false ->
       case get_bee_by_hostname(Hostname) of
@@ -59,13 +59,13 @@ get_bee(Hostname, TimeofRequestInSec) ->
           ?LOG(debug, "get_bee_by_hostname error: ~p", [Reason]),
           {error, Reason}
       end
-  end;
+  end.
 
 
--spec is_connection_expired(non_neg_integer()) -> true | false.
-is_request_timeout(TimeOfRequestInSec)->
-   TOTime = date_util:now_to_seconds() - TimeofRequestInSec,
-   case TOTime - TimeofRequestInSec > ?CONNECTION_TIMEOUT of
+-spec is_request_timedout(non_neg_integer()) -> true | false.
+is_request_timedout(TimeOfRequestInSec)->
+   TOTime = date_util:now_to_seconds() - TimeOfRequestInSec,
+   case TOTime - TimeOfRequestInSec > ?CONNECTION_TIMEOUT of
    	true -> {error, timeout};
    	false -> false
    end.  

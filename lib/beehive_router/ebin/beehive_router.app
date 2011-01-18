@@ -13,8 +13,7 @@
       bee_store,
       tcp_socket_server, 
       tcp_socket_server_sup,
-      bh_router_util,
-      bh_perf
+      bh_router_util
     ]},
   {registered,   []},
   {applications, [kernel, stdlib]},

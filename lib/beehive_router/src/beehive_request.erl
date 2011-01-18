@@ -12,13 +12,12 @@ new(ClientSocket) ->
   new(ClientSocket, {packet, http}).
 
 new(ClientSocket, {packet, http} = Opts) ->
-    inet:setopts(ClientSock, [Opts]),
-    request(ClientSock);
+    inet:setopts(ClientSocket, [Opts]),
+    request(ClientSocket);
     
 new(ClientSocket, Opts) ->
     exit({unsupported_socket_option, Opts}).
  
-
 % TODO: Change this...
 request(Socket) ->
   case gen_tcp:recv(Socket, 0, ?IDLE_TIMEOUT) of

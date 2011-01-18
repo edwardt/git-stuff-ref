@@ -1,1 +1,0 @@
--module (bh_perf_app).
