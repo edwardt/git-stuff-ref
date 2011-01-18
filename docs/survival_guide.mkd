@@ -25,7 +25,7 @@ beehive repo's root):
 * ./lib/erlang/apps/beehive_router/test
 * ./lib/erlang/apps/beehive/test
 
-The tests require that localhost:4999 be available to listen on.
+The tests require that localhost:4999 and :8080 be available to listen on.
 
 [TODO:  They don't all pass for me, in Ruby 1.8.7 or 1.9.2, and I don't
 yet know why that is.]
@@ -37,10 +37,12 @@ yet know why that is.]
  * BEEHIVE_HOME (default /tmp/beehive)
  * BEEHIVE_DOMAIN (default `hostname -f`)
 
-[TODO:  Explain those.]
-That will start an instance of Beehive on localhost:4999.  Note that, as
-the tests run an instance of Beehive on the same port, you'll want to
-shut down the dev server before running the tests.
+[TODO: Explain those.]  
+That will start an instance of Beehive's
+router on localhost:8080, and the Beehive REST service on
+localhost:4999.  Note that, as the tests run an instance of Beehive on
+the same ports, you'll want to shut down the dev server before running
+the tests.
 
 ## Deploying "Hello, World!" to the dev server
 
