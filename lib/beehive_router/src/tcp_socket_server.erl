@@ -53,7 +53,7 @@ init_accept(LPort, SockOpts) ->
 	    	?LOG(error,
 		 "There was an error listening to the socket for port ~p: ~p",
 		 [LPort, Error]),
-    		%increment_counter(
+    		
     		{error, Error}
   end.
 
@@ -129,10 +129,6 @@ send_to(To, {Tag, Msg, From}, 'debug')->
 send_to(To, {Tag, Msg, From}, _Other)->
   send_to(To, {Tag, Msg, From}).
 
--spec increment_counter(CounterName::counter_name())-> no_return().
-increment_counter(CounterName) ->
-  bh_perf:increment_hit_counter(CounterName).
-	
  
-
+  
 

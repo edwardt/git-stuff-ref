@@ -208,7 +208,7 @@ terminate1(Reason, #state{server_socket = SSock, client_socket = CSock,
   %?NOTIFY({bee, closing_stats, RealBee, StatsProplist}),
   bh_router_util:notify_manager({bee, ready, RealBee}),
   bh_router_util:notify_manager({bee, closing_stats, RealBee, StatsProplist}),
- 
+  
   gen_tcp:close(SSock), gen_tcp:close(CSock),
   exit(Reason).
 

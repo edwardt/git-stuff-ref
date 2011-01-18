@@ -17,6 +17,7 @@
   node_dump/0,
   node_dump/1,
   node_dump/2,
+  get_cpu_load/0,
   get_avg_cpu_load/0,
   get_free_memory/0,
   get_net_stat/0
@@ -43,7 +44,8 @@ node_dump() -> gen_server:call(?SERVER, {node_dump}).
 node_dump(Key) -> gen_server:call(?SERVER, {node_dump, Key}).
 node_dump(Key, Range) -> gen_server:call(?SERVER, {node_dump, Key, Range}).
 
-get_avg_cpu_load()-> gen_server:call(?SERVER, {get_avg_cpu}).
+get_cpu_load()-> gen_server:call(?SERVER,{get_cpu_load}).
+get_avg_cpu_load()-> gen_server:call(?SERVER, {get_avg_cpu_load}).
 get_free_memory() -> gen_server:call(?SERVER, {get_free_mem}).
 get_net_stat() -> gen_server:call(?SERVER,{get_net_stat}).
 
@@ -69,8 +71,6 @@ init([]) ->
   io:format("Starting bh_node_stats_srv~n"),
   process_flag(trap_exit, true),
   ensure_app_started(os_mon),
- % application:start(os_mon),
-
   State = #state{
     node_stats  = dict:new()
   },
@@ -104,6 +104,22 @@ handle_call({node_dump, Key, Range},
   end,
   Reply = lists:sublist(StatsList, Range),
   {reply, Reply, State};
+  
+handle_call({get_cpu_load}}, _From, State) ->
+  Reply = [cpu_load, get_os_data(cpu)],
+  {reply, Reply, State};
+  
+handle_call({get_avg_cpu_load}}, _From, State) ->  
+  Reply = [avg_cpu_load, get_os_data(cpu_load)],
+  {reply, Reply, State};
+  
+handle_call(get_free_mem}, _From, State) ->
+  Reply = [free_mem_byte, get_os_data(free_mem)],
+  {reply, Reply, State};
+
+handle_call({get_net_stat}}, _From, State) ->
+  Reply = [packets, get_os_data(packets)],
+  {reply, Reply, State};  
 
 handle_call(_Request, _From, State) ->
   Reply = ok,
@@ -212,3 +228,13 @@ get_os_data(packets, {unix, linux},File) ->
                   {Rcv+RcvPkt,Sent+SentPkt}
           end,
     lists:foldl(Fun, {0,0}, Eth).
+    
+
+%%--------------------------------------------------------------------
+%% Unit Test
+%%--------------------------------------------------------------------    
+-ifdef(EUNIT).
+
+
+-end.    
+    
