@@ -72,12 +72,15 @@ init([]) ->
 %%--------------------------------------------------------------------
 handle_call({create, Name}, _From, State) ->
   Resp = glitter:add_repos(Name),
+  glitter:commit(),
   {reply, Resp, State};
 handle_call({add_user, Username, Name}, _From, State) ->
   glitter:add_user_to_repos({Username, "RW+"}, Name),
+  glitter:commit(),
   {reply, ok, State};
 handle_call({remove_user, Username, Name}, _From, State) ->
   glitter:remove_user_from_repos(Username, Name),
+  glitter:commit(),
   {reply, ok, State};
 handle_call({clone, _Name, _Path}, _From, State) ->
   {reply, ok, State};
@@ -85,7 +88,9 @@ handle_call({clone_url, Name}, _From, State) ->
   Domain = config:search_for_application_value(domain),
   Url = lists:flatten(["beehive@",Domain ,":", Name, ".git"]),
   {reply, Url ,State};
-handle_call({add_pubkey, _Name, _Key}, _From, State) ->
+handle_call({add_pubkey, Name, Key}, _From, State) ->
+  ok = glitter:add_user(sanitize_name(Name), Key),
+  glitter:commit(),
   {reply, ok, State};
 handle_call(_Request, _From, State) ->
   Reply = ok,
@@ -146,3 +151,8 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 
+%% The Name we're receiving is usually an email. gitolite doesn't mind
+%% periods, hyphens and underscores, but it won't handle @'s.
+sanitize_name([]) -> [];
+sanitize_name([$@|Rest]) -> "-" ++ sanitize_name(Rest);
+sanitize_name([Ok|Rest]) -> [Ok] ++ sanitize_name(Rest).

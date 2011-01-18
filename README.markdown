@@ -12,7 +12,15 @@ Beehive
   * Configurable
   * And much more
 
-## Quickstart ##
+## Dependencies ##
+
+   * Erlang  - Development has been happening on R14B
+   * Ruby    - 1.8.7
+   * rubygems- rack, thin (for tests and prodcution)
+   * rubygems- isolate, bundler (if any prod apps depend upon them)
+   * git     - 1.7.x
+
+## Get Started ##
 
     ./start_dev.sh
 
@@ -70,12 +78,7 @@ performance of the router, which is tuned for speed.
 
 ---
 
-For more information about each particular part of the project, there
-are READMEs in each of the appropriate directories.
-
-  * [Erlang](http://github.com/auser/beehive/tree/master/lib/erlang/)
-  * [Ruby](http://github.com/auser/beehive/tree/master/lib/ruby/)
-  * [Shell](http://github.com/auser/beehive/tree/master/lib/shell)
+For more information, see [more docs](http://github.com/auser/beehive/blob/master/lib/README.markdown)
 
 ---
 

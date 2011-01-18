@@ -73,6 +73,12 @@ post([], Data) ->
               false ->
                 case users:create(Data) of
                   {ok, User} when is_record(User, user) ->
+                    case User#user.pubkey of
+                      Key when is_list(Key) ->
+                        ok = beehive_repository:add_user_pubkey(User#user.email,
+                                                                Key);
+                      _ -> ok
+                    end,
                     {user, [{email, User#user.email}]};
                   E ->
                     io:format("Error: ~p~n", [E]),
@@ -102,6 +108,7 @@ delete(_Path, _Data) -> "unhandled".
 add_pubkey(User, Pubkey) ->
   case users:save(User#user{pubkey = Pubkey}) of
     {ok, SavedUser} ->
+      ok = beehive_repository:add_user_pubkey(SavedUser#user.email, Pubkey),
       [{"user", SavedUser#user.email}, {"pubkey", "added pubkey"}];
     _Else ->
       app_error("There was an error updating the user")

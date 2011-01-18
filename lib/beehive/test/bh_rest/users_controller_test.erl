@@ -33,7 +33,8 @@ starting_test_() ->
      fun post_user_pubkeys_as_admin/0,
      fun post_user_pubkeys_as_user/0,
      fun post_user_pubkeys_as_wrong_user/0,
-     fun post_user_pubkeys_no_pubkey_provided/0
+     fun post_user_pubkeys_no_pubkey_provided/0,
+     fun post_new_user_adds_pubkey/0
     ]
    }
   }.
@@ -139,8 +140,12 @@ post_new_user_non_admin_auth() ->
   passed.
 
 post_user_pubkeys_as_admin() ->
+  erlymock:start(),
   User = bh_test_util:dummy_user(),
   Admin = bh_test_util:admin_user(),
+  erlymock:stub(beehive_repository, add_user_pubkey,
+                [User#user.email, "newkey"]),
+  erlymock:replay(),
   {ok, Header, Response} =
     perform_post_pubkeys(User#user.email,
                          [{token, Admin#user.token},
@@ -148,17 +153,24 @@ post_user_pubkeys_as_admin() ->
   ?assertEqual("HTTP/1.0 200 OK", Header),
   UpdatedUser = users:find_by_email(User#user.email),
   ?assertEqual("newkey", UpdatedUser#user.pubkey),
+  erlymock:verify(),
   passed.
 
 post_user_pubkeys_as_user() ->
+  erlymock:start(),
   User = bh_test_util:dummy_user(),
+  Key = "newkey",
+  erlymock:stub(beehive_repository, add_user_pubkey,
+                [User#user.email, Key]),
+  erlymock:replay(),
   {ok, Header, Response} =
     perform_post_pubkeys(User#user.email,
                          [{token, User#user.token},
-                          {pubkey, "newkey"}]),
+                          {pubkey, Key}]),
   ?assertEqual("HTTP/1.0 200 OK", Header),
   UpdatedUser = users:find_by_email(User#user.email),
-  ?assertEqual("newkey", UpdatedUser#user.pubkey),
+  ?assertEqual(Key, UpdatedUser#user.pubkey),
+  erlymock:verify(),
   passed.
 
 post_user_pubkeys_as_wrong_user() ->
@@ -173,6 +185,25 @@ post_user_pubkeys_as_wrong_user() ->
                          [{token, CallingUser#user.token},
                           {pubkey, "newkey"}]),
   ?assertEqual("HTTP/1.0 401 Unauthorized", Header),
+  passed.
+
+post_new_user_adds_pubkey() ->
+  Key = "pubkey",
+
+  erlymock:start(),
+  erlymock:stub(beehive_repository, add_user_pubkey,
+                ["pkuser@bhive.com", Key]),
+  erlymock:replay(),
+  Admin = bh_test_util:admin_user(),
+  {ok, Header, Response} =
+    perform_post_new( [
+                     {email, "pkuser@bhive.com"},
+                     {password, "created"},
+                     {token, Admin#user.token },
+                     {pubkey, Key}
+                   ]),
+  ?assertEqual("HTTP/1.0 200 OK", Header),
+  erlymock:verify(),
   passed.
 
 post_user_pubkeys_no_pubkey_provided() ->

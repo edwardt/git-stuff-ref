@@ -4,15 +4,18 @@ Beehive Router
 Getting started
 ===
 
-To start the router:
+To start the project in developer mode:
 
-    make
-    make rel
-    cd rel/beehive
-    bin/beehive start    
+   make
+   ./start_dev.sh
+
 
 This will start the basic router with the default options. The default
-node type that gets started is the router type. 
+node type that gets started is the router type. For more information
+on what to do next, check out docs/survival_guide.markdown
+
+
+To build the project and use in in a production mode, see docs/installation.markdown.
 
 
 How it works
@@ -28,55 +31,6 @@ The bee table stores the bee data, and their state.
 The user table stores information about the users associated with the system.
 
 The user_app table stores the mappings between users and their apps
-
-## Configuration
-
-There are multiple methods of configuration. If you are going to
-configure the router the same way every time, the recommended method
-is to write a configuration file and pass in the location of the
-configuration file at the start command with the -c option, like so:
-
-The config file currently expects a yaml format. These will be converted to
-a proplist of erlang tuples.
-    
-Beehive searches for config files at ~/.beehive.conf and
-/etc/beehive.conf as well.
-
-## Valid Config Variables
-
-### home
-
-Sets the base directory for the running beehive instance, which will
-include the DB, running apps and log files.  The default value is
-/var/lib/beehive
-
-### code_root
-
-
-### routing_param
-
-Defaults to 'Host', which means that the router will use the first
-subdomain of the given url to handle app routing.
-
-Alternate value, provided by routing_param is 'subdirectory',
-which will instead expect app names to appear as the first component
-of the path in the url.  http://domain.com/<app-name>/path
-
-### dashboard_port
-
-Defaults to 4999.  Port that the dashboard app will be listening on.
-
-### client_port
-
-Defaults to 8080.  Port that the router will be listening on.
-
-### debug
-If debug=true, beehive will increase logging output in console/log files.
-
-
-## Environment Variables
-
-Beehive will use these values if they're found in the environment. Beehive config expects that env variables will be upper case and start with BEEHIVE_, so the 'home' config key will be overridden by a BEEHIVE_HOME env variable.
 
 
 ## Proxy
@@ -114,7 +68,7 @@ For instance, to terminate and restart the application in the beehive, issue a r
 
     curl -i -XPOST http://beehive.com:8080/apps/[app_name]/restart.json
 
-## Storage nodes 
+## Storage nodes
 
 To store the distributable bees, you must start a
 storage backend. Beehive makes this easy again by using the start
@@ -137,7 +91,7 @@ Viewing the nodes is as easy as a query as well:
 
 To add a new node, as mentioned above, start a node with the seed
 value from the start script:
-  
+
     ./start_beehive.sh -s 'router@my-other-machine.com'
 
 To add an existing node to a cluster, you can set the seed with:
@@ -165,12 +119,12 @@ as:
     curl -i -XPOST -d"{\"email\":\"root@getbeehive.com\", \"password\": \"test\"}" http://beehive.com:8080/auth.json
 
 This will return a tuple that will look like:
-  
+
     {"user":"root@getbeehive.com","token":"f24e53e38dfb380066ea166f1844cf19"}
 
 Subsequent requests that require authentication should attach this
 token onto the data.
-    
+
 Of course, it would be wise to add another admin user first. To add an
 admin level user, use the level 1 and ass, such as below
 
@@ -245,16 +199,16 @@ instance:
     -module (custom_bee_picker).
     -include ("/path/to/include/beehive.hrl").
     -export([custom_chooser/1]).
-    
+
     custom_chooser(Bees) ->
       hd(Bees).
-      
+
 This is clearly a dummy handler as it will choose the top of the bees,
 but it illustrates how to build a bee picker. To start with this bee
 picker at the top of the list:
 
     ./scripts/start_beehive.sh -a /path/to/custom_callback_module -q channel_chooser
-    
+
 Now, any application that has the routing_param set to channel_chooser
 will use the custom_chooser module.
 
