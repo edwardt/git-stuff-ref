@@ -48,6 +48,27 @@ the tests.
 
 ## Deploying "Hello, World!" to the dev server
 
+By default, beehive will create an admin user:
+root@getbeehive.com/test You can use this user to get started and add
+a new non-admin user for app deployment.
+
+    $ curl -d "email=root@getbeehive.com&password=test" http://localhost:4999/auth.json
+    {"user":"root@getbeehive.com","token":"629152124e1c88e5ec9b39456d8331a9"}
+
+You can then use the admin's token as authorization for creating a new user.
+
+    $ curl -d "email=jacob@beehive.com&password=<password>&pubkey=<ssh-pubkey>&token=629152124e1c88e5ec9b39456d8331a9" http://localhost:4999/users.json
+    {"user":{"email":"jacob@beehive.com"}}
+
+    $ curl "http://localhost:4999/users/jacob@beehive.com.json"
+    {"user":{"email":"jacob@beehive.com","level":2,"pubkey":"ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAsxuj8NrLgqHmc1WymYTQNmmbu/JoaCGNuei8zk/PfXbM p77r/OPZwNPwTPaflc WTLvyRPDZReSjBWMaYmGBKx1LJNzEVyhDkHzuUoMqDPa0gR6eJQfGE9Wnm6hh0TtmSyH4P9U475MD6d0KNGOHYYZlFk/hZLftkshI1al9o9bt1nAwP87QjLS5mhiwzv78uy3Qyi1mxn58dMOmME2aowVLa791ma3hfzoNSSKElSEGPzs hvg4/plG70idt4ySlZQOECnToA6wuWh2V9FMjXJnqXhGm49UxwIW0 CDw4y6F4kYcKD2e VwFtD0pHT0F0ZkhfcdIDLmdl8iPGMfw== jdunphy@jdunphy-dev"}}
+
+At this point, you should reauthorize as your new user, using another
+POST to /auth.json.
+
+
+
+
 ## Managing Bees
 
 ## The admin interface

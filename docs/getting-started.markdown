@@ -11,7 +11,9 @@ To start the project in developer mode:
 
 
 This will start the basic router with the default options. The default
-node type that gets started is the router type.
+node type that gets started is the router type. For more information
+on what to do next, check out docs/survival_guide.markdown
+
 
 To build the project and use in in a production mode, see docs/installation.markdown.
 
