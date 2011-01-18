@@ -98,9 +98,13 @@ get_worker_childspec(Name) when is_atom(Name) ->
 worker_restart_strategy() ->
   {one_for_one, ?MaxRestartTrial, ?MaxTimeBetweenRestartInSec}.
 
--spec get_app_env(Application::application:application(), 
+-spec get_app_env(Key::atom(), Default::term())-> term(). 
+get_app_env(Key, Default) ->
+  get_app_env('beehive', Key, Default).	
+  	  
+-spec get_app_env(App::application:application(), 
 		  Key::atom(), 
-		  Default::any()) -> term().
+		  Default::any()) -> term().		  
 get_app_env(App, Key, Default)->
   case application:get_env(application:get_application(App), Key) of
        {ok, Val} -> Val;
@@ -110,8 +114,7 @@ get_app_env(App, Key, Default)->
                    error -> Default
                 end
   end.
-get_app_env(Key, Default) ->
-  get_app_env('beehive', Key, Default).
+
   
 
 %%====================================================================
