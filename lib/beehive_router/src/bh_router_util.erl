@@ -14,6 +14,7 @@
 notify_manager(Event)-> node_manager:notify(Event).
 
 %%%% Application Runtime %%%%
+-spec ensure_loaded(App::application:application()) -> {ok, app_loaded} | {error, term()}.
 ensure_loaded(App) when is_atom(App) ->
 	case application:loaded(App) of
 		ok -> {ok, app_loaded};
@@ -51,9 +52,6 @@ time_diff(ThisTimeInSec, ThatTimeInSec) ->
 
 	
 %%%%%% Print %%%%%%%%%%%%%%%%%
-%print_list([])->ok;
-%print_list(L, Pattern) when is_list(L) ->
-
 format(Mod, Func, Line, Why) ->
   io:format("Mod: ~w Func: ~w Line: ~w, Why: ~p",[Mod, Func, Line, Why]).
 
