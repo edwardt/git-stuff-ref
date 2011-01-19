@@ -1,6 +1,7 @@
 PACKAGE_NAME = beehive
 PACKAGE_VERSION = 0.1
 
+
 .PHONY: deps compile rel test
 
 all: compile
