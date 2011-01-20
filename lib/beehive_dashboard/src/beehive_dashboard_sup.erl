@@ -19,7 +19,6 @@
 -export([init/1]).
 
 -define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
--define (IF (Bool, A, B), if Bool -> A; true -> B end).
 -define(SERVER, ?MODULE).
 
 %%====================================================================
