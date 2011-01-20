@@ -154,16 +154,20 @@
 	}).
 
 % Meta info for Erlang VM???
+-record (erl_vm_stat, {
+	avg_running_process, % number of erlang process per min
+	avg_erl_queue_length, %number of messages in queue over erlang VM per min
+        % avg number of messages in ?? queue per min
+	} ).
 
 % Stats for the target machine over the last minute
 -record (machine_avg_stat, {
   cpu_load_avg,     % average cpu load in percentage
-  free_mem_avg,     % average free memory in bytes
-  paging_avg, 	    % average paging memory in bytes
-  % packets
-  packet_count_avg,     % average packet count
-  bytes_received_avg,     % average bytes received in bytes
-  bytes_sent_ave	%average bytes sent in bytes
+  free_mem_avg,     % average free memory in M
+  paging_avg, 	    % average paging memory in M
+  packet_count_avg,     % average packet count K/Second
+  bytes_received_avg,     % average bytes received in Kbytes
+  bytes_sent_ave	%average bytes sent in Kbytes
 }).
 
 

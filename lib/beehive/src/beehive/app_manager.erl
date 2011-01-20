@@ -498,7 +498,7 @@ handle_queued_call(Fun, From, #state{queries = OldTransQ,
               {error, _} = T2 -> FromServer ! {answer, TransId, T2}
             end
         end),
-  {noreply, State#state{queries = queue:in({TransId, From}, OldTransQ)}}.
+  {noreply, State#state{queries =  queue:in({TransId, From}, OldTransQ)}}.
 
 %% Spawn a process to try to connect to the instance
 spawn_update_bee_status(Bee, From, Nums) ->
