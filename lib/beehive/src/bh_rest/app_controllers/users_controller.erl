@@ -65,21 +65,24 @@ post([], Data) ->
   auth_utils:run_if_admin(
     fun(_) ->
         case proplists:get_value(email, Data) of
-            undefined -> {error, 400, "The email field was not provided."};
-            Email ->
-                %% The user has been submitted with an email
-                case users:exist(Email) of
-                    true ->
-                        {error, 409,
-                            "A user with that email address already exists."};
-                    false ->
-                        case users:create(Data) of
-                            {ok, User} when is_record(User, user) ->
-                                {user, [{email, User#user.email}]};
-                            E ->
-                                io:format("Error: ~p~n", [E]),
-                                {error, 500, "There was an error creating user"}
-                        end
+          undefined -> {error, 400, "No email defined"};
+          Email ->
+            %% The user has been submitted with an email
+            case users:exist(Email) of
+              true -> {error, 409, "The user already exists"};
+              false ->
+                case users:create(Data) of
+                  {ok, User} when is_record(User, user) ->
+                    case User#user.pubkey of
+                      Key when is_list(Key) ->
+                        ok = beehive_repository:add_user_pubkey(User#user.email,
+                                                                Key);
+                      _ -> ok
+                    end,
+                    {user, [{email, User#user.email}]};
+                  E ->
+                    io:format("Error: ~p~n", [E]),
+                    {error, 500, "There was an error creating user"}
                 end
         end
 end, Data);

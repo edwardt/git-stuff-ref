@@ -112,7 +112,10 @@ unmounting({error, Msg}, State) ->
 cleaning_up({cleaned_up, _BeeObject},
             #state{from = From, bee = Bee} = State) ->
   bees:save(Bee#bee{pid = undefined, os_pid = undefined}),
-  From ! {bee_terminated, Bee},
+  case From of
+    undefined -> ok;
+    Pid -> Pid ! {bee_terminated, Bee}
+  end,
   {stop, normal, State};
 
 cleaning_up(Event, State) ->

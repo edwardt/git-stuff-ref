@@ -429,7 +429,6 @@ handle_info({app_launcher_fsm, error, {StateName, Code}, Props}, State) ->
   {noreply, State};
 
 handle_info({error, AState, Error}, State) ->
-  erlang:display({handle_info,error,AState,Error}),
   ?LOG(debug, "something died: ~p", [Error]),
   {noreply, State};
 
@@ -443,7 +442,6 @@ handle_info({answer, TransId, Result}, #state{queries = Queries} = State) ->
   {noreply, State#state{queries = Q}};
 
 handle_info(Info, State) ->
-  erlang:display({handle_info, Info}),
   ?LOG(info, "app_manager got: ~p", [Info]),
   {noreply, State}.
 
