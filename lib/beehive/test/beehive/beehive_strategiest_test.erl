@@ -22,9 +22,15 @@ starting_test_() ->
 
 random() ->  
   List = [1,2,3,4,5,b,c,d,a],
-  Out = hd(bee_strategies:random(List)),
-  ?assert(lists:member(Out, List)),
+  Out = list_head(List),
+  ?assert(is_list_item(Out, List)),
   passed.
+
+list_head(List) when is_list(List) ->
+  erlang:hd(List).
+  
+is_list_item(Item, List) when is_list(List) ->
+  lists:member(Out, List).
   
 least_loaded() ->
   List = [
@@ -32,6 +38,6 @@ least_loaded() ->
     #bee{id={"meringue", {127,0,0,1}, 9002}},
     #bee{id={"keylime", {127,0,0,1}, 9003}}
   ],
-  Out = hd(bee_strategies:least_loaded(List)),
-  ?assert(lists:member(Out, List)),
+  Out = list_head(bee_strategies:least_loaded(List)),
+  ?assert(is_list_item(Out, List)),
   passed.
