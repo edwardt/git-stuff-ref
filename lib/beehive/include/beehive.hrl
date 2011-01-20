@@ -156,7 +156,7 @@
 % Meta info for Erlang VM???
 -record (erl_vm_stat, {
 	avg_running_process, % number of erlang process per min
-	avg_erl_queue_length, %number of messages in queue over erlang VM per min
+	avg_erl_queue_length %number of messages in queue over erlang VM per min
         % avg number of messages in ?? queue per min
 	} ).
 
