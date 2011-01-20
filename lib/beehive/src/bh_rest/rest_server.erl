@@ -159,7 +159,7 @@ run_controller(Req, Resp, Docroot, ControllerAtom, Meth, Args) ->
     {error, Status, Message} when is_integer(Status) ->
       Resp1 = Resp:status_code(Status),
       Resp2 = Resp1:header("Content-Type", "application/json"),
-      Resp3 = Resp2:data(?JSONIFY(Message)),
+      Resp3 = Resp2:data(?JSONIFY({error, Message})),
       Resp3:build_response();
     {error, _} = Tuple ->
       % Any errors must be thrown to be caught
