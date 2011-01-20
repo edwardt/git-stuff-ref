@@ -106,7 +106,7 @@ add_pubkey(User, Pubkey) ->
       ok = beehive_repository:add_user_pubkey(SavedUser#user.email, Pubkey),
       [{"user", SavedUser#user.email}, {"pubkey", "added pubkey"}];
     _Else ->
-      app_error("There was an error updating the user")
+      app_error("There was an error updating the user", 500)
   end.
 
 app_error(Msg, Status) ->
