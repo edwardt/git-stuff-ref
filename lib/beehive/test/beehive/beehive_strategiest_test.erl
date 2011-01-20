@@ -1,4 +1,5 @@
 -module (beehive_strategiest_test).
+-ifdef (TEST).
 -include_lib("eunit/include/eunit.hrl").
 -include ("beehive.hrl").
 
@@ -41,3 +42,8 @@ least_loaded() ->
   Out = list_head(bee_strategies:least_loaded(List)),
   ?assert(is_list_item(Out, List)),
   passed.
+
+
+
+  
+-endif.

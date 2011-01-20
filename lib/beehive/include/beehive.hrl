@@ -132,6 +132,7 @@
   to_timer				            % Timeout timer ref
 }).
 
+%TODO: how can this be correct? The only avg is avg_req_time?
 % Stats for a bee
 -record (bee_stat, {
   total_requests,   % total requests for the bee
@@ -142,6 +143,29 @@
   packet_count,     % total packet counts
   bytes_received    % total bytes received by packet
 }).
+
+% Meta info for target machine
+-record (machine_info,	{ 
+	 number_of_cores, %number of cpu cores availble
+	 total_ram_available, %total RAM in bytes 
+	 total_disk_available,  %disk space available
+	 net_interface %A lit of network interface
+	 
+	}).
+
+% Meta info for Erlang VM???
+
+% Stats for the target machine over the last minute
+-record (machine_avg_stat, {
+  cpu_load_avg,     % average cpu load in percentage
+  free_mem_avg,     % average free memory in bytes
+  paging_avg, 	    % average paging memory in bytes
+  % packets
+  packet_count_avg,     % average packet count
+  bytes_received_avg,     % average bytes received in bytes
+  bytes_sent_ave	%average bytes sent in bytes
+}).
+
 
 -record (node, {
   name,               % name of the node
