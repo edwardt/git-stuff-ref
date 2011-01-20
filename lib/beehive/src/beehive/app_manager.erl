@@ -778,6 +778,7 @@ kill_other_bees(#bee{app_name = Name,
   end.
 
 %% So that we can get a unique id for each communication
+%% FIXME:  This is about to have been a bug.
 next_trans(I) when I < 268435455 -> I+1;
 next_trans(_) -> 1.
 
