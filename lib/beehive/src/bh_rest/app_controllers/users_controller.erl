@@ -70,10 +70,8 @@ post([], Data) ->
                 %% The user has been submitted with an email
                 case users:exist(Email) of
                     true ->
-                        %app_error(
-                            %"A user with that email address already exists.",
-                            %409);
-                        {error, 409, "A user with that email address already exists."};
+                        {error, 409,
+                            "A user with that email address already exists."};
                     false ->
                         case users:create(Data) of
                             {ok, User} when is_record(User, user) ->
