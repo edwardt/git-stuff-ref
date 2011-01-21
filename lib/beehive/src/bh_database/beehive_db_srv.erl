@@ -2,7 +2,7 @@
 %% @author Ari Lerner <arilerner@mac.com>
 %% @copyright 05/28/10 Ari Lerner <arilerner@mac.com>
 %% @doc Database server
-
+%%
 %% db_srv expects to be initialized with a database adapter. The only
 %% adapter currently implemented is mnesia.
 %% Any adapter is expected to implement the following exports.
@@ -10,13 +10,17 @@
 %%   start/1,
 %%   stop/0,
 %%   read/2,
+%%   all/1,
 %%   save/1,
 %%   write/3,
 %%   run/1,
-%%   delete/2, delete_all/1,
-%%   all/1,
+%%   delete/2,
+%%   delete_all/1,
 %%   match/1,
 %%   info/1
+%%
+%%  This mimics the API of the actual beehive_db_srv below.  Check out that
+%%  code to see what arguments are provided.
 
 -module (beehive_db_srv).
 
