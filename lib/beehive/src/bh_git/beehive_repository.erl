@@ -1,12 +1,27 @@
 %%% @author Jacob Dunphy
 %%% @doc
 %%%
+%%%
+%%% beehive_repository depends on underlying adapters to handle actual
+%%% git interaction. To write an adapter for beehive_repository, a
+%%% module must have the gen_server behavior, and implement the
+%%% following patterns for handle_call.
+%%%
+%%% {create, Name}                -> create a repository
+%%% {add_user, Username, Name}    -> adds a user to a repository
+%%% {remove_user, Username, Name} -> remove user permissions from a repo
+%%% {add_pubkey, Name, Key}       -> add a public ssh key for a given username
+%%% {clone_url, Name}             -> Provides path to checkout git repo as list
+%%% {clone, Name, Path}           -> Check out a given repo Name to a Path on fs
+%%%
+%%% Adapters currently get started in init/1, and are chosen by the config
+%%% variable 'repository'.
 %%% @end
 %%% Created :  8 Dec 2010 by Jacob Dunphy
 
 
 -module(beehive_repository).
--behaviour(gen_server).
+-behavior(gen_server).
 
 %% API
 -export([start_link/0,
@@ -30,7 +45,7 @@
 %% @spec create(Name) -> ok | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-create(Name) ->
+create(Name)                                ->
   gen_server:call(?SERVER, {create, Name}).
 
 %%--------------------------------------------------------------------
@@ -41,7 +56,7 @@ create(Name) ->
 %% @spec add_user_to_repository(Username, Name) -> ok | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-add_user_to_repository(Username, Name) ->
+add_user_to_repository(Username, Name)      ->
   gen_server:call(?SERVER, {add_user, Username, Name}).
 
 %%--------------------------------------------------------------------
@@ -62,7 +77,7 @@ remove_user_from_repository(Username, Name) ->
 %% @spec clone(Name, Path) -> ok | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-clone(Name, Path) ->
+clone(Name, Path)                           ->
   gen_server:call(?SERVER, {clone, Name, Path}).
 
 %%--------------------------------------------------------------------
@@ -71,7 +86,7 @@ clone(Name, Path) ->
 %% @spec clone_url(Name) -> {ok, Url} | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-clone_url(Name) ->
+clone_url(Name)                             ->
   gen_server:call(?SERVER, {clone_url, Name}).
 
 %%--------------------------------------------------------------------
