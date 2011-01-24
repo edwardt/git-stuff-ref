@@ -173,8 +173,8 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal functions
 %%====================================================================
 -spec ensure_apps_started()-> no_return() | {error, term()}.
-ensure_apps_started()->
-  bh_route_util:ensure_deps_started(['os_mon']).
+ensure_apps_started()->  
+  bh_route_util:ensure_deps_started(['sasl','os_mon']).
   
   
 %% Return node cpu utilisation

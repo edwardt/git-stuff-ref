@@ -62,8 +62,8 @@ start_link() ->
 init([]) ->
   process_flag(trap_exit, true),
   
-  application:start(os_mon),
-  
+  %application:start(os_mon),
+  ensure_apps_started(),
   % Opts = [named_table, ordered_set],
   % ets:new(bee_stat_total, Opts),
   
@@ -173,6 +173,9 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
+
+ensure_apps_started()->  
+  bh_route_util:ensure_deps_started(['sasl','os_mon']).
 
 new_bee_stat() ->
   #bee_stat{
