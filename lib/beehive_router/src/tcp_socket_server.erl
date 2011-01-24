@@ -20,11 +20,13 @@
   init/0,
   init/1,
   init_accept/1
+%  stop/0
 ]).
 
 -define (Socket_Server_Sup, tcp_socket_server_sup).
 
-%TODO: not a good acceptor/reactor 
+%TODO: not a good acceptor/reactor. Also why not use gen_server? 
+%TODO: Why give up all the benefits where supervisor will do that for us?
 %%====================================================================
 %% API
 %%====================================================================
@@ -63,6 +65,8 @@ init_accept(LPort, SockOpts) ->
     	         exit(socket_listen_error, Error)
     		 %{error, Error}
   end.
+  
+
 
 %% Accept a new socket connection to the server. If the socket
 %% connection is successful, then move on and decode the socket type
