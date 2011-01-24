@@ -16,22 +16,21 @@ notify_manager(Event)-> node_manager:notify(Event).
 %%%% Application Runtime %%%%
 -spec ensure_loaded(App::application:application()) -> {ok, app_loaded} | {error, term()}.
 ensure_loaded(App) when is_atom(App) ->
-	case application:loaded(App) of
-		ok -> {ok, app_loaded};
-		{error, {already_loaded, _Name}} -> {ok, app_loaded};
-		Error -> throw({error_load_app, Error})
-	end.
+  case application:loaded(App) of
+       ok -> {ok, app_loaded};
+       {error, {already_loaded, _Name}} -> {ok, app_loaded};
+       Error -> throw({error_load_app, Error})
+  end.
 	
 -spec ensure_started(App::application:application()) -> {ok, app_started} | {error, term()}.	
 ensure_started(App) when is_atom(App) ->
-	case application:start(App) of
-		{ok, _Reason } -> ok;
-		{error , {already_started, App} -> ok;
-		{error, Error} -> throw({error_start_app, Error})
-	end. 
+  case application:start(App) of
+       {ok, _Reason } -> {ok, app_started};
+       {error , {already_started, App}} -> ok;
+       {error, Error} -> throw({error_start_app, Error})
+  end. 
 			
 ensure_deps_loaded([])-> {ok, app_loaded};
-
 ensure_deps_loaded(Apps) when is_list(Apps)->
 	list:map( fun(App)-> ensure_loaded(App)end, Apps).	
 	
