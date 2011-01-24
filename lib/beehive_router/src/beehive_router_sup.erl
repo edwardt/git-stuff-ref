@@ -124,8 +124,6 @@ get_app_env(App, Key, Default)->
 -ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
 
-
-
 should_run_dashboard_test_()->
   ?assertTrue(should_run_dashboard()).
 
@@ -146,7 +144,10 @@ get_app_env_test()_->
   App = testApp, Key = testKey,
   ensure_app_env_absent(testApp).
   Default = defaultVal,
-  ?assertEqual(Default,get_app_env(App, Key, Default)).
+  Result = get_app_env(App, Key, Default),
+  ?assertEqual(Default,Result),
+  ensure_app_env_absent(testApp).
+  
 
 
 ensure_app_env_absent(App, Key) when is_atom(App), is_atom(Key)->
