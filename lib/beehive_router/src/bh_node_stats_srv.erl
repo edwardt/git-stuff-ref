@@ -70,7 +70,8 @@ start_link() ->
 init([]) ->
   io:format("Starting bh_node_stats_srv~n"),
   process_flag(trap_exit, true),
-  ensure_app_started(os_mon),
+  %ensure_app_started(os_mon), 
+  ensure_started(os_mon),
   State = #state{
     node_stats  = dict:new()
   },
@@ -171,12 +172,9 @@ code_change(_OldVsn, State, _Extra) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
--spec ensure_app_started(Application::application:application())-> no_return() | {error, start_app_error}.
-ensure_app_started(Application) when is_atom(Application)-> 
-  case(bh_router_util:ensure_loaded(Application)) of
-  	{ok, _Reason} -> ok;
-  	Error -> throw({start_app_error, Error})
-  end.
+-spec ensure_apps_started()-> no_return() | {error, term()}.
+ensure_apps_started()->
+  bh_route_util:ensure_deps_started(['os_mon']).
   
   
 %% Return node cpu utilisation
@@ -234,6 +232,20 @@ get_os_data(packets, {unix, linux},File) ->
 %% Unit Test
 %%--------------------------------------------------------------------    
 -ifdef(EUNIT).
+get_os_data_platform_linux_()->
+ %BUILD
+ 
+ %DO
+ 
+ %ASSERT
+ 
+get_os_data_platform_unknown_()->
+
+
+get_free_mem_test_()->
+
+get_cpu_load_test_()->
+
 
 
 -endif.    

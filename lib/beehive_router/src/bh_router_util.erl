@@ -34,10 +34,14 @@ ensure_started(App) when is_atom(App) ->
        {error , {already_started, App}} -> ok;
        {error, Error} -> throw({error_start_app, Error})
   end. 
-			
+		
 ensure_deps_loaded([])-> {ok, app_loaded};
 ensure_deps_loaded(Apps) when is_list(Apps)->
-	list:map( fun(App)-> ensure_loaded(App)end, Apps).	
+  list:map( fun(App)-> ensure_loaded(App)end, Apps).
+	
+ensure_deps_started([]) ->{ok, apps_started};
+ensure_deps_started(Apps) when is_list(Apps) ->
+  list:map(fun(App) -> ensure_started(App) end, Apps).	
 
 % TODO: seperate this out to another util file, each util file provides util for 1 
 % group of concept

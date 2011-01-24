@@ -7,7 +7,7 @@
 %% adapter currently implemented is mnesia.
 %% Any adapter is expected to implement the following exports.
 %%
-%%   start/1,
+%%   start/1, <-- where is this one?
 %%   stop/0,
 %%   read/2,
 %%   all/1,
@@ -76,6 +76,9 @@ info(Type) -> gen_server:call(?SERVER, {info, Type}).
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
+start(DbAdapter) -> start_link(DbAdapter).
+
+%Defaulted as mnesia
 start_link() -> start_link(mnesia, []).
 
 start_link(DbAdapter) when is_atom(DbAdapter) ->
@@ -206,3 +209,5 @@ init_adapter(Nodes, DbAdapter) ->
     false -> ok
   end,
   ok.
+  
+
