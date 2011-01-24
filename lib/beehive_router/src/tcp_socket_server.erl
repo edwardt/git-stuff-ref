@@ -57,7 +57,8 @@ init_accept(LPort, SockOpts) ->
 		 [LPort, Error]),
 		 %TODO: what additional info does the above add?
     		 error_msg(currentfunc(), 
-    		 	   io:format("Port: ~p Sock Options: ~p Error: ~p", [LPort, SockOpts, Error])),
+    		 	   io:format("Port: ~p Sock Options: ~p Error: ~p", [LPort, SockOpts, Error]),
+    		 	   get_stacktrace()),
     	         %TODO: the server should just die and exit at this point 
     	         exit(socket_listen_error, Error)
     		 %{error, Error}
@@ -79,7 +80,7 @@ accept(LSock) ->
       ?LOG(error, "There was an error accepting the socket ~p: ~p",
            [LSock, Error]),
       %The msg above add no additional helpful info     
-      error_msg(currentfunc(), {socket_accept_error, [LSock, Error]}),      
+      error_msg(currentfunc(), {socket_accept_error, [LSock, Error]}, get_stacktrace()),      
       exit({socket_accept_error, Error})
   end.
 
@@ -137,14 +138,18 @@ send_to(To, {Tag, Msg, From}, 'debug')->
 send_to(To, {Tag, Msg, From}, _Other)->
   send_to(To, {Tag, Msg, From}).
 
-info_msg(Fun, What)->
-  bh_router_util:info_msg(?MODULE,Fun,What).  
-  
-error_msg(Fun, Why)->
-  bh_router_util:error_msg(?MODULE, Fun, Why).
+info_msg(Func, What)->
+  bh_router_util:info_msg(?MODULE, Func, What).  
+
+%TODO Func may not be needed  
+error_msg(Func, Why, StackTrace) ->
+  bh_router_util:error_msg(Func, Why, StackTrace).
 
 currentfunc()->
   bh_router_util:current_function().
+
+get_stacktrace()->
+  bh_router_util:get_stacktrace().
 
 
  
