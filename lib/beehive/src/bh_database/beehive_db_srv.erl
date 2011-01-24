@@ -2,6 +2,26 @@
 %% @author Ari Lerner <arilerner@mac.com>
 %% @copyright 05/28/10 Ari Lerner <arilerner@mac.com>
 %% @doc Database server
+%%
+%% db_srv expects to be initialized with a database adapter. The only
+%% adapter currently implemented is mnesia.
+%% Any adapter is expected to implement the following exports.
+%%
+%%   start/1,
+%%   stop/0,
+%%   read/2,
+%%   all/1,
+%%   save/1,
+%%   write/3,
+%%   run/1,
+%%   delete/2,
+%%   delete_all/1,
+%%   match/1,
+%%   info/1
+%%
+%%  This mimics the API of the actual beehive_db_srv below.  Check out that
+%%  code to see what arguments are provided.
+
 -module (beehive_db_srv).
 
 -behaviour(gen_server).
@@ -29,9 +49,7 @@
 -export ([init_databases/0]).
 
 -record(state, {
-  adapter,
-  last_trans  = 0,
-  queries     = queue:new()
+  adapter
 }).
 
 -define(SERVER, ?MODULE).
@@ -88,7 +106,6 @@ init([DbAdapterName, Nodes]) ->
   init_adapter([node()|Nodes], DbAdapter),
 
   {ok, #state{
-    last_trans = next_trans(0),
     adapter = DbAdapter
   }}.
 %%--------------------------------------------------------------------
@@ -101,30 +118,26 @@ init([DbAdapterName, Nodes]) ->
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
 handle_call({write, Table, Key, Proplist}, From, State) ->
-  handle_queued_call(write, From, [Table, Key, Proplist], State);
+  {reply, call_adapter(write, [Table, Key, Proplist], State), State};
 handle_call({save, Fun}, From, State) ->
-  handle_queued_call(save, From, [Fun], State);
+  {reply, call_adapter(save, [Fun], State), State};
 handle_call({read, Table, Key}, From, State) ->
-  handle_queued_call(read, From, [Table, Key], State);
+  {reply, call_adapter(read, [Table, Key], State), State};
 % Deletions
 handle_call({delete, Table, Key}, From, State) ->
-  handle_queued_call(delete, From, [Table, Key], State);
+  {reply, call_adapter(delete, [Table, Key], State), State};
 handle_call({delete_all, Table}, From, State) ->
-  handle_queued_call(delete_all, From, [Table], State);
-  % {reply, try_to_call(Adapter, delete, [Table, Key]), State};
+  {reply, call_adapter(delete_all, [Table], State), State};
 handle_call({status}, From, State) ->
-  handle_queued_call(status, From, [], State);
-  % {reply, try_to_call(Adapter, status, []), State};
+  {reply, call_adapter(status, [], State), State};
 handle_call({all, Table}, From, State) ->
-  handle_queued_call(all, From, [Table], State);
-  % {reply, try_to_call(Adapter, all, [Table]), State};
+  {reply, call_adapter(all, [Table], State), State};
 handle_call({run, Fun}, From, State) ->
-  handle_queued_call(run, From, [Fun], State);
-  % {reply, try_to_call(Adapter, run, [Fun]), State};
+  {reply, call_adapter(run, [Fun], State), State};
 handle_call({match, Mod}, From, State) ->
-  handle_queued_call(match, From, [Mod], State);
+  {reply, call_adapter(match, [Mod], State), State};
 handle_call({info, Type}, From, State) ->
-  handle_queued_call(info, From, [Type], State);
+  {reply, call_adapter(info, [Type], State), State};
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.
@@ -149,14 +162,6 @@ handle_cast(_Msg, State) ->
 %%                                       {stop, Reason, State}
 %% Description: Handling all non call/cast messages
 %%--------------------------------------------------------------------
-handle_info({answer, TransId, Result}, #state{queries = Queries} = State) ->
-  case get_transaction(Queries, TransId) of
-    {true, From, Q} ->
-      gen_server:reply(From, Result);
-    {false, Q} ->
-      ok
-  end,
-  {noreply, State#state{queries = Q}};
 
 handle_info(Info, State) ->
   erlang:display({?MODULE, handle_info, Info}),
@@ -182,44 +187,9 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
-%%-------------------------------------------------------------------
-%% @spec (Action::fun(), From::pid(), Args::list(), State) ->
-%%     {ok, Value}
-%% @doc The directory for the database
-%% @end
-%%-------------------------------------------------------------------
-handle_queued_call(Action, From, Args,
-                   #state{adapter = Adapter, queries = OldTransQ,
-                          last_trans = LastTrans} = State) ->
-  TransId = next_trans(LastTrans),
-  try_to_call(TransId, Adapter, Action, Args),
-  {noreply, State#state{queries = queue:in({TransId, From}, OldTransQ)}}.
-% Super utility
-try_to_call(TransId, M, F, A) ->
-  From = self(),
-  spawn(fun() ->
-    case erlang:function_exported(M,F,erlang:length(A)) of
-      true ->
-        From ! {answer, TransId, apply(M,F,A)};
-      false ->
-        From ! {answer, TransId, not_found}
-    end
-  end).
 
-% So that we can get a unique id for each communication
-next_trans(I) when I < 268435455 -> I+1;
-next_trans(_) -> 1.
-
-get_transaction(Q, I) -> get_transaction(Q, I, Q).
-get_transaction(Q, I, OldQ) ->
-  case queue:out(Q) of
-    {{value, {I, From}}, Q2} ->
-      {true, From, Q2};
-    {empty, _} ->
-      {false, OldQ};
-    {_E, Q2} ->
-      get_transaction(Q2, I, OldQ)
-    end.
+call_adapter(F, A, State) ->
+  apply(State#state.adapter,F,A).
 
 init_adapter(Nodes, DbAdapter) ->
   case erlang:module_loaded(DbAdapter) of
