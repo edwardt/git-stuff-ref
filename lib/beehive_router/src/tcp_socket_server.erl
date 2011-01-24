@@ -56,7 +56,7 @@ init_accept(LPort, SockOpts) ->
 		 "There was an error listening to the socket for port ~p: ~p",
 		 [LPort, Error]),
 		 %TODO: what additional info does the above add?
-    		 error_msg(currentfunc(), 
+    		 error_msg(current_func(), 
     		 	   io:format("Port: ~p Sock Options: ~p Error: ~p", [LPort, SockOpts, Error]),
     		 	   get_stacktrace()),
     	         %TODO: the server should just die and exit at this point 
@@ -71,19 +71,21 @@ init_accept(LPort, SockOpts) ->
 %% request in this process so that we are never blocking the socket
 %% server
 accept(LSock) ->  
-  case gen_tcp:accept(LSock) of
+  accept(LSock,'no_debug').
+
+accept(LSock, Debug) ->
+    case gen_tcp:accept(LSock) of
     {ok, ClientSock} ->
-      spawn(fun() -> pass_on_to_proxy(ClientSock) end), %TODO: debug
+      spawn(fun() -> pass_on_to_proxy(ClientSock, Debug) end), %TODO: debug
 	    accept(LSock);
     Error ->
       %TODO slowly migrate from
       ?LOG(error, "There was an error accepting the socket ~p: ~p",
            [LSock, Error]),
       %The msg above add no additional helpful info     
-      error_msg(currentfunc(), {socket_accept_error, [LSock, Error]}, get_stacktrace()),      
+      error_msg(current_func(), {socket_accept_error, [LSock, Error]}, get_stacktrace()),      
       exit({socket_accept_error, Error})
   end.
-
 
 
 %% Take the socket and decode the routing key from the packet. For
@@ -93,13 +95,10 @@ accept(LSock) ->
 %% process and finally passing the socket to the proxy handler process
 pass_on_to_proxy(ClientSock) ->
   pass_on_to_proxy(ClientSock, 'no_debug').
-
-pass_on_to_proxy(ClientSock, 'debug') ->
-  pass_on_to_proxy(ClientSock, 'debug');
-
 pass_on_to_proxy(ClientSock, Debug) ->
   %% Choose here the type of response... for now, it'll just be http,
   %% but in the future... maybe tcp/udp?
+  debug_msg(current_func(), "Hand over connection to proxy", Debug),
   {ok, ProxyPid} = ?Socket_Server_Sup:start_client(ClientSock),
   gen_tcp:controlling_process(ClientSock, ProxyPid),
   send_to(ProxyPid, {start, ClientSock, ProxyPid}, Debug).
@@ -123,29 +122,30 @@ get_port(UnknownProtocol) -> throw({unsupported_protocol_type, UnknownProtocol})
 
 -spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}) -> {ok, term()} | 
 								  {error, term()}.
-send_to(To, {Tag, Msg, To}) ->
-  send_to(To, {Tag, Msg, To});
-
+ 
 send_to(To, {Tag, Msg, From}) ->
   To ! {Tag, Msg, From}.
   
 -spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}, 'debug' | any()) -> {ok, term()} | 
 								  {error, term()}.
-send_to(To, {Tag, Msg, From}, 'debug')->
-  send_to(To, {Tag, Msg, From}),
-  info_msg(currentfunc(),io:format("Message ~w sent to ~w",[To, {Tag, Msg, From}]));
-
-send_to(To, {Tag, Msg, From}, _Other)->
+send_to(To, {Tag, Msg, From}, Debug)->
+  debug_msg(current_func(),io:format("Message ~w sent to ~w",[To, {Tag, Msg, From}]), Debug), 
   send_to(To, {Tag, Msg, From}).
-
+  
 info_msg(Func, What)->
   bh_router_util:info_msg(?MODULE, Func, What).  
 
 %TODO Func may not be needed  
 error_msg(Func, Why, StackTrace) ->
   bh_router_util:error_msg(Func, Why, StackTrace).
+  
+debug_msg(Func, What, 'debug') ->
+  info_msg(Func, What);
+  
+debug_msg(_Func, _What, _ELSE) ->
+  ok.
 
-currentfunc()->
+current_func()->
   bh_router_util:current_function().
 
 get_stacktrace()->
