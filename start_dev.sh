@@ -21,9 +21,8 @@ if [ -z "$BEEHIVE_DOMAIN" ]; then
   export BEEHIVE_DOMAIN=`hostname -f`
 fi
 
-if [ -z "$BEEHIVE_REPOSITORY"]
-then
-    export BEEHIVE_REPOSITORY=local_git
+if [ -z "$BEEHIVE_REPOSITORY"]; then
+  export BEEHIVE_REPOSITORY=local_git
 fi
 
 mkdir -p $BEEHIVE_HOME
@@ -35,7 +34,7 @@ eval "erl \
     -name beehive@127.0.0.1 \
     -pa deps/*/ebin -pa lib/*/ebin -pa lib/*/include  \
     -beehive database_dir '\"$BEEHIVE_HOME/db\"' \
-    -eval \"application:start(sasl)\" \
+    -eval \"application:start(sasl, [{errlog_type, error}])\" \
     -eval \"application:start(os_mon)\" \
     -eval \"application:start(crypto)\" \
 		-s reloader \
