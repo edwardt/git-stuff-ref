@@ -14,8 +14,8 @@ Beehive
 
 ## Dependencies ##
 
-   * Erlang  - Development has been happening on R14B
-   * Ruby    - 1.8.7
+   * Erlang  - Development has been happening on R14B also runs on R14A and R13B
+   * Ruby    - 1.8.7 or 1.9.2
    * rubygems- rack, thin (for tests and prodcution)
    * rubygems- isolate, bundler (if any prod apps depend upon them)
    * git     - 1.7.x
@@ -37,8 +37,10 @@ to /var/lib/beehive.
 
      make test
 
-**Make sure you have ruby gems rack and thin installed.**  Various tests
+**Make sure you have all dependencies installed.** Various tests
 depend up them, and tests likely won't complete properly without them.
+You'll get some especially confusing output if you're missing thin and
+rack.
 
 How it works
 ===
@@ -78,7 +80,7 @@ performance of the router, which is tuned for speed.
 
 ---
 
-For more information, see [more docs](http://github.com/auser/beehive/blob/master/lib/README.markdown)
+For more information, see [more docs](http://github.com/auser/beehive/tree/master/docs)
 
 ---
 

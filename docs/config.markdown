@@ -37,11 +37,24 @@ Defaults to 4999.  Port that the dashboard app will be listening on.
 
 Defaults to 8080.  Port that the router will be listening on.
 
+### domain
+
+Defaults to `hostname -f`.  Used by router to parse out subodomains
+for app picking.
+
+### bee_strategy
+
+bee_strategy is used to determine which node to start a new bee on.
+Currently defaults to 'random'.
+
 ### debug
 If debug=true, beehive will increase logging output in console/log files.
 
 
 ## Environment Variables
 
-Beehive will use these values if they're found in the environment. Beehive config expects that env variables will be upper case and start with BEEHIVE_, so the 'home' config key will be overridden by a BEEHIVE_HOME env variable.
+Beehive will use these values if they're found in the
+environment. Beehive config expects that env variables will be upper
+case and start with BEEHIVE_, so the 'home' config key will be
+overridden by a BEEHIVE_HOME env variable.
 

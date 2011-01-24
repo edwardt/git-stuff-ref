@@ -2,6 +2,26 @@
 %% @author Ari Lerner <arilerner@mac.com>
 %% @copyright 05/28/10 Ari Lerner <arilerner@mac.com>
 %% @doc Database server
+%%
+%% db_srv expects to be initialized with a database adapter. The only
+%% adapter currently implemented is mnesia.
+%% Any adapter is expected to implement the following exports.
+%%
+%%   start/1,
+%%   stop/0,
+%%   read/2,
+%%   all/1,
+%%   save/1,
+%%   write/3,
+%%   run/1,
+%%   delete/2,
+%%   delete_all/1,
+%%   match/1,
+%%   info/1
+%%
+%%  This mimics the API of the actual beehive_db_srv below.  Check out that
+%%  code to see what arguments are provided.
+
 -module (beehive_db_srv).
 
 -behaviour(gen_server).
@@ -98,26 +118,26 @@ init([DbAdapterName, Nodes]) ->
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
 handle_call({write, Table, Key, Proplist}, From, State) ->
-  {reply, try_to_call(write, [Table, Key, Proplist], State), State};
+  {reply, call_adapter(write, [Table, Key, Proplist], State), State};
 handle_call({save, Fun}, From, State) ->
-  {reply, try_to_call(save, [Fun], State), State};
+  {reply, call_adapter(save, [Fun], State), State};
 handle_call({read, Table, Key}, From, State) ->
-  {reply, try_to_call(read, [Table, Key], State), State};
+  {reply, call_adapter(read, [Table, Key], State), State};
 % Deletions
 handle_call({delete, Table, Key}, From, State) ->
-  {reply, try_to_call(delete, [Table, Key], State), State};
+  {reply, call_adapter(delete, [Table, Key], State), State};
 handle_call({delete_all, Table}, From, State) ->
-  {reply, try_to_call(delete_all, [Table], State), State};
+  {reply, call_adapter(delete_all, [Table], State), State};
 handle_call({status}, From, State) ->
-  {reply, try_to_call(status, [], State), State};
+  {reply, call_adapter(status, [], State), State};
 handle_call({all, Table}, From, State) ->
-  {reply, try_to_call(all, [Table], State), State};
+  {reply, call_adapter(all, [Table], State), State};
 handle_call({run, Fun}, From, State) ->
-  {reply, try_to_call(run, [Fun], State), State};
+  {reply, call_adapter(run, [Fun], State), State};
 handle_call({match, Mod}, From, State) ->
-  {reply, try_to_call(match, [Mod], State), State};
+  {reply, call_adapter(match, [Mod], State), State};
 handle_call({info, Type}, From, State) ->
-  {reply, try_to_call(info, [Type], State), State};
+  {reply, call_adapter(info, [Type], State), State};
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.
@@ -168,13 +188,8 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%--------------------------------------------------------------------
 
-%% Super utility
-try_to_call(F, A, State) ->
-  M = State#state.adapter,
-  case erlang:function_exported(M,F,erlang:length(A)) of
-    true -> apply(M,F,A);
-    false -> not_found
-  end.
+call_adapter(F, A, State) ->
+  apply(State#state.adapter,F,A).
 
 init_adapter(Nodes, DbAdapter) ->
   case erlang:module_loaded(DbAdapter) of
