@@ -95,6 +95,7 @@ accept(LSock, Debug) ->
 %% process and finally passing the socket to the proxy handler process
 pass_on_to_proxy(ClientSock) ->
   pass_on_to_proxy(ClientSock, 'no_debug').
+  
 pass_on_to_proxy(ClientSock, Debug) ->
   %% Choose here the type of response... for now, it'll just be http,
   %% but in the future... maybe tcp/udp?
@@ -111,7 +112,7 @@ get_client_port()->
   PortNum = get_port('http-alt'),
   config:search_for_application_value(client_port, PortNum). %TODO: I don't know why we need to hide usage like this
   
--spec get_port(Protocol::protocol()) -> port() | 'undefined'.
+-spec get_port(Protocol::protocol()) -> port() | {unsupported_protocol_type, atom()}.
 get_port('http-alt') -> 8080; %TODO: get from dets later instead
 get_port('https')-> 443;
 get_port(UnknownProtocol) -> throw({unsupported_protocol_type, UnknownProtocol}).
