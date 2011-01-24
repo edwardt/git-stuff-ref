@@ -67,8 +67,7 @@ init(_Args) ->
 %% Internal functions
 %%====================================================================
 
--spec optional_dashboard_childspec()-> supervisor:childspec() | [].
-  	
+-spec optional_dashboard_childspec()-> supervisor:childspec() | [].  	
 optional_dashboard_childspec()->
   Dashboard = get_worker_childspec(beehive_dashboard_sup),
   ShouldRunDashboard = should_run_dashboard(),
@@ -151,7 +150,7 @@ get_app_env_test()_->
 
 ensure_app_env_absent(App, Key) when is_atom(App), is_atom(Key)->
     ok = application:unset_env(App, Key).  
-
+    
 
 -endif
 

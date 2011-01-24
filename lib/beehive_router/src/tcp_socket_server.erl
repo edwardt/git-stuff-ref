@@ -54,8 +54,8 @@ init_accept(LPort, SockOpts) ->
 	    	?LOG(error,
 		 "There was an error listening to the socket for port ~p: ~p",
 		 [LPort, Error]),
-    		
-    		{error, Error}
+    		 
+    		 {error, Error}
   end.
 
 %% Accept a new socket connection to the server. If the socket
@@ -124,11 +124,18 @@ send_to(To, {Tag, Msg, From}) ->
 -spec send_to(To::pid(), {Tag::atom(), Msg::any(), To::pid()}, 'debug' | any()) -> {ok, term()} | 
 								  {error, term()}.
 send_to(To, {Tag, Msg, From}, 'debug')->
-  send_to(To, {Tag, Msg, From}) 
-  %TODO log
-  ;
+  send_to(To, {Tag, Msg, From}),
+  info_msg(currentfunc(),io:format("Message ~w sent to ~w",[To, {Tag, Msg, From}]));
+
 send_to(To, {Tag, Msg, From}, _Other)->
   send_to(To, {Tag, Msg, From}).
+
+info_msg(Fun, What)->
+  bh_router_util:info_msg(?MODULE,Fun,What).  
+
+currentfunc()->
+  bh_router_util:current_function().
+
 
  
   
