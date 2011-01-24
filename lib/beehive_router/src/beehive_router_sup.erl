@@ -120,6 +120,7 @@ get_app_env(App, Key, Default)->
 %%====================================================================
 %% Unit test
 %%====================================================================
+-ifdef(TEST).
 -ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
 
@@ -152,6 +153,7 @@ ensure_app_env_absent(App, Key) when is_atom(App), is_atom(Key)->
     ok = application:unset_env(App, Key).  
     
 
--endif
+-endif.
+-endif.
 
 	

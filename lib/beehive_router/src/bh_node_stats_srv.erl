@@ -229,26 +229,44 @@ get_os_data(packets, {unix, linux},File) ->
     
 
 %%--------------------------------------------------------------------
-%% Unit Test
+%% Unit Test 
 %%--------------------------------------------------------------------    
+-ifdef(TEST).
 -ifdef(EUNIT).
-get_os_data_platform_linux_()->
+-include_lib("eunit/include/eunit.hrl").
+
+ensure_apps_started_test_()->
+  Result = ensure_apps_started().
+  ?assertMatch({ok, _Whatever}, Result).
+
+get_os_data_platform_linux_test()->
  %BUILD
- 
+   
  %DO
  
  %ASSERT
   ok.
  
-get_os_data_platform_unknown_()->
+get_os_data_platform_unknown_test()->
+ % Result = get_os_data(
   ok.
 
-get_free_mem_test_()->
+get_packets_test()_>
+
+  ok.
+
+get_free_mem_test()->
+
   ok.
   
-get_cpu_load_test_()->
+get_cpu_load_test()->
+
   ok.
 
+get_cpu_utilization_test()->
+ 
+  ok.
 
 -endif.    
+-endif.
     

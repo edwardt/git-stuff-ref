@@ -157,6 +157,15 @@ get_stacktrace()->
   bh_router_util:get_stacktrace().
 
 
+%%--------------------------------------------------------------------
+%% Unit Test
+%%--------------------------------------------------------------------  
+-ifdef(TEST).
+-ifdef(EUNIT).
+-include_lib("eunit/include/eunit.hrl").
+
+-endif.
+-endif.
  
   
 
