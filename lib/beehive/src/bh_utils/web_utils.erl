@@ -1,6 +1,5 @@
 -module(web_utils).
 -include ("beehive.hrl").
--include ("http.hrl").
 -compile (export_all).
 
 % Private
@@ -13,7 +12,8 @@ convert_to_struct(RawData) ->
 
 % jsonify the struct
 jsonify(JsonifiableBody) ->
-  [ ?JSON_ENCODE({
+  [  
+   json_encode({
         struct, [
           JsonifiableBody
         ]

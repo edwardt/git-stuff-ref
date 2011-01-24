@@ -71,7 +71,7 @@ init([]) ->
   io:format("Starting bh_node_stats_srv~n"),
   process_flag(trap_exit, true),
   %ensure_app_started(os_mon), 
-  ensure_started(os_mon),
+  ensure_apps_started(),
   State = #state{
     node_stats  = dict:new()
   },
@@ -238,14 +238,16 @@ get_os_data_platform_linux_()->
  %DO
  
  %ASSERT
+  ok.
  
 get_os_data_platform_unknown_()->
-
+  ok.
 
 get_free_mem_test_()->
-
+  ok.
+  
 get_cpu_load_test_()->
-
+  ok.
 
 
 -endif.    

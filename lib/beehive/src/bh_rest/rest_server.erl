@@ -159,13 +159,13 @@ run_controller(Req, Resp, Docroot, ControllerAtom, Meth, Args) ->
     {error, Status, Message} when is_integer(Status) ->
       Resp1 = Resp:status_code(Status),
       Resp2 = Resp1:header("Content-Type", "application/json"),
-      Resp3 = Resp2:data(?JSONIFY(Message)),
+      Resp3 = Resp2:data(to_json(Message)),
       Resp3:build_response();
     {error, _} = Tuple ->
       % Any errors must be thrown to be caught
       Resp1 = Resp:status_code(404),
       Resp2 = Resp1:header("Content-Type", "application/json"),
-      Resp3 = Resp2:data(?JSONIFY(Tuple)),
+      Resp3 = Resp2:data(to_json(Tuple)),
       Resp3:build_response();
     Body -> 
       respond_to(Req, Resp, Docroot, Body)
@@ -176,7 +176,7 @@ respond_to(Req, Resp, Docroot, Body) ->
     ".json" ->
       Resp1 = Resp:status_code(200),
       Resp2 = Resp1:header("Content-Type", "application/json"),
-      Resp2:data(?JSONIFY(Body));
+      Resp2:data(to_json(Body));
     _ ->
       Resp1 = Resp:header("Content-Type", "text/html"),
       Filename = case Req:path() of
@@ -251,6 +251,9 @@ decode_data_from_request(Req, delete) ->
   end;
 decode_data_from_request(Req, _Meth) -> atomize_keys(Req:post_params()).
 
+to_json(Value) ->
+  web_utils:json_encode(Value).
+  
 not_found_web(Resp, Docroot, _Redirect) -> serve_file("not_found.html", Resp:status_code(404), Docroot, false).
 serve_file(Path, Resp, Docroot, Redirect) -> 
 	RealPath = filename:join([Path]),
