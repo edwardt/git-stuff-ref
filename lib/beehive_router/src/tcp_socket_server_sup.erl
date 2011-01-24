@@ -45,6 +45,7 @@ init([Module]) ->
 stop(_Args) ->
   ok.
 
+%TODO: Not a good implementation for acceptor-receiver. Let it go for now. 
 %%====================================================================
 %% Internal functions
 %%====================================================================
