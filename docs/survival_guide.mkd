@@ -63,7 +63,31 @@ You can then use the admin's token as authorization for creating a new user.
 At this point, you should reauthorize as your new user, using another
 POST to /auth.json.
 
+    $ curl -d "token=<token>&name=myapp&template=rack" http://localhost:4999/apps.json
+    {"ok":"created"}
 
+Ouch.  That's some pretty unhelpful output.  Don't worry.  It's on the TODO list.
+
+    $ curl localhost:4999/apps/myapp.json?token=7942cc22d9dd2c449048978ca07b6d74
+    {"application":{"name":"myapp","routing_param":"Host","owners":["jacob@beehive.com"],"updated_at":"undefined","branch":"master","deploy_env":"production","clone_url":"/tmp/beehive/git_repos/myapp.git","dynamic":"dynamic","template":"rack","latest_error":"undefined"}}
+
+So we've got an app, and within that hash, there's a 'clone_url'
+value.  That's a git repo ready for us to check out and update.
+
+    $ git clone /tmp/beehive/git_repos/myapp.git
+    Cloning into myapp...
+    done.
+    warning: You appear to have cloned an empty repository.
+    $ cd myapp
+
+Now you can create an app in this repo, or use the provided url to add
+as a remote to another repo.
+
+    $ git remote add beehive <url>
+    $ git push beehive master
+
+Once the server (in this case localhost) receives the push, a receive
+hook fires and calls the beehive app manager to start up the application.
 
 
 ## Managing Bees
