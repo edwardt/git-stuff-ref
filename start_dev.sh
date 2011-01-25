@@ -38,5 +38,5 @@ eval "erl \
     -eval \"application:start(sasl)\" \
     -eval \"application:start(os_mon)\" \
     -eval \"application:start(crypto)\" \
-		-s reloader \
+    -s reloader \
     -eval \"application:start(beehive)\""

@@ -27,9 +27,6 @@ beehive repo's root):
 
 The tests require that localhost:4999 and :8080 be available to listen on.
 
-[TODO:  They don't all pass for me, in Ruby 1.8.7 or 1.9.2, and I don't
-yet know why that is.]
-
 ## Running a dev server
 
 `./start_dev.sh`.  The relevant environment variables are:

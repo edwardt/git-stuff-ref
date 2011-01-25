@@ -13,7 +13,7 @@ Beehive searches for config files at ~/.beehive.conf and
 
 Sets the base directory for the running beehive instance, which will
 include the DB, running apps and log files.  The default value is
-/var/lib/beehive
+/var/lib/beehive .
 
 ### code_root
 

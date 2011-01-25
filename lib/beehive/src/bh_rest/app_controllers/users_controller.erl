@@ -65,33 +65,33 @@ post([], Data) ->
   auth_utils:run_if_admin(
     fun(_) ->
         case proplists:get_value(email, Data) of
-          undefined -> {error, "No email defined"};
+          undefined -> {error, 400, "No email defined"};
           Email ->
             %% The user has been submitted with an email
             case users:exist(Email) of
-              true -> {error, "The user already exists"};
+              true -> {error, 409, "The user already exists"};
               false ->
                 case users:create(Data) of
                   {ok, User} when is_record(User, user) ->
                     case User#user.pubkey of
                       Key when is_list(Key) ->
                         ok = beehive_repository:add_user_pubkey(User#user.email,
-                                                                Key);
+                          Key);
                       _ -> ok
                     end,
                     {user, [{email, User#user.email}]};
                   E ->
                     io:format("Error: ~p~n", [E]),
-                    {error, "There was an error creating user"}
+                    {error, 500, "There was an error creating user"}
                 end
             end
         end
-
     end, Data);
 
 post(Path, _Data) ->
   io:format("Path: ~p~n", [Path]),
-  app_error("unhandled").
+  {error, 404, "Path did not match."}.
+
 put(_Path, _Data) -> "unhandled".
 
 delete([], Data) ->
@@ -111,7 +111,7 @@ add_pubkey(User, Pubkey) ->
       ok = beehive_repository:add_user_pubkey(SavedUser#user.email, Pubkey),
       [{"user", SavedUser#user.email}, {"pubkey", "added pubkey"}];
     _Else ->
-      app_error("There was an error updating the user")
+      app_error("There was an error updating the user", 500)
   end.
 
 app_error(Msg, Status) ->
