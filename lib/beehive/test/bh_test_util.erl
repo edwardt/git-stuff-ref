@@ -34,7 +34,7 @@ setup(Proplist) when is_list(Proplist) ->
       GlitterConfig = filename:join([Dir, "test", "gitolite-admin",
                                      "conf", "gitolite.conf"]),
       application:set_env(glitter, config_file, GlitterConfig),
-      application:start(sasl, [{errlog_type, error}]),
+      application:start(sasl),
       %% We don't need any error output here.
       beehive:start([{beehive_db_srv, testing}]),
 
