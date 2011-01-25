@@ -77,7 +77,7 @@ post([], Data) ->
                       Key when is_list(Key) ->
                         ok = beehive_repository:add_user_pubkey(User#user.email,
                           Key);
-                      true -> ok
+                      _ -> ok
                     end,
                     {user, [{email, User#user.email}]};
                   E ->
