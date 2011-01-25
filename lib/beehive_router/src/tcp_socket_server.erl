@@ -113,10 +113,16 @@ pass_on_to_proxy(ClientSock, Debug) ->
 %%%%%%%%%%%%% Internal Functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -spec get_client_port() -> port() | {error, term()}.
 get_client_port()->
-  PortNum = get_port('http-alt'),
+  PortNum = get_port(),
   config:search_for_application_value(client_port, PortNum). %TODO: I don't know why we need to hide usage like this
+
+%Note: this is for now. we only support http, prevent people from messing it up for now.
+-spec get_port()-> port().
+get_port()-> 
+  get_port('http-alt'). 
   
 -spec get_port(Protocol::protocol()) -> port() | {unsupported_protocol_type, atom()}.
+
 get_port('http-alt') -> 8080; %TODO: get from dets later instead
 get_port('https')-> 443;
 get_port(UnknownProtocol) -> throw({unsupported_protocol_type, UnknownProtocol}).
@@ -163,6 +169,17 @@ get_stacktrace()->
 -ifdef(TEST).
 -ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
+
+get_port_test_()->
+  ?assertEqual(8080, get_port()).
+
+get_port_unknown_prototcol_test_()->
+  UnknownProtocol = 'whatever',
+  ?assertThrow({unsupported_protocol_type, UnknownProtocol}, 
+   get_port(UnkownProtocol)).
+
+debug_msg_unknown_option__ensure_do_nothing_test()->  
+  ?assertEqual(ok, debug_msg(somefunc, "some reason", 'whetever')).
 
 -endif.
 -endif.
