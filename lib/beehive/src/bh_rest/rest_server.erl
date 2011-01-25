@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : rest_server.erl
 %%% Author  : Ari Lerner
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  Fri Jun 26 17:14:22 PDT 2009
 %%%-------------------------------------------------------------------
@@ -50,17 +50,17 @@ init([]) ->
     "Http beehive rest server",
     {"Port", integer_to_list(Port)}
   ],
-  
+
   printer:banner(Settings),
-  
+
   Dir = ?BH_ROOT,
   Docroot = filename:join([Dir, "priv", "www"]),
-  
+
   WebServer = case WebServerName of
     mochiweb -> mochiweb_http;
     _ -> mochiweb_http
   end,
-  
+
   WebServer:start([ {port, Port},
                     {loop, fun(Req) -> dispatch_requests(WebServerName, Docroot, Req) end}]).
 
@@ -119,7 +119,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 dispatch_requests(WebServerName, Docroot, RawRequest) ->
   {Req, Resp} = case WebServerName of
-    mochiweb -> 
+    mochiweb ->
       Info = {RawRequest, Docroot},
       {simple_bridge:make_request(mochiweb_request_bridge, Info),
         simple_bridge:make_response(mochiweb_response_bridge, Info)};
@@ -129,12 +129,12 @@ dispatch_requests(WebServerName, Docroot, RawRequest) ->
   handle(Path, Docroot, Req, Resp).
 
 % Handle the requests
-handle("/favicon.ico", _Docroot, _Req, Resp) -> 
+handle("/favicon.ico", _Docroot, _Req, Resp) ->
   Resp1 = Resp:status_code(200),
   Resp2 = Resp1:header("Content-Type", "text/html"),
   Resp3 = Resp2:data(""),
   Resp3:build_response();
-  
+
 handle(Path, Docroot, Req, Resp) ->
   BaseController = lists:concat([top_level_request(Path), "_controller"]),
   CAtom = list_to_atom(BaseController),
@@ -149,7 +149,7 @@ run_controller(Req, Resp, Docroot, ControllerAtom, Meth, Args) ->
     {'EXIT', {undef, Reason}} ->
       % ?LOG(error, "(~p:~p) Undefined method rest server: ~p~n", [?MODULE, ?LINE, Reason]),
       respond_to(Req, Resp, Docroot, Reason);
-    {'EXIT', E} -> 
+    {'EXIT', E} ->
       ?LOG(error, "(~p:~p) Error in rest server: ~p~n", [?MODULE, ?LINE, E]),
       erlang:display({error, E}),
       Resp1 = Resp:status_code(503),
@@ -167,7 +167,7 @@ run_controller(Req, Resp, Docroot, ControllerAtom, Meth, Args) ->
       Resp2 = Resp1:header("Content-Type", "application/json"),
       Resp3 = Resp2:data(?JSONIFY(Tuple)),
       Resp3:build_response();
-    Body -> 
+    Body ->
       respond_to(Req, Resp, Docroot, Body)
   end.
 
@@ -187,7 +187,7 @@ respond_to(Req, Resp, Docroot, Body) ->
   end,
   ReturnResp:build_response().
 
-% Find the method used as a request. 
+% Find the method used as a request.
 % This turns 'GET' into get
 clean_method(M) ->
   case M of
@@ -215,7 +215,7 @@ top_level_request(Path) ->
 generalize_request_path(Path) ->
   case string:rstr(Path, ".json") of
     0 -> Path;
-    _ -> 
+    _ ->
       % EWWWW
       string:substr(Path, 1, erlang:length(Path) - 5)
   end.
@@ -224,11 +224,11 @@ generalize_request_path(Path) ->
 atomize_keys(Data) ->
   lists:flatten(lists:map( fun({K,V}) -> atomize_kv(K,V) end, Data)).
 
-atomize_kv(Key, []) -> 
+atomize_kv(Key, []) ->
   try
     case mochijson2:decode(Key) of
       {struct, List} when is_list(List) ->
-        lists:map(fun({K,V}) -> 
+        lists:map(fun({K,V}) ->
                       atomize_kv(misc_utils:to_atom(K),
                                  misc_utils:to_list(V)) end, List);
       {BinKey, BinVal} ->
@@ -252,14 +252,14 @@ decode_data_from_request(Req, delete) ->
 decode_data_from_request(Req, _Meth) -> atomize_keys(Req:post_params()).
 
 not_found_web(Resp, Docroot, _Redirect) -> serve_file("not_found.html", Resp:status_code(404), Docroot, false).
-serve_file(Path, Resp, Docroot, Redirect) -> 
-	RealPath = filename:join([Path]),
+serve_file(Path, Resp, Docroot, Redirect) ->
+  RealPath = filename:join([Path]),
   FullPath = filename:join([Docroot, RealPath]),
   case filelib:is_file(FullPath) of
-    true -> 
+    true ->
       Resp1 = Resp:status_code(200),
       Resp1:file([[], Path]); % this is dumb... thanks simple_bridge
-    _ -> 
+    _ ->
       case Redirect of
         true -> not_found_web(Resp, Docroot, false);
         _ -> ?ERROR_HTML(io_lib:format("Error with serving the page: ~p", [FullPath]))
