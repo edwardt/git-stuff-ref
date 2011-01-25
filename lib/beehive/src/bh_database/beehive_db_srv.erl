@@ -196,13 +196,12 @@ init_adapter(Nodes, DbAdapter) ->
     true -> ok;
     false ->
       case code:load_file(DbAdapter) of
-        {error, not_purged} -> code:purge(DbAdapter), code:load_file(DbAdapter);
+        {error, not_purged} ->
+          code:purge(DbAdapter),
+          code:load_file(DbAdapter);
         {error, _Error} = T -> throw(T);
         _ -> ok
       end
   end,
-  case erlang:function_exported(DbAdapter, init_databases, 1) of
-    true -> apply(DbAdapter, init_databases, [Nodes]);
-    false -> ok
-  end,
+  apply(DbAdapter, init_databases, [Nodes]),
   ok.
