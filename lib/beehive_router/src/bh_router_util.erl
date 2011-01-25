@@ -66,6 +66,12 @@ time_diff(ThisTimeInSec, ThatTimeInSec) ->
 %%%%%%%%%%%% File/Folder Util %%%%%%%%%%%%%
 %-spec ensure_file(FileName::nonempty_string()) -> 'ok' | {error, term()}.
 %ensure_file(FileName)
+
+
+% TODO: seperate this out to another util, see above
+%%%%%%%%%%%% HTTP Util %%%%%%%%%%%%%
+to_json(Data) when is_list(Data)->
+  mochijson2:encode(Data).
 	
 
 % TODO: seperate this out to another util, see above	

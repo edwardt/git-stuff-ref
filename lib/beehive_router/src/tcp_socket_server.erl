@@ -180,6 +180,8 @@ get_port_unknown_prototcol_test_()->
 
 debug_msg_unknown_option__ensure_do_nothing_test()->  
   ?assertEqual(ok, debug_msg(somefunc, "some reason", 'whetever')).
+  
+
 
 -endif.
 -endif.
