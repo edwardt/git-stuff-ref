@@ -195,12 +195,13 @@ pending({updated_bee_status, BackendStatus},
   ?LOG(debug, "Application started ~p: ~p", [BackendStatus, App#app.name]),
   %% App started normally
   bees:save(Bee#bee{status = BackendStatus}),
-  case Updating of
-    true -> From ! {bee_updated_normally, Bee#bee{status = BackendStatus},
-                    App#app{revision = Sha}, Caller};
-    false -> From ! {bee_started_normally, Bee#bee{status = BackendStatus},
-                     App#app{revision = Sha}, Caller}
-  end,
+  Message =  case Updating of
+               true  -> bee_updated_normally;
+               false -> bee_started_normally
+             end,
+  From ! {Message, Bee#bee{status = BackendStatus},
+                    App#app{revision = Sha}, Caller},
+
   ok = global:unregister_name(registered_name(App)),
   {stop, normal, State};
 

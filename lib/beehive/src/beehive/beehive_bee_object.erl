@@ -947,9 +947,9 @@ start_ets_process() ->
   end.
 
 run_kill_on_pid(_OsPid, BeeDir, RealBeeObject) ->
-  %% KillStr = lists:flatten(["kill ", integer_to_list(OsPid)]),
   From = self(),
-  case beehive_bee_object_config:get_or_default(stop, RealBeeObject#bee_object.template) of
+  case beehive_bee_object_config:
+    get_or_default(stop, RealBeeObject#bee_object.template) of
     {error, _} = T ->
       send_to(From, T),
       throw(T);
@@ -963,19 +963,6 @@ run_kill_on_pid(_OsPid, BeeDir, RealBeeObject) ->
           run_hook_action(post, RealBeeObject, From)
       end
   end.
-
-%% ?DEBUG_PRINT({killing_with_string, KillStr}),
-%% cmd(KillStr, BeeDir, to_proplist(RealBeeObject), self()),
-%% receive
-%%   {error, _} = Tuple ->
-%%     erlang:display({run_kill_on_pid,error,KillStr,Tuple}),
-%%     Tuple;
-%%   X ->
-%%     erlang:display({run_kill_on_pid,KillStr,X}),
-%%     ok
-%%   after 5000 ->
-%%     ok
-%% end.
 
 log_shell_output(Tuple, Name) ->
   case Tuple of
