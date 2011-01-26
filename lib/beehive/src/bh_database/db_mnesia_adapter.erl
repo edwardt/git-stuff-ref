@@ -38,10 +38,6 @@ read(Table, Key) ->
 write(_Table, _Key, Record) ->
   {_Time, Value} = timer:tc(mnesia, dirty_write, [Record]),
   Value.
-  %% case mnesia:transaction(fun() -> mnesia:write(Record) end) of
-  %%   {aborted, Reason} -> {error, Reason};
-  %%   {atomic, _} -> ok
-  %% end.
 
 match(Pattern) ->
   {_Time, Value} = timer:tc(mnesia, dirty_match_object, [Pattern]),
@@ -235,7 +231,8 @@ create_local_table_copies(Type) ->
     table_definitions()),
   ok.
 
-table_has_copy_type(TabDef, DiscType) -> lists:member(node(), proplists:get_value(DiscType, TabDef, [])).
+table_has_copy_type(TabDef, DiscType) ->
+  lists:member(node(), proplists:get_value(DiscType, TabDef, [])).
 
 %% Create a copy of the Table locally
 create_local_table_copy(Table, Type) ->

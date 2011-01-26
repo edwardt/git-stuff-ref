@@ -120,26 +120,26 @@ init([DbAdapterName, Nodes]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call({write, Table, Key, Proplist}, From, State) ->
+handle_call({write, Table, Key, Proplist}, _From, State) ->
   {reply, call_adapter(write, [Table, Key, Proplist], State), State};
-handle_call({save, Fun}, From, State) ->
+handle_call({save, Fun}, _From, State) ->
   {reply, call_adapter(save, [Fun], State), State};
-handle_call({read, Table, Key}, From, State) ->
+handle_call({read, Table, Key}, _From, State) ->
   {reply, call_adapter(read, [Table, Key], State), State};
 % Deletions
-handle_call({delete, Table, Key}, From, State) ->
+handle_call({delete, Table, Key}, _From, State) ->
   {reply, call_adapter(delete, [Table, Key], State), State};
-handle_call({delete_all, Table}, From, State) ->
+handle_call({delete_all, Table}, _From, State) ->
   {reply, call_adapter(delete_all, [Table], State), State};
-handle_call({status}, From, State) ->
+handle_call({status}, _From, State) ->
   {reply, call_adapter(status, [], State), State};
-handle_call({all, Table}, From, State) ->
+handle_call({all, Table}, _From, State) ->
   {reply, call_adapter(all, [Table], State), State};
-handle_call({run, Fun}, From, State) ->
+handle_call({run, Fun}, _From, State) ->
   {reply, call_adapter(run, [Fun], State), State};
-handle_call({match, Mod}, From, State) ->
+handle_call({match, Mod}, _From, State) ->
   {reply, call_adapter(match, [Mod], State), State};
-handle_call({info, Type}, From, State) ->
+handle_call({info, Type}, _From, State) ->
   {reply, call_adapter(info, [Type], State), State};
 handle_call(_Request, _From, State) ->
   Reply = ok,
