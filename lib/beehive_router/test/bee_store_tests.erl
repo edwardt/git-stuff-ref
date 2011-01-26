@@ -1,6 +1,6 @@
 -module (bee_store_tests).
--ifdef (TEST).
--ifdef(EUNIT).
+%-ifdef (TEST).
+%-ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
 
 setup() ->
@@ -22,5 +22,5 @@ starting_test_() ->
 
 test_startup() ->
   passed.
--endif.
--endif.
+%-endif.
+%-endif.
