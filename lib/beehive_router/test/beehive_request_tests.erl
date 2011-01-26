@@ -1,4 +1,6 @@
 -module (beehive_request_tests).
+-ifdef (TEST).
+-ifdef(EUNIT).
 -include_lib("eunit/include/eunit.hrl").
 
 setup() ->
@@ -20,3 +22,5 @@ starting_test_() ->
 
 test_dummy() ->
   passed.
+-endif.
+-endif.
