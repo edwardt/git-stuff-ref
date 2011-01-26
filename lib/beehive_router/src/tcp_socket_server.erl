@@ -20,7 +20,7 @@
   init/0,
   init/1,
   init_accept/1
-%  stop/0
+  stop/0
 ]).
 
 -define (Socket_Server_Sup, tcp_socket_server_sup).
@@ -41,6 +41,12 @@ init(LocalPort) ->
   ensure_environment(),
   Pid = proc_lib:spawn_link(?MODULE, init_accept, [LocalPort]),
   {ok, Pid}.
+
+stop()->
+  %Kill all the handlers
+  %Stop itself
+  Socket = get_client_port(), 
+  gen_tcp:close(Socket).
 
 % accept responses on the port given by the application configuration
 
