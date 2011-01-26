@@ -191,7 +191,7 @@ get_port_test()->
 get_port_unknown_prototcol_test()->
   UnknownProtocol = 'whatever',
   ?assertThrow({unsupported_protocol_type, UnknownProtocol}, 
-   get_port(UnkownProtocol)).
+   get_port(UnknownProtocol)).
 
 debug_msg_unknown_option__ensure_do_nothing_test()->  
   ?assertEqual(ok, debug_msg(somefunc, "some reason", 'whetever')).

@@ -178,18 +178,21 @@ ensure_app_already_started_test()->
 ensure_app_not_found_started_test()->
   ok.
 
-ensure_apps_started_test()->
+ensure_apps_stopped_test()->
+  ok.
+  
+ensure_apps_already_stopped_test()->
+  ok.  
+
+ensure_apps_stopped_emptyset_test()->
   ok.
 
-ensure_apps_started_emptyset_test()->
-  ok.
-
-ensure_apps_started_one_failed_test()->
+ensure_apps_stopped_one_failed_test()->
   %appstart sasl, inet, os_mon
   %check loaded
   ok.
 
-ensure_apps_started_OneElementSet_test()->
+ensure_apps_stopped_OneElementSet_test()->
   ok.
 
 time_diff_test()->

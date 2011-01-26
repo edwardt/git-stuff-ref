@@ -236,7 +236,7 @@ get_os_data(packets, {unix, linux},File) ->
 -include_lib("eunit/include/eunit.hrl").
 
 ensure_apps_started_test()->
-  Result = ensure_apps_started().
+  Result = ensure_apps_started(),
   ?assertMatch({ok, _Whatever}, Result).
 
 get_os_data_platform_linux_test()->
@@ -251,7 +251,7 @@ get_os_data_platform_unknown_test()->
  % Result = get_os_data(
   ok.
 
-get_packets_test()_>
+get_packets_test()->
 
   ok.
 

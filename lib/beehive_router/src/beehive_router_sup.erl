@@ -125,28 +125,29 @@ get_app_env(App, Key, Default)->
 -include_lib("eunit/include/eunit.hrl").
 
 should_run_dashboard_test_()->
-  ?assertTrue(should_run_dashboard()).
+  ?assert(should_run_dashboard()).
 
 get_worker_childspec_test_()->
    Name = testApp, 
-   ensure_app_env_absent(Name).
-   Expected = {Name, {Name, start_link, []}, permanent, ?ShutdownAfterTimeoutInSec, worker, [Name]}.
+   Key = testKey,
+   ensure_app_env_absent(Name, Key),
+   Expected = {Name, {Name, start_link, []}, permanent, ?ShutdownAfterTimeoutInSec, worker, [Name]},
    ?assertMatch(Expected, get_worker_childspec(Name)).
      	
 get_worker_childspec_invalid_apptype_test_()->
-  ?assertNot(get_worker_childspec("TestApp_As_String").
+  ?assertNot(get_worker_childspec("TestApp_As_String")).
 
 worker_restart_strategy_test_() ->
   ?assertEqual({one_for_one,?MaxRestartTrial, ?MaxTimeBetweenRestartInSec },
   	 	worker_restart_strategy()). 
 
-get_app_env_test()_->
+get_app_env_test()->
   App = testApp, Key = testKey,
-  ensure_app_env_absent(testApp).
+  ensure_app_env_absent(testApp, Key),
   Default = defaultVal,
   Result = get_app_env(App, Key, Default),
   ?assertEqual(Default,Result),
-  ensure_app_env_absent(testApp).
+  ensure_app_env_absent(testApp, Key).
   
 
 
