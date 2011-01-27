@@ -19,7 +19,7 @@
   start_link/0,
   init/0,
   init/1,
-  init_accept/1
+  init_accept/1,
   stop/0
 ]).
 

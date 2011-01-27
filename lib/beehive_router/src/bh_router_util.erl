@@ -70,8 +70,15 @@ equal(_Other, _Other) -> false.
 %%%%%%%%%%%% Date Time Util %%%%%%%%%%%%%%%% 
 %TODO: this is not a good func for time diff, just pull this out from dup code from product
 -spec time_diff(ThisTime::non_neg_integer(), ThatTime::non_neg_integer()) -> integer().
-time_diff(ThisTimeInSec, ThatTimeInSec) -> 
-   ThisTimeInSec - ThatTimeInSec.	
+
+time_diff(Now, Then) -> 
+   time_diff(Now,Then, 0).
+time_diff(Now, Then, 0) ->
+   Val = (Now - Then),
+   if(Val < 0)-> Val;
+      true -> 0      
+   end.
+    	     	
 
 % TODO: seperate this out to another util, see above
 %%%%%%%%%%%% File/Folder Util %%%%%%%%%%%%%
@@ -196,9 +203,10 @@ ensure_apps_stopped_OneElementSet_test()->
   ok.
 
 time_diff_test()->
-  ok.
-
-
+  Then = erlang:now(),
+  erlang:sleep(10),
+  Now = erlang:now(),
+  ?assertMatch(10, time_diff(Then, Now)).
 
 -endif.
 -endif.

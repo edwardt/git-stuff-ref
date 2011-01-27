@@ -14,6 +14,7 @@ init() ->
 % Find the application config value
 search_for_application_value(Param) ->
   search_for_application_value(Param, undefined).
+  
 search_for_application_value(Param, Default) ->
   case search_for_application_value_from_environment(Param) of
     false ->
@@ -31,6 +32,7 @@ search_for_application_value(Param, Default) ->
 search_for_application_value_on_env(Param) ->
   case application:get_env(beehive, Param) of
     undefined         -> false;
+    undef 	      -> false;
     {ok, undefined}   -> false;
     {ok, V}    -> V
   end.
