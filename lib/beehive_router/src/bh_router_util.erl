@@ -75,7 +75,7 @@ time_diff(Now, Then) ->
    time_diff(Now,Then, 0).
 time_diff(Now, Then, 0) ->
    Val = (Now - Then),
-   if(Val < 0)-> Val;
+   if(Val > 0)-> Val;
       true -> 0      
    end.
     	     	
@@ -202,11 +202,26 @@ ensure_apps_stopped_one_failed_test()->
 ensure_apps_stopped_OneElementSet_test()->
   ok.
 
-time_diff_test()->
-  Then = erlang:now(),
-  erlang:sleep(10),
-  Now = erlang:now(),
-  ?assertMatch(10, time_diff(Then, Now)).
+time_diff_postive_diff_test()->
+  ?assertEqual(10, time_diff(11,1)).
+
+time_diff_negative_diff_test()->
+  ?assertEqual(0, time_diff(1,11)).
+
+time_diff_zero_diff_test()->
+ ?assertEqual(0, time_diff(0,0)).
+
+time_diff_timer_random_test()->
+  {ThenHr, ThenMin, ThenSec} = erlang:now(),
+  io:format("ThenSec: ~p ~n",[ThenSec]),
+  timer:sleep(10),
+  {NowHr, NowMin, NowSec} = erlang:now(),
+  io:format("NowSec: ~p ~n",[NowSec]),
+  Return = time_diff(ThenSec, NowSec),
+  io:format("time diff return: ~p ~n",[Return]),
+  ?assertTrue((Return >=0), Return).
+  
+  
 
 -endif.
 -endif.
