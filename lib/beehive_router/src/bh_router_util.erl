@@ -147,27 +147,37 @@ get_stacktrace() ->
 -include_lib("eunit/include/eunit.hrl").
 ensure_app_new_loaded_test()->
   %Buid,, do, check
-  ok.
+  unload_app('sasl'),
+  Ret = ensure_loaded('sasl'),  
+  ?assertMatch({ok, app_loaded}, Ret).
+
 
 ensure_app_already_loaded_test()->
-  %App start
-  %check load
-  
-  ok.
+  unload_app('sasl'),
+  Ret = ensure_loaded('sasl'),
+  Ret1 = ensure_loaded('sasl'),
+  ?assertMatch({ok, app_loaded}, Ret1).
 
 ensure_app_not_found_loaded_test()->
-  %check load
-  ok.
+  Ret1 = ensure_loaded('fakesasl'),
+  io:format("load fake app ~p",[Ret1]),
+  ?assertThrow({error_load_app, _Error}, Ret1).
 
 ensure_apps_loaded_test()->
   %appstart sasl, os_mon
-  %check loaded
-  ok.
+  unload_app('sasl'),
+  unload_app('os_mon'),
+  Ret1 = ensure_apps_loaded(['sasl', 'os_mon']),
+  io:format("Apps loaded ~p",[Ret1]),
+  ?assertMatch({ok, app_loaded}, Ret1).
+
 
 ensure_apps_one_failed_loaded_test()->
-  %appstart sasl, inet, os_mon
-  %check loaded
-  ok.
+  unload_app('sasl'),
+  unload_app('os_mon'),
+  Ret1 = ensure_apps_loaded(['os_mon', 'sasl']),
+  io:format("1 App failed loaded ~p",[Ret1]),
+  ?assertThrow({error_load_app, _Error}, Ret1).
 
 ensure_apps_started_emptyset_test()->
   ok.
@@ -219,10 +229,19 @@ time_diff_timer_random_test()->
   io:format("NowSec: ~p ~n",[NowSec]),
   Return = time_diff(ThenSec, NowSec),
   io:format("time diff return: ~p ~n",[Return]),
-  ?assertTrue((Return >=0), Return).
+  ?assert((Return >=0)).
   
-  
+stop_app(App) when is_atom(App) ->
+  catch (application:stop(App)).
+start_app(App) when is_atom(App) ->
+  catch (application:start(App)).
 
+load_app(App) when is_atom(App) ->
+  catch (application:load(App)). 
+    
+unload_app(App) when is_atom(App) ->
+  catch (application:unload(App)). 
+  
 -endif.
 -endif.
 
